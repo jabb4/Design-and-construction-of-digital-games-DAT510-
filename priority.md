@@ -1,4 +1,5 @@
 **Need to**
+
 Combat system:
 Attack
 Take damage
@@ -15,6 +16,7 @@ Enemies:
 Some waves
 
 **Want to**
+
 Combat system: See Kappas document
 
 Upgrades:
