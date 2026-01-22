@@ -1,16 +1,5 @@
 # Zuni against AI
 
-## Gameplay
-You live in your camper van, which is your "home base". You can drive this van (not gameplay) to two different places. The first place is an abandoned city where enemies will spawn in waves and run to attack you and your van. The second location is a temple where a master AI (Boss) lives. When you drive to this location you can't leave until you have killed it or it has killed you.
-
-The main gameplay loop is raids at the first location. A raid consists of many waves of enemies. They spawn and you kill them and take loot. Every fifth round a mini-boss spawns, which gives more loot but is harder to kill.
-
-Then you drive away with your car when you feel like you can't take it anymore. When you are not in a raid you are in your car. There you can organize the loot you picked up during the raid, upgrade gear and vehicles, and then go on another raid.
-
-When you have strong enough gear you can try to fight the boss; if you kill it, you win the game.
-
-If you die you lose everything in your inventory (including armour and sword) and spawn back in your car (with the starter sword and no armour).
-
 ## Storyline
 A boy named Zuni lived with his family in an old Japanese temple. Zuni, who was an only child, lived there with his father and mother who both were samurai warriors.
 
@@ -20,13 +9,22 @@ The day Zuni turned 13 they arrived. His mother hid Zuni in a garbage bin where 
 
 He was so furious and knew that one day he would get revenge.
 
-The only thing that survived the fire was the family's van. Zuni had been driving it since he was 10 years old because he had to collect water for the family to drink.
-
-He took the van and drove away deeper into the forest to continue his training so that one day he could take down the AIs....
+The only thing that survived the fire was the his fathers katana. Zuni picked it up with tears in his eyes....
 
 .... 10 years later ....
 
 Game begins
+
+## Gameplay
+You live in your camper van, which is your "home base". You can drive this van (not gameplay) to two different places. The first place is an abandoned city where enemies will spawn in waves and run to attack you. The second location is a temple where a master AI (Boss) lives. When you drive to this location you can't leave until you have killed it or it has killed you.
+
+The main gameplay loop is raids at the first location. A raid consists of many waves of enemies. They spawn and you kill them and take loot. Every fifth round a mini-boss spawns, which gives more loot but is harder to kill.
+
+Then you drive away with your car when you feel like you can't take it anymore. When you are not in a raid you are in your car. There you can organize the loot you picked up during the raid, upgrade gear and vehicles, and then go on another raid.
+
+When you have strong enough gear you can try to fight the boss; if you kill it, you win the game.
+
+If you die you lose everything in your inventory (including armour and sword) and spawn back in your car (with the starter sword and no armour).
 
 ## Theme
 The theme is futuristic with Japanese cultural influences. Think Kill Bill vibe but set in the future with AI robots.
@@ -49,12 +47,10 @@ The van can be upgraded in different ways.
 The van needs fuel to drive into a raid.
 
 ### Upgrades
-1. Armor upgrades
-2. Storage upgrades
+1. Storage upgrades
 
 You can also use money on your van to:
-1. Repair armour
-2. Re-fuel
+1. Re-fuel
 
 The van can also be teched out with extra modules. You need to collect blueprints to be able to build these modules.
 
