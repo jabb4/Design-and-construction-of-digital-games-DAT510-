@@ -40,20 +40,6 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         CheckGrounded();
-        ResolveSprintInput();
-    }
-
-    // Fallback polling to avoid sticky sprint when input events miss canceled phases
-    private void ResolveSprintInput()
-    {
-        bool pressed = false;
-        var kb = Keyboard.current;
-        if (kb != null && kb.leftShiftKey.isPressed) pressed = true;
-
-        var gp = Gamepad.current;
-        if (gp != null && gp.leftStickButton.isPressed) pressed = true;
-
-        isSprinting = pressed;
     }
 
     private void FixedUpdate()
@@ -79,13 +65,11 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 desiredHorizontal = moveDirection.normalized * currentSpeed;
 
-        // If airborne, reduce control
         if (!isGrounded)
         {
             desiredHorizontal *= airControlFactor;
         }
 
-        // Smooth horizontal velocity for nicer feel
         Vector3 currentHorizontal = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         float t = Mathf.Clamp01(acceleration * Time.fixedDeltaTime);
         Vector3 smoothed = Vector3.Lerp(currentHorizontal, desiredHorizontal, t);
