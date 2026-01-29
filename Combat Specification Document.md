@@ -177,7 +177,7 @@ When toggling the camera lock, it should check the camera's view for any lock-on
 
 To switch between targets, we take the input vector of the mouse and draw a line from the target in that direction in the view space. The view space is the coordinate system where the x and y axis are parallell to the screen, with the z axis corresponding to depth into the scene. We can use the x and y coordinates of objects in the view space to identify where they are on screen. We will calculate the difference in the angle between the input vector and each other target on screen. With consideration to distance, the target with the smallest angle is selected as the new camera target.
 
-> Use Cinemachine Target Group for initial lock-on, extend later with custom scripting.
+> Use Cinemachine Target Group for initial lock-on, extend later with custom scripting. (Cinemachine could not be used, package does not have valid signature)
 
 ### Omnidirectional Movement
 
