@@ -179,8 +179,8 @@ public class CameraController : MonoBehaviour
         Transform bestTarget = null;
         float bestScore = float.MaxValue;
 
-        // Get player's viewport position to determine sections
-        Vector3 playerViewportPos = cam.WorldToViewportPoint(playerTransform.position + Vector3.up * 1.5f); // Above player's head
+        // Get player's viewport position to determine sections top and bottom section
+        Vector3 playerViewportPos = cam.WorldToViewportPoint(playerTransform.GetComponent<Collider>().bounds.center);
 
         foreach (Collider enemy in enemiesInRange)
         {
@@ -188,18 +188,18 @@ public class CameraController : MonoBehaviour
             if (viewportPos.z <= 0 || viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0 || viewportPos.y > 1)
                 continue; // Not in view
 
-            // Check top section first (above player's viewport y), then bottom
+            // Check top section first, then bottom (prioritize top)
             bool isInTopSection = viewportPos.y > playerViewportPos.y;
-            float sectionPriority = isInTopSection ? 0 : 1; // Prefer top section
+            float sectionPriority = isInTopSection ? 0 : 1;
 
             // Distance from center
             float centerDistance = Vector2.Distance(new Vector2(viewportPos.x, viewportPos.y), new Vector2(0.5f, 0.5f));
 
-            // Distance from player (weight closer targets)
+            // Distance from player
             float playerDistance = Vector3.Distance(playerTransform.position, enemy.transform.position);
 
-            // Weight: prioritize section (top first), then center proximity, then player distance
-            float score = sectionPriority * 1000 + centerDistance * 100 + playerDistance;
+            // Score: prioritize section (top first), then player distance, then center proximity
+            float score = sectionPriority * 1000 + playerDistance * 100 + centerDistance;
 
             if (score < bestScore)
             {
