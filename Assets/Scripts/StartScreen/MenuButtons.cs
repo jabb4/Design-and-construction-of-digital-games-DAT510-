@@ -1,0 +1,24 @@
+using System;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class MenuButtons : MonoBehaviour
+{
+    public void NewGame()
+    {
+        // Needs to impement some logic to create new save files
+        SceneManager.LoadSceneAsync(0);
+    }
+
+    public void LoadGame()
+    {
+        // Make sure we load the saved values
+        Debug.Log("Loading new game");
+        // SceneManager.LoadSceneAsync(1); // Switch to Van sceen
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+}
