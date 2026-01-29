@@ -76,7 +76,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 finalVelocity = new Vector3(smoothed.x, rb.linearVelocity.y, smoothed.z);
         rb.linearVelocity = finalVelocity;
 
-        // Add extra gravity when falling for snappier feel
+        // Add extra gravity when falling
         if (!isGrounded && rb.linearVelocity.y < 0)
         {
             rb.AddForce(Vector3.down * 5f, ForceMode.Acceleration);
@@ -92,6 +92,7 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
+        if (!isGrounded || moveInput.magnitude < 0.1f || cameraTransform == null) return;
 
         Vector3 cameraForward = cameraTransform.forward;
         cameraForward.y = 0f;

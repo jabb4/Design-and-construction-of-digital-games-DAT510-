@@ -257,8 +257,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fae4f79f6ce48948c3e7bfdab5d6e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyPrefab: {fileID: 546369070842216715, guid: bb173dff46ee349b987d865ce28c8a25, type: 3}
   numberOfEnemies: 5
-  spawnRadius: 10
+  spawnRadius: 20
   spawnCenter: {x: 0, y: 0, z: 0}
 --- !u!4 &309561498
 Transform:
@@ -681,5 +682,5 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 7112517571143368931}
-  - {fileID: 268734912}
   - {fileID: 309561498}
+  - {fileID: 268734912}

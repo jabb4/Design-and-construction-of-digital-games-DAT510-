@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Start Screen.unity
+    guid: bf8ff4255a72b440086532069c5afff0
+  - enabled: 1
+    path: Assets/Scenes/VanView.unity
+    guid: c7def2bd52ed04454a3efadf743483d7
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
