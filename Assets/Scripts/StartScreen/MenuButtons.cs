@@ -7,14 +7,14 @@ public class MenuButtons : MonoBehaviour
     public void NewGame()
     {
         // Needs to impement some logic to create new save files
-        SceneManager.LoadSceneAsync(0);
+        SceneManager.LoadSceneAsync(2);
     }
 
     public void LoadGame()
     {
         // Make sure we load the saved values
         Debug.Log("Loading new game");
-        // SceneManager.LoadSceneAsync(1); // Switch to Van sceen
+        SceneManager.LoadSceneAsync(2);
     }
 
     public void QuitGame()
