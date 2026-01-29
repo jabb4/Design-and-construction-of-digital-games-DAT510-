@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float sprintSpeed = 8f;
     [SerializeField] private float rotationSpeed = 10f;
     [SerializeField, Range(0f, 50f)] private float acceleration = 20f;
+<<<<<<< HEAD
     [SerializeField] private float airControlFactor = 0.3f;
     [Header("Jump Settings")]
     [SerializeField] private float jumpForce = 5f;
@@ -16,17 +17,32 @@ public class PlayerMovement : MonoBehaviour
     [Header("Ground Check")]
     [SerializeField] private float groundCheckRadius = 1f;
     [SerializeField] private float groundCheckOffset = 0.05f;
+=======
+    [SerializeField, Range(0f, 1f)] private float airControlFactor = 0.5f;
+    [Header("References")]
+    [SerializeField] private Transform cameraTransform;
+    [Header("Ground Check")]
+    [SerializeField] private float groundCheckRadius = 0.3f;
+    [SerializeField] private float groundCheckOffset = 0.15f;
+>>>>>>> main
 
     private Rigidbody rb;
     private Vector2 moveInput;
     private bool isSprinting;
     private bool isGrounded;
+<<<<<<< HEAD
     private CameraController cameraController;
+=======
+    private Vector3 velocitySmooth;
+>>>>>>> main
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+<<<<<<< HEAD
         cameraController = FindAnyObjectByType<CameraController>();
+=======
+>>>>>>> main
         if (cameraTransform == null && Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
@@ -40,9 +56,19 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+<<<<<<< HEAD
     private void FixedUpdate()
     {
         CheckGrounded();
+=======
+    private void Update()
+    {
+        CheckGrounded();
+    }
+
+    private void FixedUpdate()
+    {
+>>>>>>> main
         HandleMovement();
         HandleRotation();
     }
@@ -75,16 +101,20 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 finalVelocity = new Vector3(smoothed.x, rb.linearVelocity.y, smoothed.z);
         rb.linearVelocity = finalVelocity;
+<<<<<<< HEAD
 
-        // Add extra gravity when falling
+        // Add extra gravity when falling for snappier feel
         if (!isGrounded && rb.linearVelocity.y < 0)
         {
             rb.AddForce(Vector3.down * 5f, ForceMode.Acceleration);
         }
+=======
+>>>>>>> main
     }
 
     private void HandleRotation()
     {
+<<<<<<< HEAD
         if (!isGrounded || moveInput.magnitude < 0.1f) return;
 
         // If locked on, rotation is handled by camera controller
@@ -92,7 +122,9 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
+=======
         if (!isGrounded || moveInput.magnitude < 0.1f || cameraTransform == null) return;
+>>>>>>> main
 
         Vector3 cameraForward = cameraTransform.forward;
         cameraForward.y = 0f;
@@ -124,6 +156,7 @@ public class PlayerMovement : MonoBehaviour
     {
         isSprinting = value.isPressed;
     }
+<<<<<<< HEAD
 
     private void OnJump(InputValue value)
     {
@@ -139,4 +172,6 @@ public class PlayerMovement : MonoBehaviour
         Vector3 spherePosition = transform.position + Vector3.down * groundCheckOffset;
         Gizmos.DrawWireSphere(spherePosition, groundCheckRadius);
     }
+=======
+>>>>>>> main
 }
