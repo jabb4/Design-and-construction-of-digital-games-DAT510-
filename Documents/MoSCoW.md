@@ -35,7 +35,6 @@
   - Defense: One block (right mouse click)
 - Weapon
   - One katana: can't be changed
-  - Sharpness can be upgraded with money -> increases dmg.
 
 ### Enemy
 
@@ -100,6 +99,8 @@
 - Armor: Adds defense
 - Bandage: Heals 15%, takes 10 sec to apply
 - Purse: Holds money that the player can collect during the raid.
+- Weapon
+	- Sharpness can be upgraded with money -> increases dmg.
 
 ### Combat
 
