@@ -143,7 +143,7 @@ public class CameraController : MonoBehaviour
         // Calculate target position and rotation
         Vector3 directionToTarget = (lockedTarget.position - playerTransform.position).normalized;
         Vector3 desiredCameraPosition = playerTransform.position - directionToTarget * offset.magnitude + Vector3.up * offset.y;
-        Quaternion desiredCameraRotation = Quaternion.LookRotation(lockedTarget.position + Vector3.up * 1.5f - desiredCameraPosition);
+        Quaternion desiredCameraRotation = Quaternion.LookRotation(lockedTarget.position + Vector3.up - desiredCameraPosition);
 
         transform.position = Vector3.Lerp(transform.position, desiredCameraPosition, Time.deltaTime * cameraSmoothSpeed);
         transform.rotation = Quaternion.Lerp(transform.rotation, desiredCameraRotation, Time.deltaTime * cameraSmoothSpeed);
