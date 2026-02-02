@@ -85,25 +85,25 @@ text("Here the user got a feel for the user interface during the general gamepla
 figure(
   image("Images/Paper-prototype/paper-prototype-2.jpg", width: 100%),
   caption: [
-    Narrow streets fight 1
+    User testing boss scene UI
   ],
 ),
 
 figure(
   image("Images/Paper-prototype/paper-prototype-3.jpg", width: 100%),
   caption: [
-    Narrow streets fight 2
+    User testing city raid
   ],
 ),
 
 text("Since the user wanted to move the player health UI to the top left corner, the boss health bar was moved to the bottom left of the screen. In hindsight we think that this UI placement could be improved upon, since the player item and player health elements are too far apart from each other and not more \"grouped\"."),
 
-text("For the map view, the user thought that it was a good idea for the different destinations to use kilometers as the \"currency\" to travel to that place rather than dollars or an arbitrary number. With the kilometers as the unit, the user felt that it gave the map more context and perspective."),
+text("For the raid map view, the user thought that it was a good idea for the different destinations to use kilometers as the \"currency\" to travel to that place rather than dollars or an arbitrary number. With the kilometers as the unit, the user felt that it gave the map more context and perspective."),
 
 figure(
   image("Images/Paper-prototype/paper-prototype-4.jpg", width: 100%),
   caption: [
-    Narrow streets map
+    User testing raid map view
   ],
 )
 )
@@ -125,18 +125,18 @@ Here you will be able to load into existing saves, as well as start new ones. No
 #pagebreak()
 
 === Back story "movie"
-Here we want a backstory cinematic. This is going to go through the story of the main character and let the player get in to the mood.
+Here we want a backstory cinematic. This is going to go through the story of the main character and let the player get in to the mood. This should only be showed when a new game is started, not when you load in to a save.
 #figure(
   image("Images/Paper-prototype/back_story_movie.jpg", width: 100%),
   caption: [
-    Back story
+    Back story movie
   ],
 )
 
 #pagebreak()
 
 === Raid combat
- Here we get put into a tutorial scene after the backstory. After we finish the tutorial, we get to the main inventory/out of raid scene (image 4). The following times we go to this scene, it will be treated like a Main raid scene.
+ This is were the player is going to be spending most of its time. The city raid scene where the player is going to face multiple waves of enemies. The player is firstly put here with a tutorial which goes through the basic game mechanics.
 
 #figure(
   image("Images/Paper-prototype/combat_city.jpg", width: 100%),
@@ -148,7 +148,7 @@ Here we want a backstory cinematic. This is going to go through the story of the
 #pagebreak()
 
 === Van scene
-After the tutorial scene we get put to the main out of raid scene, where we can check our inventory, upgrades, etc by hovering different parts of the car and character. Now we press the RAID button on the right, this sends us to the map screen (image 5).
+After the tutorial scene we get put to the "van view", where we can check our inventory, upgrades, etc by hovering different parts of the car and character. Now we press the RAID button on the right, this sends us to the raid map screen.
 
 #figure(
   image("Images/Paper-prototype/van_scene.jpg", width: 100%),
@@ -160,7 +160,7 @@ After the tutorial scene we get put to the main out of raid scene, where we can 
 #pagebreak()
 
 === Raid map
-Now we get shown the “map” scene. Here we can choose where to raid. The main gameplay loop will be raiding the City multiple times in order to gather upgrades and become more powerful (images 5 -> 3 -> 4 -> 5), and then when you are ready, raid the Temple for the final boss (image 6). We now raid the temple
+This is the raid map. Here we can choose where to raid. The main gameplay loop will be raiding the City multiple times in order to gather upgrades and become more powerful, and then when you are ready, raid the Temple for the final boss.
 #figure(
   image("Images/Paper-prototype/raid_map.jpg", width: 100%),
   caption: [
@@ -170,7 +170,7 @@ Now we get shown the “map” scene. Here we can choose where to raid. The main
 
 #pagebreak()
 
-=== Boss fight
+=== Temple raid (boss fight)
 This is where we fight the final boss; if we lose, all our equipped items are lost. If we win, we win the game.
 #figure(
   image("Images/Paper-prototype/boss_fight.jpg", width: 100%),
