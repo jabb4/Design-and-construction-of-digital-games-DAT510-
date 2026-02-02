@@ -1,4 +1,5 @@
 ## Must haves (aka MVP)
+
 ### UI
 
 - Start screen
@@ -7,7 +8,6 @@
 	- Quit game button
 - Gameplay (in raid)
 	- Health bar (lower left corner)
-	- Money (top right corner)
 - Common Enemy
 	- Health bar (abover their head)
 - Home base view (Van view)
@@ -70,6 +70,8 @@
 
 - Game saves: Every time player gets back to van view, the game state is saved.
 
+---
+
 ## Should haves
 
 ### UI
@@ -81,8 +83,9 @@
 	- City location
 	    - How far away it is
 - Boss
-	- Big Health bar (top center)
+	- Big Health bar
 - Gameplay (in raid)
+ 	- Money (top right corner)
 	- Healing item (lower right corner)
 - Home base view (Van view)
 	- Money (top right corner)
@@ -124,9 +127,6 @@
 ### Gameplay
 
 - Boss fight
-- Storyline intro "movie"
-- Gameplay tutorial
-  - How the game works etc.
 - Collect money from killed enemies
 - Upgraded van, buy fuel
 
@@ -134,33 +134,42 @@
 
 - Sound effect for most things
 
+---
+
 ## Could haves
+
 ### UI
 
 - Start screen
   - Settings menu button
-    - Options for brightness etc.???
+    - Options for brightness etc.
 
 ### Gameplay
 
 - Animated storyline intro
+- Gameplay tutorial
+  - How the game works etc.
 
 ### Combat
 
 - Posture system:
-  - If we time multiple attacks the enemy can get unbalanced
-    - One taps the enemy
+  - Parry multiple attacks the stagger enemies
+    - When enemy is staggered, the player can instantly kill the enemy
+    - If the player is bad at parrying, the players posture will increase and eventually stun the player
 - Block spam prevention system
 
 ### Enemy
 
-- Type: Range
+- Ranged combatant
 
 ### Environment
 
 - New raid location
 
+---
+
 ## Won't haves
+
 ### Player
 
 - Appearance customization
