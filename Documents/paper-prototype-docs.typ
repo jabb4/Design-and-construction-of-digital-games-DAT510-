@@ -80,19 +80,19 @@ We have tested a bunch of different locations for the UI elements in game. We fo
   column-gutter: 20pt,
   row-gutter: 30pt,
 
-text("Here the user got a feel for the user interface during the general gameplay (raids). The user suggested moving the player health bar to the top left of the screen instead of the bottom left corner, since the user felt it was more standard, which we agreed on. Though if we would implement the posture system later, this would have to be changed since it introduces new vital UI elements. Another suggestion by the user was the visibility of the health bars, in which they suggested that they should be hidden until they engage in combat, which was something we did not think about and was a good idea to reduce visual clutter."),
-
-figure(
-  image("Images/Paper-prototype/paper-prototype-2.jpg", width: 100%),
-  caption: [
-    User testing boss scene UI
-  ],
-),
+text("Here the user got a feel for the user interface during the general gameplay (raids). The user suggested moving the player health bar to the top left of the screen instead of the bottom left corner, since the user felt it was more standard, which we agreed on. Though if we would implement the posture system later, this would have to be changed since it introduces new vital UI elements. Another suggestion by the user was the visibility of the health bars of the enemies, in which they suggested that they should be hidden until they took damage. Which was something we did not think about and was a good idea to reduce visual clutter."),
 
 figure(
   image("Images/Paper-prototype/paper-prototype-3.jpg", width: 100%),
   caption: [
     User testing city raid
+  ],
+),
+
+figure(
+  image("Images/Paper-prototype/paper-prototype-2.jpg", width: 100%),
+  caption: [
+    User testing boss scene UI
   ],
 ),
 
@@ -171,7 +171,7 @@ This is the raid map. Here we can choose where to raid. The main gameplay loop w
 #pagebreak()
 
 === Temple raid (boss fight)
-This is where we fight the final boss; if we lose, all our equipped items are lost. If we win, we win the game.
+This is where we fight the final boss; if we lose, all our inventory items are lost. If we win, we win the game. So the stakes are high, the player need to have geared up before facing it.
 #figure(
   image("Images/Paper-prototype/boss_fight.jpg", width: 100%),
   caption: [
