@@ -23,18 +23,8 @@ namespace Player.StateMachine.States
             float blend = landingDuration <= 0f ? 1f : Mathf.Clamp01(landingTimer / landingDuration);
 
             Motor.Move(Input.MoveInput, Input.IsSprinting, blend);
-            
-            if (Input.HasMovementInput)
-            {
-                if (Motor.IsLockedOn)
-                {
-                    Motor.RotateTowardsLockOnTarget();
-                }
-                else
-                {
-                    Motor.RotateTowardsMovement(Input.MoveInput);
-                }
-            }
+
+            RotateWithContext(requireMovementInput: true);
         }
 
         public override IState CheckTransitions()

@@ -94,7 +94,7 @@ namespace Player.StateMachine.States
         public override void OnUpdate()
         {
             locomotion.Update(Input.HasMovementInput);
-            UpdateBlendTreeParameters();
+            smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
             
             if (Input.HasMovementInput)
             {
@@ -112,14 +112,7 @@ namespace Player.StateMachine.States
 
             Motor.Move(Input.MoveInput, useSprint: false);
 
-            if (Motor.IsLockedOn)
-            {
-                Motor.RotateTowardsLockOnTarget();
-            }
-            else
-            {
-                Motor.RotateTowardsMovement(Input.MoveInput);
-            }
+            RotateWithContext();
         }
         
         public override IState CheckTransitions()
@@ -158,19 +151,6 @@ namespace Player.StateMachine.States
             }
             
             return null;
-        }
-        
-        private void UpdateBlendTreeParameters()
-        {
-            Vector2 targetVelocity = Motor.IsLockedOn 
-                ? Input.MoveInput 
-                : new Vector2(0f, Input.MoveInput.magnitude);
-            
-            smoothVelocity = Vector2.SmoothDamp(smoothVelocity, targetVelocity, ref velocityRef, SMOOTH_TIME);
-            
-            Animator.SetFloat(VelocityXHash, smoothVelocity.x);
-            Animator.SetFloat(VelocityZHash, smoothVelocity.y);
-            Animator.SetFloat(SpeedHash, smoothVelocity.magnitude);
         }
         
         public override void OnExit()

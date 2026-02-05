@@ -349,6 +349,49 @@ namespace Player.StateMachine
             Animator.SetBool(IsMovingHash, speed > 0.01f);
         }
 
+        /// <summary>
+        /// Updates blend-tree parameters with smoothed velocity.
+        /// </summary>
+        /// <param name="currentVelocity">Current smoothed velocity (x = strafe, y = forward)</param>
+        /// <param name="velocityRef">Reference velocity for SmoothDamp</param>
+        /// <param name="smoothTime">Smoothing time</param>
+        /// <param name="lockOn">Whether lock-on movement should use raw input</param>
+        /// <returns>Updated smoothed velocity</returns>
+        protected Vector2 UpdateBlendTreeParameters(Vector2 currentVelocity, ref Vector2 velocityRef, float smoothTime, bool lockOn)
+        {
+            Vector2 targetVelocity = lockOn
+                ? Input.MoveInput
+                : new Vector2(0f, Input.MoveInput.magnitude);
+
+            Vector2 smoothed = Vector2.SmoothDamp(currentVelocity, targetVelocity, ref velocityRef, smoothTime);
+
+            Animator.SetFloat(VelocityXHash, smoothed.x);
+            Animator.SetFloat(VelocityZHash, smoothed.y);
+            Animator.SetFloat(SpeedHash, smoothed.magnitude);
+
+            return smoothed;
+        }
+
+        /// <summary>
+        /// Rotate towards lock-on target or movement direction based on input and lock state.
+        /// </summary>
+        /// <param name="requireMovementInput">If true, only rotate towards movement when input exists.</param>
+        protected void RotateWithContext(bool requireMovementInput = false)
+        {
+            if (Motor.IsLockedOn)
+            {
+                Motor.RotateTowardsLockOnTarget();
+                return;
+            }
+
+            if (requireMovementInput && !Input.HasMovementInput)
+            {
+                return;
+            }
+
+            Motor.RotateTowardsMovement(Input.MoveInput);
+        }
+
         #endregion
     }
 }

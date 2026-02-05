@@ -15,9 +15,9 @@ namespace Player.StateMachine.States
             
             locomotion = new WeightedLocomotion(
                 Animator,
-                () => GetSprintStartAnimation(isEquipped),
+                () => "Run Start",
                 () => "Sprint",
-                () => GetSprintStopAnimation(isEquipped),
+                () => "Run Stop",
                 startDuration: 0.15f,
                 loopDuration: 0.2f,
                 stopDuration: 0.15f
@@ -41,7 +41,7 @@ namespace Player.StateMachine.States
         public override void OnUpdate()
         {
             locomotion.Update(Input.HasMovementInput && Input.IsSprinting);
-            UpdateBlendTreeParameters();
+            smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
         }
 
         public override void OnFixedUpdate()
@@ -61,14 +61,7 @@ namespace Player.StateMachine.States
                 Motor.Move(Input.MoveInput, useSprint: true);
             }
 
-            if (Motor.IsLockedOn)
-            {
-                Motor.RotateTowardsLockOnTarget();
-            }
-            else if (Input.HasMovementInput)
-            {
-                Motor.RotateTowardsMovement(Input.MoveInput);
-            }
+            RotateWithContext(requireMovementInput: true);
         }
 
         public override IState CheckTransitions()
@@ -110,27 +103,5 @@ namespace Player.StateMachine.States
             Animator.SetBool(IsSprintingHash, false);
         }
 
-        private string GetSprintStartAnimation(bool isEquipped)
-        {
-            return isEquipped ? "Run Start" : "Run Start";
-        }
-
-        private string GetSprintStopAnimation(bool isEquipped)
-        {
-            return isEquipped ? "Run Stop" : "Run Stop";
-        }
-
-        private void UpdateBlendTreeParameters()
-        {
-            Vector2 targetVelocity = Motor.IsLockedOn
-                ? Input.MoveInput
-                : new Vector2(0f, Input.MoveInput.magnitude);
-
-            smoothVelocity = Vector2.SmoothDamp(smoothVelocity, targetVelocity, ref velocityRef, SMOOTH_TIME);
-
-            Animator.SetFloat(VelocityXHash, smoothVelocity.x);
-            Animator.SetFloat(VelocityZHash, smoothVelocity.y);
-            Animator.SetFloat(SpeedHash, smoothVelocity.magnitude);
-        }
     }
 }
