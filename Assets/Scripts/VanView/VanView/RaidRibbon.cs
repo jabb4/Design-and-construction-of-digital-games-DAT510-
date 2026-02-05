@@ -7,6 +7,7 @@ public class RaidRibbon : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 {
 
     private Image image;
+    public GameObject raidMap;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -21,7 +22,9 @@ public class RaidRibbon : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        SceneManager.LoadSceneAsync(0);
+        if (raidMap != null) raidMap.SetActive(true);
+        image.color = Color.black;
+        if (transform.parent != null) transform.parent.gameObject.SetActive(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
