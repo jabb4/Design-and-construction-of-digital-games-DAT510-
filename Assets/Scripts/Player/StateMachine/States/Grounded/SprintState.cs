@@ -66,6 +66,11 @@ namespace Player.StateMachine.States
 
         public override IState CheckTransitions()
         {
+            if (Input.IsBlocking && Owner.IsEquipped)
+            {
+                return Owner.GetState<global::Player.StateMachine.BlockingState>();
+            }
+
             if (Input.IsJumpPressed && Motor.IsGrounded)
             {
                 return Owner.GetState<JumpStartState>();

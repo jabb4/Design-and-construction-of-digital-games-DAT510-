@@ -2,7 +2,6 @@ namespace Player.StateMachine
 {
     using UnityEngine;
     using System;
-    using System.Collections.Generic;
     using Player.StateMachine.States;
 
     /// <summary>
@@ -18,7 +17,7 @@ namespace Player.StateMachine
         [SerializeField] private bool startEquipped = false;
 
         [Header("Weapon Settings")]
-        [SerializeField] private float unequipDelay = 3f;
+        [SerializeField] private float unequipDelay = 10f;
 
 
         [Header("Debug")]
@@ -104,6 +103,7 @@ namespace Player.StateMachine
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
         private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
         private static readonly int IsSprintingHash = Animator.StringToHash("IsSprinting");
+        private static readonly int IsBlockingHash = Animator.StringToHash("IsBlocking");
         private static readonly int IsTransitioningWeaponHash = Animator.StringToHash("IsTransitioningWeapon");
         private static readonly int UnequipVariantHash = Animator.StringToHash("UnequipVariant");
 
@@ -306,7 +306,11 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (Input != null && Input.HasMovementInput)
+            if (Input != null && Input.IsBlocking)
+            {
+                ChangeState(GetState<BlockingState>());
+            }
+            else if (Input != null && Input.HasMovementInput)
             {
                 ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
             }
@@ -355,41 +359,38 @@ namespace Player.StateMachine
 
         private void UpdateWeaponState()
         {
-            if (CameraController != null)
+            bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
+            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking);
+
+            if (wantsEquip && !IsEquipped && !IsTransitioningWeapon)
             {
-                bool isLockedOn = CameraController.IsLockedOn;
+                RequestEquip();
+            }
+            else if (!wantsEquip && IsEquipped && !hasPendingUnequipRequest)
+            {
+                RequestUnequip();
+            }
 
-                if (isLockedOn && !IsEquipped && !IsTransitioningWeapon)
+            if (hasPendingUnequipRequest)
+            {
+                if (wantsEquip)
                 {
-                    RequestEquip();
+                    requestedEquipWhilePending = true;
+                    unequipTimer = unequipDelay;
                 }
-                else if (!isLockedOn && IsEquipped && !hasPendingUnequipRequest)
+                else
                 {
-                    RequestUnequip();
-                }
-
-                if (hasPendingUnequipRequest)
-                {
-                    if (isLockedOn)
-                    {
-                        requestedEquipWhilePending = true;
-                        unequipTimer = unequipDelay;
-                    }
-                    else
-                    {
-                        requestedEquipWhilePending = false;
-                    }
+                    requestedEquipWhilePending = false;
                 }
             }
 
-            if (hasPendingUnequipRequest && unequipTimer > 0f &&
-                (CameraController == null || !CameraController.IsLockedOn))
+            if (hasPendingUnequipRequest && unequipTimer > 0f && !wantsEquip)
             {
                 unequipTimer -= Time.deltaTime;
 
                 if (unequipTimer <= 0f)
                 {
-                    if (!requestedEquipWhilePending && (CameraController == null || !CameraController.IsLockedOn))
+                    if (!requestedEquipWhilePending)
                     {
                         BeginUnequipTransition();
                     }
@@ -541,6 +542,7 @@ namespace Player.StateMachine
 
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
             Animator.SetBool("IsLockedOn", isLockedOn);
+            Animator.SetBool(IsBlockingHash, Input != null && Input.IsBlocking && IsEquipped);
 
             if (IsTransitioningWeapon)
             {
