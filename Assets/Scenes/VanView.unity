@@ -351,7 +351,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 144019575}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &144019577
 Camera:
   m_ObjectHideFlags: 0
@@ -798,7 +798,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hoverColor: {r: 0, g: 0, b: 0, a: 0.39215687}
-  vanViewUI: {fileID: 0}
 --- !u!1 &534095087
 GameObject:
   m_ObjectHideFlags: 0
@@ -1115,7 +1114,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hoverColor: {r: 0, g: 0, b: 0, a: 0.39215687}
-  vanViewUI: {fileID: 0}
 --- !u!1 &643893019
 GameObject:
   m_ObjectHideFlags: 0
@@ -2093,6 +2091,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88c889b48c6a54637b3f936b64051418, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vanViewUI: {fileID: 1391118313}
 --- !u!4 &1182257294 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 9bd72fad8a317e24ca28a013b205fea2, type: 3}
@@ -2412,7 +2411,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hoverColor: {r: 0, g: 0, b: 0, a: 0.39215687}
-  vanViewUI: {fileID: 1391118313}
 --- !u!1 &1391118313
 GameObject:
   m_ObjectHideFlags: 0

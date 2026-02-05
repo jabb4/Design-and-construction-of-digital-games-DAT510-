@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHandler, IPointerExitHandler
@@ -8,8 +7,6 @@ public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     private Image image;
     public Color hoverColor = new Color32(0, 0, 0, 100);
     private Color transparentColor = new Color32(0, 0, 0, 0);
-
-    public GameObject vanViewUI;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -29,28 +26,15 @@ public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
         {
             case "van":
                 Debug.Log("Going back to VAN");
-                image.color = transparentColor;
-
-                // Re-enable Main Camera 
-                GameObject camObj = GameObject.FindGameObjectWithTag("MainCamera");
-                if (camObj != null)
-                {
-                    Camera c = camObj.GetComponent<Camera>();
-                    if (c != null) c.enabled = true;
-                }
-
-                if (vanViewUI != null) vanViewUI.SetActive(true);
-                if (transform.parent != null) transform.parent.gameObject.SetActive(false);
+                RaidMapUIController.Instance.GoToVan();
                 break;
             case "city":
                 Debug.Log("Entering CITY");
-                image.color = transparentColor;
-                SceneManager.LoadSceneAsync(0);
+                RaidMapUIController.Instance.GoToCity();
                 break;
             case "temple":
                 Debug.Log("Entering TEMPLE");
-                image.color = transparentColor;
-                SceneManager.LoadSceneAsync(0);
+                RaidMapUIController.Instance.GoToTemple();
                 break;
             default:
                 // no action for other tags
@@ -65,6 +49,11 @@ public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     }
 
     public void OnPointerExit(PointerEventData eventData)
+    {
+        ResetHover();
+    }
+
+    public void ResetHover()
     {
         image.color = transparentColor;
     }
