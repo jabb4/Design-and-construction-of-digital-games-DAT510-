@@ -1,5 +1,0 @@
-<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:VisualElement name="HealthBarBackground" style="flex-grow: 1; position: absolute; width: 10%; height: 10%; background-image: url(&quot;project://database/Assets/Images/8c3bdb90a0cb308.png?fileID=2800000&amp;guid=c7b71e9a8e7176b439515a82895bd5cc&amp;type=3#8c3bdb90a0cb308&quot;); background-size: 100% 100%; -unity-background-scale-mode: scale-and-crop; flex-direction: column; align-items: center; top: auto; right: auto; left: auto; bottom: auto; -unity-text-align: middle-center; background-position-x: left 0;">
-        <ui:Label text="Label" name="HealthLabel" parse-escape-sequences="false" style="position: relative; width: 100%; height: 81px; -unity-text-align: middle-center; align-items: stretch; justify-content: flex-start; bottom: auto; -unity-background-scale-mode: scale-and-crop; background-position-x: right 0; font-size: 28px;" />
-    </ui:VisualElement>
-</ui:UXML>

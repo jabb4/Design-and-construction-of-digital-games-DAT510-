@@ -4,15 +4,22 @@ public class PlayerScript : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-    public float health, maxHealth;
+    public float health, maxHealth, stamina, maxStamina;
 
     [SerializeField]
-    private HealthBarUi healthbar;
+    private BarUi healthbar;
+
+    [SerializeField]
+    private BarUi staminabar;
+
 
     void Start()
     {
-        healthbar.setMaxHealth(maxHealth);
-        healthbar.setHealth(health);
+        healthbar.setMaxResource(maxHealth);
+        healthbar.setCurrentResource(health);
+
+        staminabar.setMaxResource(maxStamina);
+        staminabar.setCurrentResource(stamina);
     }
 
     // Update is called once per frame
