@@ -17,13 +17,18 @@ public class RaidRibbon : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (raidMap != null) raidMap.SetActive(true);
         image.color = Color.black;
+
+        // Disable Main Camera for performance
+        Camera mainCam = Camera.main;
+        if (mainCam != null) mainCam.enabled = false;
+
         if (transform.parent != null) transform.parent.gameObject.SetActive(false);
     }
 

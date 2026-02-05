@@ -30,6 +30,15 @@ public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
             case "van":
                 Debug.Log("Going back to VAN");
                 image.color = transparentColor;
+
+                // Re-enable Main Camera 
+                GameObject camObj = GameObject.FindGameObjectWithTag("MainCamera");
+                if (camObj != null)
+                {
+                    Camera c = camObj.GetComponent<Camera>();
+                    if (c != null) c.enabled = true;
+                }
+
                 if (vanViewUI != null) vanViewUI.SetActive(true);
                 if (transform.parent != null) transform.parent.gameObject.SetActive(false);
                 break;
