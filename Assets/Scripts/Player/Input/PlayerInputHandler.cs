@@ -26,6 +26,16 @@ namespace Player.StateMachine
         public bool IsSprinting { get; private set; }
 
         /// <summary>
+        /// Whether the player is currently holding the block button.
+        /// </summary>
+        public bool IsBlocking { get; private set; }
+
+        /// <summary>
+        /// True only on the frame when block was pressed.
+        /// </summary>
+        public bool IsBlockPressed { get; private set; }
+
+        /// <summary>
         /// True only on the frame when jump was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
@@ -131,6 +141,20 @@ namespace Player.StateMachine
             }
         }
 
+        /// <summary>
+        /// Called by Unity Input System when block input changes.
+        /// </summary>
+        /// <param name="value">The input value from the Input System</param>
+        private void OnBlock(InputValue value)
+        {
+            bool wasBlocking = IsBlocking;
+            IsBlocking = value.isPressed;
+            if (IsBlocking && !wasBlocking)
+            {
+                IsBlockPressed = true;
+            }
+        }
+
         #endregion
 
         #region Unity Lifecycle
@@ -143,6 +167,7 @@ namespace Player.StateMachine
         {
             // Reset one-frame flags
             IsJumpPressed = false;
+            IsBlockPressed = false;
 
             if (jumpBufferTimer > 0f)
             {
