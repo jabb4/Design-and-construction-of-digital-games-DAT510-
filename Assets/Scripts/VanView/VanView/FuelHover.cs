@@ -3,9 +3,9 @@ using UnityEngine.EventSystems;
 
 public class FuelHover : MonoBehaviour, IPointerEnterHandler
 {
-    
-    public FuelTooltip fuelTooltip;
-    
+
+    public GameObject fuelTooltip;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -17,10 +17,10 @@ public class FuelHover : MonoBehaviour, IPointerEnterHandler
     {
     }
 
-    // This will be called when mouse pointer is entering the obejct
+    // This will be called when mouse pointer is entering the object
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Mouse Entered");
+        // Debug.Log("Mouse Entered");
         fuelTooltip.gameObject.SetActive(true);
     }
 }

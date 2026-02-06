@@ -23,7 +23,7 @@ public class FuelTooltip : MonoBehaviour, IPointerExitHandler
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log("Mouse Exited");
+        // Debug.Log("Mouse Exited");
         this.gameObject.SetActive(false);
     }
 }
