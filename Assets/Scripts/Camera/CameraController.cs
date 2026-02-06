@@ -1,12 +1,25 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using System;
 
 [RequireComponent(typeof(Camera))]
 public class CameraController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Transform playerTransform;
+    
+    /// <summary>
+    /// Event fired when camera locks onto a target.
+    /// Used by PlayerStateMachine for auto-equip weapon.
+    /// </summary>
+    public event Action OnLockOnStarted;
+    
+    /// <summary>
+    /// Event fired when camera lock-on is released.
+    /// Used by PlayerStateMachine for delayed auto-unequip weapon.
+    /// </summary>
+    public event Action OnLockOnEnded;
 
     [Header("Camera Settings")]
     [SerializeField] private Vector3 offset = new Vector3(0, 3.5f, -6f);
@@ -143,18 +156,10 @@ public class CameraController : MonoBehaviour
         // Calculate target position and rotation
         Vector3 directionToTarget = (lockedTarget.position - playerTransform.position).normalized;
         Vector3 desiredCameraPosition = playerTransform.position - directionToTarget * offset.magnitude + Vector3.up * offset.y;
-        Quaternion desiredCameraRotation = Quaternion.LookRotation(lockedTarget.position + Vector3.up * 1.5f - desiredCameraPosition);
+        Quaternion desiredCameraRotation = Quaternion.LookRotation(lockedTarget.position + Vector3.up - desiredCameraPosition);
 
         transform.position = Vector3.Lerp(transform.position, desiredCameraPosition, Time.deltaTime * cameraSmoothSpeed);
         transform.rotation = Quaternion.Lerp(transform.rotation, desiredCameraRotation, Time.deltaTime * cameraSmoothSpeed);
-
-        // Make player face the target
-        Vector3 playerToTarget = lockedTarget.position - playerTransform.position;
-        playerToTarget.y = 0;
-        if (playerToTarget != Vector3.zero)
-        {
-            playerTransform.rotation = Quaternion.LookRotation(playerToTarget);
-        }
     }
 
 
@@ -220,6 +225,7 @@ public class CameraController : MonoBehaviour
         isLockedOn = true;
         AddLockOnIndicator(target);
         UpdateTargetCameraTransform();
+        OnLockOnStarted?.Invoke();
     }
 
     private void UpdateTargetCameraTransform()
@@ -242,6 +248,7 @@ public class CameraController : MonoBehaviour
         lockedTarget = null;
 
         UpdateFreeCameraAnglesFromCurrent();
+        OnLockOnEnded?.Invoke();
     }
 
     private void UpdateFreeCameraAnglesFromCurrent()
@@ -286,6 +293,8 @@ public class CameraController : MonoBehaviour
     }
 
     public bool IsLockedOn => isLockedOn;
+
+    public Transform GetLockedTarget() => lockedTarget;
 
     private void UpdateLockOnIndicator()
     {

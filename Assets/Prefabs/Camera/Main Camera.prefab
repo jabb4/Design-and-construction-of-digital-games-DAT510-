@@ -151,12 +151,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTransform: {fileID: 0}
-  offset: {x: 0, y: 3.5, z: -6}
+  offset: {x: 0, y: 3, z: -6}
   rotationSpeed: 1
   cameraSmoothSpeed: 20
-  minVerticalAngle: -35
+  minVerticalAngle: -25
   maxVerticalAngle: 50
-  fieldOfView: 60
+  fieldOfView: 45
   targetSwitchSensitivity: 10
   lockOnRange: 30
   enemyLayer:
