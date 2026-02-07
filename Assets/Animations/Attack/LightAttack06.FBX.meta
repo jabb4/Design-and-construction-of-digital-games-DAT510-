@@ -65,14 +65,14 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.241875
+      - time: 0.19705883
         functionName: OnAttackSlash
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.3771691
+      - time: 0.4264706
         functionName: OnAttackRecovery
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
