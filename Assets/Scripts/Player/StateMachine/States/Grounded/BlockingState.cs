@@ -8,8 +8,8 @@ namespace Player.StateMachine
         private Vector2 velocityRef;
         private const float SMOOTH_TIME = 0.1f;
         private const string DefenseIdleStateName = "DefenseIdle";
-        private const string StandToDefenseLeft = "Stand2DefenseL_InPlace";
-        private const string DefenseToStandLeft = "DefenseL2Stand_InPlace";
+        private const string StandToDefenseLeft = "Idle2DefenseL";
+        private const string DefenseToStandLeft = "Defense2IdleL";
         private bool isExiting;
 
         public override void OnEnter()
