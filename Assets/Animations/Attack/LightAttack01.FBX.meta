@@ -72,7 +72,7 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.24233453
+      - time: 0.31586394
         functionName: OnAttackRecovery
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}

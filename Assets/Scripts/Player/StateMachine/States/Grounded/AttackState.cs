@@ -5,11 +5,13 @@ namespace Player.StateMachine.States
 
     public sealed class AttackState : PlayerStateBase, IAttackPhaseListener
     {
+        private const float RecoveryMoveDelay = 0.5f;
         private int comboIndex;
         private bool queuedNextAttack;
         private AttackPhase currentPhase;
         private bool hasEnteredRecovery;
         private bool hasPhaseEvents;
+        private float recoveryElapsed;
 
         public AttackPhase CurrentPhase => currentPhase;
 
@@ -24,6 +26,7 @@ namespace Player.StateMachine.States
             currentPhase = AttackPhase.Windup;
             hasEnteredRecovery = false;
             hasPhaseEvents = false;
+            recoveryElapsed = 0f;
 
             AttackStep step = AttackComboDefinition.Attacks[comboIndex];
             Owner.SetCurrentAttack(step);
@@ -40,6 +43,11 @@ namespace Player.StateMachine.States
             float normalizedTime = GetAnimatorNormalizedTime();
 
             UpdatePhaseFromTime(step, normalizedTime);
+
+            if (hasEnteredRecovery)
+            {
+                recoveryElapsed += Time.deltaTime;
+            }
         }
 
         public override void OnFixedUpdate()
@@ -57,6 +65,30 @@ namespace Player.StateMachine.States
             if (hasEnteredRecovery && Input.IsAttackPressed)
             {
                 queuedNextAttack = true;
+            }
+
+            if (hasEnteredRecovery && Motor.IsGrounded)
+            {
+                if (Input.IsBlocking && Owner.IsEquipped)
+                {
+                    Owner.ClearCurrentAttack();
+                    return Owner.GetState<BlockingState>();
+                }
+
+                if (recoveryElapsed >= RecoveryMoveDelay)
+                {
+                    if (Input.IsJumpPressed)
+                    {
+                        Owner.ClearCurrentAttack();
+                        return Owner.GetState<JumpStartState>();
+                    }
+
+                    if (Input.HasMovementInput)
+                    {
+                        Owner.ClearCurrentAttack();
+                        return Input.IsSprinting ? Owner.GetState<SprintState>() : Owner.GetState<WalkingState>();
+                    }
+                }
             }
 
             bool isInAttackState = IsAnimatorInState(step.AnimationStateName);
@@ -82,6 +114,7 @@ namespace Player.StateMachine.States
         public override void OnExit()
         {
             queuedNextAttack = false;
+            recoveryElapsed = 0f;
         }
 
         public void OnAttackPhase(AttackPhase phase)
@@ -102,6 +135,7 @@ namespace Player.StateMachine.States
             if (phase == AttackPhase.Recovery)
             {
                 hasEnteredRecovery = true;
+                recoveryElapsed = 0f;
             }
         }
 
