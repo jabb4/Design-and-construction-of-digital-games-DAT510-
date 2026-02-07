@@ -42,6 +42,12 @@ namespace Player.StateMachine
         public bool IsJumpPressed { get; private set; }
 
         /// <summary>
+        /// True only on the frame when attack was pressed.
+        /// This is reset to false in LateUpdate.
+        /// </summary>
+        public bool IsAttackPressed { get; private set; }
+
+        /// <summary>
         /// True while jump input is buffered.
         /// </summary>
         public bool IsJumpBuffered => jumpBufferTimer > 0f;
@@ -90,6 +96,11 @@ namespace Player.StateMachine
         /// Invoked when the sprint button is released.
         /// </summary>
         public event Action OnSprintEnded;
+
+        /// <summary>
+        /// Invoked when the attack button is pressed.
+        /// </summary>
+        public event Action OnAttackPressed;
 
         #endregion
 
@@ -155,6 +166,20 @@ namespace Player.StateMachine
             }
         }
 
+        /// <summary>
+        /// Called by Unity Input System when attack input is received.
+        /// Sets a one-frame flag that gets reset in LateUpdate.
+        /// </summary>
+        /// <param name="value">The input value from the Input System</param>
+        private void OnAttack(InputValue value)
+        {
+            if (value.isPressed)
+            {
+                IsAttackPressed = true;
+                OnAttackPressed?.Invoke();
+            }
+        }
+
         #endregion
 
         #region Unity Lifecycle
@@ -168,6 +193,7 @@ namespace Player.StateMachine
             // Reset one-frame flags
             IsJumpPressed = false;
             IsBlockPressed = false;
+            IsAttackPressed = false;
 
             if (jumpBufferTimer > 0f)
             {

@@ -5,7 +5,7 @@ ModelImporter:
   internalIDToNameTable:
   - first:
       74: 8993902097722301239
-    second: DefenseL2Stand_InPlace
+    second: DefenseL2Stand
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -34,7 +34,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: DefenseL2Stand_InPlace
+      name: DefenseL2Stand
       takeName: DefenseL2Stand_InPlace
       internalID: 8993902097722301239
       firstFrame: 0

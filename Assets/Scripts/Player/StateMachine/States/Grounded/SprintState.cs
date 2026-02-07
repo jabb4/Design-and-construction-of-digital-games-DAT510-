@@ -66,6 +66,19 @@ namespace Player.StateMachine.States
 
         public override IState CheckTransitions()
         {
+            if (Input.IsAttackPressed && Motor.IsGrounded)
+            {
+                if (!Owner.IsEquipped)
+                {
+                    Owner.RequestEquip();
+                    return null;
+                }
+
+                var attackState = Owner.GetState<AttackState>();
+                attackState.SetComboIndex(0);
+                return attackState;
+            }
+
             if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
             {
                 return Owner.GetState<BlockingState>();

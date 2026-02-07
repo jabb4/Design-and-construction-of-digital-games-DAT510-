@@ -20,33 +20,7 @@ ModelImporter:
     removeConstantScaleCurves: 0
     motionNodeName: 
     animationImportErrors: 
-    animationImportWarnings: "\nClip 'LightAttack01' has import animation warnings
-      that might lower retargeting quality:\nNote: Activate translation DOF on avatar
-      to improve retargeting quality.\n\t'spine_02' has translation animation that
-      will be discarded.\n\t'clavicle_l' has translation animation that will be discarded.\n\t'upperarm_l'
-      has translation animation that will be discarded.\n\t'lowerarm_l' has translation
-      animation that will be discarded.\n\t'hand_l' has translation animation that
-      will be discarded.\n\t'index_01_l' has translation animation that will be discarded.\n\t'index_02_l'
-      has translation animation that will be discarded.\n\t'index_03_l' has translation
-      animation that will be discarded.\n\t'middle_01_l' has translation animation
-      that will be discarded.\n\t'middle_02_l' has translation animation that will
-      be discarded.\n\t'middle_03_l' has translation animation that will be discarded.\n\t'pinky_01_l'
-      has translation animation that will be discarded.\n\t'pinky_02_l' has translation
-      animation that will be discarded.\n\t'pinky_03_l' has translation animation
-      that will be discarded.\n\t'ring_01_l' has translation animation that will
-      be discarded.\n\t'ring_02_l' has translation animation that will be discarded.\n\t'ring_03_l'
-      has translation animation that will be discarded.\n\t'thumb_01_l' has translation
-      animation that will be discarded.\n\t'thumb_02_l' has translation animation
-      that will be discarded.\n\t'thumb_03_l' has translation animation that will
-      be discarded.\n\t'clavicle_r' has translation animation that will be discarded.\n\t'upperarm_r'
-      has translation animation that will be discarded.\n\t'lowerarm_r' has translation
-      animation that will be discarded.\n\t'hand_r' has translation animation that
-      will be discarded.\n\t'head' has translation animation that will be discarded.\n\t'calf_l'
-      has translation animation that will be discarded.\n\t'foot_l' has translation
-      animation that will be discarded.\n\t'ball_l' has translation animation that
-      will be discarded.\n\t'calf_r' has translation animation that will be discarded.\n\t'foot_r'
-      has translation animation that will be discarded.\n\t'ball_r' has translation
-      animation that will be discarded.\n"
+    animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -84,17 +58,24 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.18811437
-        functionName: BladeTriggerOn
+      - time: 0
+        functionName: OnAttackWindup
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.23798616
-        functionName: BladeTriggerOff
+      - time: 0.16636027
+        functionName: OnAttackSlash
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.24233453
+        functionName: OnAttackRecovery
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
@@ -569,7 +550,7 @@ ModelImporter:
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 1
+  avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0

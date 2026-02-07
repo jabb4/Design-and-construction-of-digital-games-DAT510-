@@ -4,6 +4,39 @@ namespace Player.StateMachine
     using System;
     using Player.StateMachine.States;
 
+    public enum AttackPoseDirection
+    {
+        None,
+        LeftUp,
+        RightUp,
+        LeftDown,
+        RightDown
+    }
+
+    public enum AttackPhase
+    {
+        Windup,
+        Slash,
+        Recovery
+    }
+
+    [Serializable]
+    public struct AttackStep
+    {
+        public string AnimationStateName;
+        public AttackPoseDirection StartPose;
+        public AttackPoseDirection EndPose;
+        public float SlashStartTime;
+        public float RecoveryStartTime;
+        public float ComboWindowStart;
+        public float ExitTime;
+    }
+
+    public interface IAttackPhaseListener
+    {
+        void OnAttackPhase(AttackPhase phase);
+    }
+
     /// <summary>
     /// Main state machine controller for the player character.
     /// Manages state transitions, weapon state, and coordinates all player behavior.
@@ -22,6 +55,8 @@ namespace Player.StateMachine
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo = true;
+        [SerializeField] private bool slowMotionEnabled = false;
+        [SerializeField, Range(0.05f, 1f)] private float slowMotionScale = 0.2f;
 
         // Weapon state
         /// <summary>
@@ -57,6 +92,11 @@ namespace Player.StateMachine
         /// </summary>
         public event Action<bool> OnWeaponStateChanged;
 
+        /// <summary>
+        /// Fired when the current attack step changes.
+        /// </summary>
+        public event Action<global::Player.StateMachine.AttackStep> OnAttackStepChanged;
+
         // Components
         /// <summary>
         /// Reference to the Animator component.
@@ -77,6 +117,11 @@ namespace Player.StateMachine
         /// Reference to the CameraController (found at runtime).
         /// </summary>
         public CameraController CameraController { get; private set; }
+
+        /// <summary>
+        /// Current attack step metadata for parry reactions.
+        /// </summary>
+        public global::Player.StateMachine.AttackStep? CurrentAttackStep { get; private set; }
 
         // Internal state management
         private float unequipTimer = -1f;
@@ -123,6 +168,8 @@ namespace Player.StateMachine
 
         private void Update()
         {
+            UpdateTimeScale();
+
             // Update weapon state timer
             UpdateWeaponState();
 
@@ -146,6 +193,11 @@ namespace Player.StateMachine
             UpdateAnimatorParameters();
         }
 
+        private void OnValidate()
+        {
+            UpdateTimeScale();
+        }
+
         private void FixedUpdate()
         {
             if (IsTransitioningWeapon)
@@ -160,6 +212,23 @@ namespace Player.StateMachine
 
         private void OnDestroy()
         {
+            if (slowMotionEnabled)
+            {
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = 0.02f;
+            }
+        }
+
+        private void UpdateTimeScale()
+        {
+            if (!slowMotionEnabled)
+            {
+                return;
+            }
+
+            float clampedScale = Mathf.Clamp(slowMotionScale, 0.01f, 1f);
+            Time.timeScale = clampedScale;
+            Time.fixedDeltaTime = 0.02f * clampedScale;
         }
 
         #endregion
@@ -191,6 +260,8 @@ namespace Player.StateMachine
             {
                 return;
             }
+
+            ClearCurrentAttack();
 
             IState oldState = CurrentState;
 
@@ -354,11 +425,31 @@ namespace Player.StateMachine
             }
         }
 
+        public void SetCurrentAttack(global::Player.StateMachine.AttackStep step)
+        {
+            CurrentAttackStep = step;
+            OnAttackStepChanged?.Invoke(step);
+        }
+
+        public void ClearCurrentAttack()
+        {
+            CurrentAttackStep = null;
+        }
+
+        public void NotifyAttackPhase(AttackPhase phase)
+        {
+            if (CurrentState is IAttackPhaseListener listener)
+            {
+                listener.OnAttackPhase(phase);
+            }
+        }
+
         private void UpdateWeaponState()
         {
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
             bool canBlock = Motor != null && Motor.IsGrounded;
-            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock);
+            bool isAttacking = CurrentState is global::Player.StateMachine.States.AttackState;
+            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock) || isAttacking;
             bool isSprinting = Input != null && Input.IsSprinting;
             bool isLanding = CurrentState is JumpEndState;
             bool canUnequipNow = Motor != null && Motor.IsGrounded && !isSprinting && !isLanding;
@@ -586,6 +677,13 @@ namespace Player.StateMachine
             GUILayout.Label($"State: <b>{CurrentStateName}</b>");
             GUILayout.Label($"Equipped: <b>{IsEquipped}</b>");
             GUILayout.Label($"Transitioning: <b>{IsTransitioningWeapon}</b>");
+
+            if (CurrentState is AttackState attackState)
+            {
+                GUILayout.Label($"Attack Phase: <b>{attackState.CurrentPhase}</b>");
+            }
+
+            GUILayout.Label($"Slow Motion: <b>{(slowMotionEnabled ? $"On ({slowMotionScale:0.00}x)" : "Off")}</b>");
 
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
 

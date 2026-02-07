@@ -27,5 +27,20 @@ namespace Player.StateMachine
         {
             stateMachine?.NotifyUnequipAnimationComplete();
         }
+
+        public void OnAttackWindup()
+        {
+            stateMachine?.NotifyAttackPhase(AttackPhase.Windup);
+        }
+
+        public void OnAttackSlash()
+        {
+            stateMachine?.NotifyAttackPhase(AttackPhase.Slash);
+        }
+
+        public void OnAttackRecovery()
+        {
+            stateMachine?.NotifyAttackPhase(AttackPhase.Recovery);
+        }
     }
 }

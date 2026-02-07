@@ -7,16 +7,12 @@ namespace Player.StateMachine.States
         private WeightedLocomotion locomotion;
         private Vector2 smoothVelocity;
         private Vector2 velocityRef;
-        private Vector2 lastMoveDirection;
-
         private const float SMOOTH_TIME = 0.1f;
 
         public override void OnEnter()
         {
             bool isEquipped = Animator.GetBool(IsEquippedHash);
             bool isLockedOn = Motor.IsLockedOn;
-
-            lastMoveDirection = Input.MoveInput;
 
             locomotion = new WeightedLocomotion(
                 Animator,
@@ -95,11 +91,6 @@ namespace Player.StateMachine.States
         {
             locomotion.Update(Input.HasMovementInput);
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
-
-            if (Input.HasMovementInput)
-            {
-                lastMoveDirection = Input.MoveInput;
-            }
         }
 
         public override void OnFixedUpdate()
@@ -117,6 +108,19 @@ namespace Player.StateMachine.States
 
         public override IState CheckTransitions()
         {
+            if (Input.IsAttackPressed && Motor.IsGrounded)
+            {
+                if (!Owner.IsEquipped)
+                {
+                    Owner.RequestEquip();
+                    return null;
+                }
+
+                var attackState = Owner.GetState<AttackState>();
+                attackState.SetComboIndex(0);
+                return attackState;
+            }
+
             if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
             {
                 return Owner.GetState<BlockingState>();
