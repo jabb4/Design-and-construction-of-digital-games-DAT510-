@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BarUi : MonoBehaviour
+public class BarUiController : MonoBehaviour
 {
     public float MaxResource, Width, Height, Resource;
 
