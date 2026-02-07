@@ -117,7 +117,7 @@ namespace Player.StateMachine.States
 
         public override IState CheckTransitions()
         {
-            if (Input.IsBlocking && Owner.IsEquipped)
+            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
             {
                 return Owner.GetState<BlockingState>();
             }

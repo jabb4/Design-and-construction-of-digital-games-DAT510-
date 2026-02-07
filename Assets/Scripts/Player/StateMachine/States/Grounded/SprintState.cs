@@ -8,11 +8,11 @@ namespace Player.StateMachine.States
         private Vector2 smoothVelocity;
         private Vector2 velocityRef;
         private const float SMOOTH_TIME = 0.1f;
-        
+
         public override void OnEnter()
         {
             bool isEquipped = Animator.GetBool(IsEquippedHash);
-            
+
             locomotion = new WeightedLocomotion(
                 Animator,
                 () => "Run Start",
@@ -66,9 +66,9 @@ namespace Player.StateMachine.States
 
         public override IState CheckTransitions()
         {
-            if (Input.IsBlocking && Owner.IsEquipped)
+            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
             {
-                return Owner.GetState<global::Player.StateMachine.BlockingState>();
+                return Owner.GetState<BlockingState>();
             }
 
             if (Input.IsJumpPressed && Motor.IsGrounded)

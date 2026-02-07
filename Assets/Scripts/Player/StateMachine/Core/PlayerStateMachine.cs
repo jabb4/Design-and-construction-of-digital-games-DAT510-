@@ -231,10 +231,8 @@ namespace Player.StateMachine
         /// </summary>
         public void RequestEquip()
         {
-            // Cancel any pending unequip
             CancelUnequipRequest();
 
-            // Already equipped or transitioning?
             if (IsEquipped || IsTransitioningWeapon)
             {
                 if (IsTransitioningWeapon)
@@ -252,7 +250,6 @@ namespace Player.StateMachine
         /// </summary>
         public void RequestUnequip()
         {
-            // Already unequipped or transitioning?
             if (!IsEquipped || IsTransitioningWeapon)
             {
                 if (IsTransitioningWeapon)
@@ -306,7 +303,7 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (Input != null && Input.IsBlocking)
+            if (Input != null && Input.IsBlocking && Motor != null && Motor.IsGrounded)
             {
                 ChangeState(GetState<BlockingState>());
             }
@@ -360,7 +357,11 @@ namespace Player.StateMachine
         private void UpdateWeaponState()
         {
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
-            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking);
+            bool canBlock = Motor != null && Motor.IsGrounded;
+            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock);
+            bool isSprinting = Input != null && Input.IsSprinting;
+            bool isLanding = CurrentState is JumpEndState;
+            bool canUnequipNow = Motor != null && Motor.IsGrounded && !isSprinting && !isLanding;
 
             if (wantsEquip && !IsEquipped && !IsTransitioningWeapon)
             {
@@ -384,18 +385,28 @@ namespace Player.StateMachine
                 }
             }
 
-            if (hasPendingUnequipRequest && unequipTimer > 0f && !wantsEquip)
+            if (hasPendingUnequipRequest && !wantsEquip)
             {
-                unequipTimer -= Time.deltaTime;
-
-                if (unequipTimer <= 0f)
+                if (!canUnequipNow)
                 {
-                    if (!requestedEquipWhilePending)
+                    unequipTimer = unequipDelay;
+                }
+                else
+                {
+                    if (unequipTimer > 0f)
                     {
-                        BeginUnequipTransition();
+                        unequipTimer -= Time.deltaTime;
                     }
-                    hasPendingUnequipRequest = false;
-                    requestedEquipWhilePending = false;
+
+                    if (unequipTimer <= 0f)
+                    {
+                        if (!requestedEquipWhilePending)
+                        {
+                            BeginUnequipTransition();
+                        }
+                        hasPendingUnequipRequest = false;
+                        requestedEquipWhilePending = false;
+                    }
                 }
             }
 
@@ -542,7 +553,7 @@ namespace Player.StateMachine
 
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
             Animator.SetBool("IsLockedOn", isLockedOn);
-            Animator.SetBool(IsBlockingHash, Input != null && Input.IsBlocking && IsEquipped);
+            Animator.SetBool(IsBlockingHash, Input != null && Input.IsBlocking && IsEquipped && Motor != null && Motor.IsGrounded);
 
             if (IsTransitioningWeapon)
             {

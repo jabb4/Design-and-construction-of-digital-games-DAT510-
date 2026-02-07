@@ -36,11 +36,11 @@ namespace Player.StateMachine
                 {
                     if (Input.HasMovementInput)
                     {
-                        Owner.ChangeState(Owner.GetState<global::Player.StateMachine.States.WalkingState>());
+                        Owner.ChangeState(Owner.GetState<States.WalkingState>());
                     }
                     else
                     {
-                        Owner.ChangeState(Owner.GetState<global::Player.StateMachine.States.IdleState>());
+                        Owner.ChangeState(Owner.GetState<States.IdleState>());
                     }
                 }
 
@@ -66,7 +66,7 @@ namespace Player.StateMachine
         {
             if (!Owner.IsEquipped)
             {
-                return Owner.GetState<global::Player.StateMachine.States.IdleState>();
+                return Owner.GetState<States.IdleState>();
             }
 
             if (!Input.IsBlocking)

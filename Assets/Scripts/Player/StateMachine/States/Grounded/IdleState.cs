@@ -55,9 +55,9 @@ namespace Player.StateMachine.States
                 return Owner.GetState<JumpLoopState>();
             }
 
-            if (Input.IsBlocking && Owner.IsEquipped)
+            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
             {
-                return Owner.GetState<global::Player.StateMachine.BlockingState>();
+                return Owner.GetState<BlockingState>();
             }
 
             if (Input.IsJumpPressed && Motor.IsGrounded)
