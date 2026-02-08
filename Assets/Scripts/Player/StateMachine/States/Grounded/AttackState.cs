@@ -12,6 +12,9 @@ namespace Player.StateMachine.States
         private bool hasEnteredRecovery;
         private bool hasPhaseEvents;
         private float recoveryElapsed;
+        private Vector3 attackDirection;
+        private float attackPushSpeed;
+        private bool attackPushReady;
 
         public AttackPhase CurrentPhase => currentPhase;
 
@@ -27,6 +30,10 @@ namespace Player.StateMachine.States
             hasEnteredRecovery = false;
             hasPhaseEvents = false;
             recoveryElapsed = 0f;
+            attackPushSpeed = 0f;
+            attackPushReady = false;
+
+            UpdateAttackDirectionFromTransform();
 
             AttackStep step = AttackComboDefinition.Attacks[comboIndex];
             Owner.SetCurrentAttack(step);
@@ -52,7 +59,23 @@ namespace Player.StateMachine.States
 
         public override void OnFixedUpdate()
         {
-            Motor.Move(Vector2.zero, useSprint: false);
+            if (currentPhase == AttackPhase.Windup)
+            {
+                if (Motor.IsLockedOn || Input.HasMovementInput)
+                {
+                    RotateWithContext(requireMovementInput: true);
+                    UpdateAttackDirectionFromTransform();
+                }
+            }
+
+            if (currentPhase == AttackPhase.Slash && attackPushReady)
+            {
+                Motor.SetHorizontalVelocity(attackDirection * attackPushSpeed);
+            }
+            else
+            {
+                Motor.Move(Vector2.zero, useSprint: false);
+            }
         }
 
         public override IState CheckTransitions()
@@ -115,6 +138,8 @@ namespace Player.StateMachine.States
         {
             queuedNextAttack = false;
             recoveryElapsed = 0f;
+            attackPushSpeed = 0f;
+            attackPushReady = false;
         }
 
         public void OnAttackPhase(AttackPhase phase)
@@ -136,6 +161,29 @@ namespace Player.StateMachine.States
             {
                 hasEnteredRecovery = true;
                 recoveryElapsed = 0f;
+                attackPushReady = false;
+            }
+            else if (phase == AttackPhase.Slash)
+            {
+                UpdateAttackDirectionFromTransform();
+
+                float slashWindow = step.RecoveryStartTime - step.SlashStartTime;
+                if (slashWindow <= 0f)
+                {
+                    attackPushReady = false;
+                    return;
+                }
+
+                float clipLength = Animator.GetCurrentAnimatorStateInfo(0).length;
+                if (clipLength <= 0f)
+                {
+                    attackPushReady = false;
+                    return;
+                }
+
+                float slashDuration = Mathf.Max(Owner.AttackMinSlashDuration, slashWindow * clipLength);
+                attackPushSpeed = Owner.AttackForwardDistance / slashDuration;
+                attackPushReady = true;
             }
         }
 
@@ -156,6 +204,18 @@ namespace Player.StateMachine.States
             {
                 OnAttackPhase(AttackPhase.Slash);
             }
+        }
+
+        private void UpdateAttackDirectionFromTransform()
+        {
+            Vector3 forward = Owner.transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f)
+            {
+                forward = Vector3.forward;
+            }
+
+            attackDirection = forward.normalized;
         }
     }
 }

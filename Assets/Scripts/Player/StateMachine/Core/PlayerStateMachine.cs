@@ -52,6 +52,9 @@ namespace Player.StateMachine
         [Header("Weapon Settings")]
         [SerializeField] private float unequipDelay = 10f;
 
+        [Header("Attack Movement")]
+        [SerializeField] private float attackForwardDistance = 0.50f;
+        [SerializeField] private float attackMinSlashDuration = 0.05f;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo = true;
@@ -122,6 +125,9 @@ namespace Player.StateMachine
         /// Current attack step metadata for parry reactions.
         /// </summary>
         public global::Player.StateMachine.AttackStep? CurrentAttackStep { get; private set; }
+
+        public float AttackForwardDistance => attackForwardDistance;
+        public float AttackMinSlashDuration => attackMinSlashDuration;
 
         // Internal state management
         private float unequipTimer = -1f;

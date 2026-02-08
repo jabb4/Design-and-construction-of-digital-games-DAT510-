@@ -192,6 +192,24 @@ namespace Player.StateMachine
         }
 
         /// <summary>
+        /// Override horizontal velocity while preserving vertical velocity.
+        /// Useful for short, controlled attack nudges.
+        /// </summary>
+        /// <param name="horizontalVelocity">World-space horizontal velocity (y ignored).</param>
+        public void SetHorizontalVelocity(Vector3 horizontalVelocity)
+        {
+            if (rb == null)
+            {
+                return;
+            }
+
+            Vector3 velocity = rb.linearVelocity;
+            velocity.x = horizontalVelocity.x;
+            velocity.z = horizontalVelocity.z;
+            rb.linearVelocity = velocity;
+        }
+
+        /// <summary>
         /// Apply rotation towards movement direction (free camera mode).
         /// </summary>
         /// <param name="moveInput">2D movement input</param>
