@@ -455,7 +455,8 @@ namespace Player.StateMachine
         private void UpdateWeaponState()
         {
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
-            bool canBlock = Motor != null && Motor.IsGrounded;
+            bool isGrounded = Motor != null && Motor.IsGrounded;
+            bool canBlock = isGrounded;
             bool isAttacking = CurrentState is global::Player.StateMachine.States.AttackState;
             bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock) || isAttacking;
             bool isSprinting = Input != null && Input.IsSprinting;
@@ -464,7 +465,10 @@ namespace Player.StateMachine
 
             if (wantsEquip && !IsEquipped && !IsTransitioningWeapon)
             {
-                RequestEquip();
+                if (isGrounded)
+                {
+                    RequestEquip();
+                }
             }
             else if (!wantsEquip && IsEquipped && !hasPendingUnequipRequest)
             {
