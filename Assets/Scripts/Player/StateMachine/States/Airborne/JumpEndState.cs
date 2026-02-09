@@ -24,7 +24,10 @@ namespace Player.StateMachine.States
 
             Motor.Move(Input.MoveInput, Input.IsSprinting, blend);
 
-            RotateWithContext(requireMovementInput: true);
+            if (landingTimer >= landingDuration)
+            {
+                RotateWithContext(requireMovementInput: true);
+            }
         }
 
         public override IState CheckTransitions()
