@@ -1,6 +1,7 @@
 namespace Player.StateMachine
 {
     using UnityEngine;
+    using Player.Combat;
 
     /// <summary>
     /// Receives animation events for weapon transitions and notifies the state machine.
@@ -15,6 +16,11 @@ namespace Player.StateMachine
             if (stateMachine == null)
             {
                 stateMachine = GetComponent<PlayerStateMachine>();
+            }
+
+            if (GetComponent<PlayerAttackHitboxDriver>() == null)
+            {
+                gameObject.AddComponent<PlayerAttackHitboxDriver>();
             }
         }
 

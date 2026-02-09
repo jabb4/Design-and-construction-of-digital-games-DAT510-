@@ -26,6 +26,7 @@ namespace Player.StateMachine
         public string AnimationStateName;
         public AttackPoseDirection StartPose;
         public AttackPoseDirection EndPose;
+        public float Damage;
         public float SlashStartTime;
         public float RecoveryStartTime;
         public float ComboWindowStart;
