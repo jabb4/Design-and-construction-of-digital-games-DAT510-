@@ -4,7 +4,7 @@ public class ExManagerScript : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-    public float health, maxHealth, stamina, maxStamina, itemAmount;
+    public float health, maxHealth, stamina, maxStamina, itemAmount, moneyAmount;
     public string healKeybind;
 
     [SerializeField]
@@ -15,6 +15,9 @@ public class ExManagerScript : MonoBehaviour
 
     [SerializeField]
     private ItemUiController healItem;
+
+    [SerializeField]
+    private MoneyUiController moneyText;
 
     // Update is called once per frame
     void Update()
@@ -27,5 +30,7 @@ public class ExManagerScript : MonoBehaviour
 
         healItem.setKeybind(healKeybind);
         healItem.setItemAmount(itemAmount);
+
+        moneyText.SetMoneyAmount(moneyAmount);
     }
 }
