@@ -7,12 +7,12 @@ public class BarUiController : MonoBehaviour
     [SerializeField]
     private RectTransform bar;
 
-    public void setMaxResource(float maxResource)
+    public void SetMaxResource(float maxResource)
     {
         MaxResource = maxResource;
     }
 
-    public void setCurrentResource(float resource)
+    public void SetCurrentResource(float resource)
     {
         Resource = resource;
 

@@ -15,7 +15,7 @@ public class ItemUiController : MonoBehaviour
     private float itemAmount;
     private string keybind;
 
-    public void setKeybind(string Keybind)
+    public void SetKeybind(string Keybind)
     {
         keybind = Keybind;
 
@@ -27,7 +27,7 @@ public class ItemUiController : MonoBehaviour
 
     }
 
-    public void setItemAmount(float ItemAmount)
+    public void SetItemAmount(float ItemAmount)
     {
         itemAmount = ItemAmount;
 

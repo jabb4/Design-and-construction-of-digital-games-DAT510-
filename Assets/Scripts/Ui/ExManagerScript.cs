@@ -22,15 +22,15 @@ public class ExManagerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        healthbar.setMaxResource(maxHealth);
-        healthbar.setCurrentResource(health);
+        healthbar.SetMaxResource(maxHealth);
+        healthbar.SetCurrentResource(health);
 
-        staminabar.setMaxResource(maxStamina);
-        staminabar.setCurrentResource(stamina);
+        staminabar.SetMaxResource(maxStamina);
+        staminabar.SetCurrentResource(stamina);
 
-        healItem.setKeybind(healKeybind);
-        healItem.setItemAmount(itemAmount);
+        healItem.SetKeybind(healKeybind);
+        healItem.SetItemAmount(itemAmount);
 
-        moneyText.SetMoneyAmount(moneyAmount);
+        moneyText.SetMoneyAmount(moneyAmount);  
     }
 }
