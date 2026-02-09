@@ -778,8 +778,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startEquipped: 0
-  unequipDelay: 10
+  unequipDelay: 5
+  attackForwardDistance: 0.75
+  attackPushDuration: 0.12
+  attackPushEndSpeedFraction: 0.2
   showDebugInfo: 1
+  slowMotionEnabled: 1
+  slowMotionScale: 1
   weaponTransitionTimeout: 0
 --- !u!114 &967580488707547334
 MonoBehaviour:

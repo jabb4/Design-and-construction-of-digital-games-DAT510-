@@ -54,7 +54,8 @@ namespace Player.StateMachine
 
         [Header("Attack Movement")]
         [SerializeField] private float attackForwardDistance = 0.50f;
-        [SerializeField] private float attackMinSlashDuration = 0.05f;
+        [SerializeField, Min(0.01f)] private float attackPushDuration = 0.12f;
+        [SerializeField, Range(0.05f, 0.95f)] private float attackPushEndSpeedFraction = 0.2f;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo = true;
@@ -127,7 +128,8 @@ namespace Player.StateMachine
         public global::Player.StateMachine.AttackStep? CurrentAttackStep { get; private set; }
 
         public float AttackForwardDistance => attackForwardDistance;
-        public float AttackMinSlashDuration => attackMinSlashDuration;
+        public float AttackPushDuration => attackPushDuration;
+        public float AttackPushEndSpeedFraction => attackPushEndSpeedFraction;
 
         // Internal state management
         private float unequipTimer = -1f;

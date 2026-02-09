@@ -13,8 +13,12 @@ namespace Player.StateMachine.States
         private bool hasPhaseEvents;
         private float recoveryElapsed;
         private Vector3 attackDirection;
-        private float attackPushSpeed;
-        private bool attackPushReady;
+        private bool attackPushActive;
+        private float attackPushElapsed;
+        private float attackPushDuration;
+        private float attackPushDecay;
+        private float attackPushInitialSpeed;
+        private float attackPushRemainingDistance;
 
         public AttackPhase CurrentPhase => currentPhase;
 
@@ -30,8 +34,12 @@ namespace Player.StateMachine.States
             hasEnteredRecovery = false;
             hasPhaseEvents = false;
             recoveryElapsed = 0f;
-            attackPushSpeed = 0f;
-            attackPushReady = false;
+            attackPushActive = false;
+            attackPushElapsed = 0f;
+            attackPushDuration = 0f;
+            attackPushDecay = 0f;
+            attackPushInitialSpeed = 0f;
+            attackPushRemainingDistance = 0f;
 
             UpdateAttackDirectionFromTransform();
 
@@ -68,14 +76,49 @@ namespace Player.StateMachine.States
                 }
             }
 
-            if (currentPhase == AttackPhase.Slash && attackPushReady)
+            if (currentPhase == AttackPhase.Slash && attackPushActive)
             {
-                Motor.SetHorizontalVelocity(attackDirection * attackPushSpeed);
+                float dt = Time.fixedDeltaTime;
+                if (dt <= 0f)
+                {
+                    attackPushActive = false;
+                    Motor.SetHorizontalVelocity(Vector3.zero);
+                    return;
+                }
+
+                float t0 = attackPushElapsed;
+                float t1 = Mathf.Min(t0 + dt, attackPushDuration);
+                float distanceThisStep;
+
+                if (attackPushDecay > 0f)
+                {
+                    float exp0 = Mathf.Exp(-attackPushDecay * t0);
+                    float exp1 = Mathf.Exp(-attackPushDecay * t1);
+                    distanceThisStep = (attackPushInitialSpeed / attackPushDecay) * (exp0 - exp1);
+                }
+                else
+                {
+                    float remainingTime = Mathf.Max(attackPushDuration - t0, 0.0001f);
+                    distanceThisStep = attackPushRemainingDistance * (t1 - t0) / remainingTime;
+                }
+
+                distanceThisStep = Mathf.Min(distanceThisStep, attackPushRemainingDistance);
+                float speed = distanceThisStep / dt;
+                Motor.SetHorizontalVelocity(attackDirection * speed);
+
+                attackPushElapsed = t1;
+                attackPushRemainingDistance -= distanceThisStep;
+
+                if (attackPushRemainingDistance <= 0.0001f || attackPushElapsed >= attackPushDuration)
+                {
+                    attackPushActive = false;
+                    Motor.SetHorizontalVelocity(Vector3.zero);
+                }
+
+                return;
             }
-            else
-            {
-                Motor.Move(Vector2.zero, useSprint: false);
-            }
+
+            Motor.Move(Vector2.zero, useSprint: false);
         }
 
         public override IState CheckTransitions()
@@ -138,8 +181,12 @@ namespace Player.StateMachine.States
         {
             queuedNextAttack = false;
             recoveryElapsed = 0f;
-            attackPushSpeed = 0f;
-            attackPushReady = false;
+            attackPushActive = false;
+            attackPushElapsed = 0f;
+            attackPushDuration = 0f;
+            attackPushDecay = 0f;
+            attackPushInitialSpeed = 0f;
+            attackPushRemainingDistance = 0f;
         }
 
         public void OnAttackPhase(AttackPhase phase)
@@ -161,29 +208,38 @@ namespace Player.StateMachine.States
             {
                 hasEnteredRecovery = true;
                 recoveryElapsed = 0f;
-                attackPushReady = false;
+                attackPushActive = false;
+                attackPushElapsed = 0f;
+                attackPushRemainingDistance = 0f;
             }
             else if (phase == AttackPhase.Slash)
             {
                 UpdateAttackDirectionFromTransform();
 
-                float slashWindow = step.RecoveryStartTime - step.SlashStartTime;
-                if (slashWindow <= 0f)
+                float distance = Owner.AttackForwardDistance;
+                float duration = Owner.AttackPushDuration;
+                if (distance <= 0f || duration <= 0f)
                 {
-                    attackPushReady = false;
+                    attackPushActive = false;
                     return;
                 }
 
-                float clipLength = Animator.GetCurrentAnimatorStateInfo(0).length;
-                if (clipLength <= 0f)
+                float endFraction = Mathf.Clamp(Owner.AttackPushEndSpeedFraction, 0.05f, 0.95f);
+                attackPushDuration = duration;
+                attackPushElapsed = 0f;
+                attackPushRemainingDistance = distance;
+                attackPushDecay = -Mathf.Log(endFraction) / duration;
+                if (attackPushDecay > 0f)
                 {
-                    attackPushReady = false;
-                    return;
+                    float denom = 1f - Mathf.Exp(-attackPushDecay * duration);
+                    attackPushInitialSpeed = denom <= 0f ? (distance / duration) : (distance * attackPushDecay / denom);
+                }
+                else
+                {
+                    attackPushInitialSpeed = distance / duration;
                 }
 
-                float slashDuration = Mathf.Max(Owner.AttackMinSlashDuration, slashWindow * clipLength);
-                attackPushSpeed = Owner.AttackForwardDistance / slashDuration;
-                attackPushReady = true;
+                attackPushActive = true;
             }
         }
 
