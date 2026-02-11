@@ -1,25 +1,50 @@
 using UnityEngine;
 using Combat;
 
+[RequireComponent(typeof(HealthComponent))]
+[RequireComponent(typeof(CombatFlagsComponent))]
 public class Enemy : MonoBehaviour, ICombatant
 {
-    [Header("Health")]
-    [SerializeField] private float maxHealth = 100f;
-    [SerializeField] private float currentHealth = 100f;
+    [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
+    [SerializeField] private bool disableGameObjectOnDeath = true;
 
-    private bool isDead;
+    private HealthComponent health;
+    private CombatFlagsComponent flags;
 
     public CombatTeam Team => CombatTeam.Enemy;
-    public bool IsVulnerable => !isDead;
-    public bool IsAttacking => false;
+    public bool IsVulnerable => flags != null && flags.IsVulnerable;
+    public bool IsAttacking
+    {
+        get => flags != null && flags.IsAttacking;
+        set
+        {
+            if (flags != null)
+            {
+                flags.IsAttacking = value;
+            }
+        }
+    }
 
     private void Awake()
     {
-        if (currentHealth <= 0f)
+        health = GetComponent<HealthComponent>();
+        flags = GetComponent<CombatFlagsComponent>();
+        if (health == null)
         {
-            currentHealth = maxHealth;
+            health = gameObject.AddComponent<HealthComponent>();
         }
 
+        if (flags == null)
+        {
+            flags = gameObject.AddComponent<CombatFlagsComponent>();
+        }
+
+        if (health != null)
+        {
+            health.OnDied += HandleDied;
+        }
+
+        SyncCombatFlags();
         EnsureHurtbox();
     }
 
@@ -31,25 +56,54 @@ public class Enemy : MonoBehaviour, ICombatant
 
     public void ReceiveHit(AttackHitInfo hit)
     {
-        if (isDead)
+        if (health == null)
         {
             return;
         }
 
-        float damage = Mathf.Max(0f, hit.Damage);
-        currentHealth -= damage;
-
-        if (currentHealth <= 0f)
+        DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
+        if (resolution.Outcome == DamageOutcome.Ignored)
         {
-            Die();
+            return;
+        }
+
+        health.ApplyDamage(resolution.AppliedDamage);
+        SyncCombatFlags();
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null)
+        {
+            health.OnDied -= HandleDied;
         }
     }
 
-    private void Die()
+    private void HandleDied()
     {
-        isDead = true;
-        currentHealth = 0f;
-        gameObject.SetActive(false);
+        SyncCombatFlags();
+
+        if (disableGameObjectOnDeath)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
+    private void SyncCombatFlags()
+    {
+        if (flags == null)
+        {
+            return;
+        }
+
+        bool isAlive = health == null || !health.IsDead;
+        flags.IsVulnerable = isAlive;
+        flags.IsBlocking = false;
+
+        if (!isAlive)
+        {
+            flags.IsAttacking = false;
+        }
     }
 
     private void EnsureHurtbox()
