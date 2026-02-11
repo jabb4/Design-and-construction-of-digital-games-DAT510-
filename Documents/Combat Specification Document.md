@@ -19,14 +19,14 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 ### Player Mechanics
 
-| Feature       | Description                            |
-| ------------- | -------------------------------------- |
-| Movement      | WASD + SHIFT to sprint                 |
-| Camera        | Third-person camera with lock-on       |
-| Light Attack  | Sword slash                            |
-| Block         | Hold to block incoming attacks         |
-| Perfect Parry | Timed block during enemy attack window |
-| Health        | Player can die if health reaches zero  |
+| Feature       | Description                           |
+| ------------- | ------------------------------------- |
+| Movement      | WASD + SHIFT to sprint                |
+| Camera        | Third-person camera with lock-on      |
+| Light Attack  | Sword slash                           |
+| Block         | Guard input (tap or hold)             |
+| Perfect Parry | Timed deflect during parry window     |
+| Health        | Player can die if health reaches zero |
 
 ### Enemy Mechanics
 
@@ -50,17 +50,19 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 #### Block
 
-- Activated by holding the parry button (right click)
+- Activated by guard input (right click), using tap or hold
+- Holding keeps block active continuously
+- Tapping opens a short block linger window so block/parry can register without holding
 - Dull sound effect
 - Reduces damage dealt (50% reduction)
 
 #### Perfect Parry
 
-- Triggered when the parry button is pressed and held; if impact occurs **within a short timing window** after the initial press, it counts as a perfect parry
+- Triggered when guard is pressed and the hit lands **within the active parry window**
 - Negates all damage
 - Plays special sound + VFX
 
-**Timing Window:** 0.2 seconds from the initial press (while still holding).
+**Base Timing Window:** 0.2 seconds from the latest guard press.
 
 ### Attack Resolution Rules
 
@@ -136,7 +138,7 @@ Every attack in the combo chain registers active hit detection during specific a
 
 #### Anti-spam system
 
-The player's parry mechanic includes an anti-spamming system that reduces the timing window for parries after successive missed attempts.
+The player's parry mechanic includes an anti-spamming system that reduces the timing window for parries after successive rapid presses.
 
 ---
 
@@ -212,7 +214,27 @@ After verifying the eligibility of a hit, we then check the receiver's current s
 
 Every time the player presses the parry button in quick succession without actively parrying an attack, it should diminish the timeframe in which the parry window is active. This is to prevent the player spamming the parry button.
 
-To achieve this we should add a parry counter that counts how many parries are pressed in a given time frame. Every parry spam without parrying an attack, should add to the counter until the max of 4. For the first two parry inputs, there should be no effect on the parry timing window, staying at 0.2 seconds. However on the third parry input, the parry window should be reduced by 0.1 seconds, and for the fourth, 0 seconds, meaning that all parries will register as blocks. This prevention mechanic can be reset by not spamming parry for a certain amount of time or by successfully parrying an attack, resetting the counter.
+To achieve this we use a parry counter that tracks rapid guard presses.
+
+| Rapid press count | Parry window |
+| ----------------- | ------------ |
+| 1                 | 0.2s         |
+| 2                 | 0.2s         |
+| 3                 | 0.1s         |
+| 4+                | 0.0s         |
+
+When the window reaches `0.0s`, guard still blocks but no perfect parry is possible.
+
+**Reset conditions:**
+
+- No rapid presses for ~0.5 seconds
+- Successful perfect parry
+
+**After a successful perfect parry:**
+
+- Movement and attack are locked for 0.5 seconds
+- Blocking can continue during this lock
+- Parry animation should complete unless interrupted by a new hit/input state change
 
 ### Enemy Behaviour
 
