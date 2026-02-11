@@ -26,10 +26,26 @@ namespace Player.StateMachine
         public bool IsSprinting { get; private set; }
 
         /// <summary>
+        /// Whether the player is currently holding the block button.
+        /// </summary>
+        public bool IsBlocking { get; private set; }
+
+        /// <summary>
+        /// True only on the frame when block was pressed.
+        /// </summary>
+        public bool IsBlockPressed { get; private set; }
+
+        /// <summary>
         /// True only on the frame when jump was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
         public bool IsJumpPressed { get; private set; }
+
+        /// <summary>
+        /// True only on the frame when attack was pressed.
+        /// This is reset to false in LateUpdate.
+        /// </summary>
+        public bool IsAttackPressed { get; private set; }
 
         /// <summary>
         /// True while jump input is buffered.
@@ -81,6 +97,11 @@ namespace Player.StateMachine
         /// </summary>
         public event Action OnSprintEnded;
 
+        /// <summary>
+        /// Invoked when the attack button is pressed.
+        /// </summary>
+        public event Action OnAttackPressed;
+
         #endregion
 
         #region Input System Callbacks
@@ -131,6 +152,34 @@ namespace Player.StateMachine
             }
         }
 
+        /// <summary>
+        /// Called by Unity Input System when block input changes.
+        /// </summary>
+        /// <param name="value">The input value from the Input System</param>
+        private void OnBlock(InputValue value)
+        {
+            bool wasBlocking = IsBlocking;
+            IsBlocking = value.isPressed;
+            if (IsBlocking && !wasBlocking)
+            {
+                IsBlockPressed = true;
+            }
+        }
+
+        /// <summary>
+        /// Called by Unity Input System when attack input is received.
+        /// Sets a one-frame flag that gets reset in LateUpdate.
+        /// </summary>
+        /// <param name="value">The input value from the Input System</param>
+        private void OnAttack(InputValue value)
+        {
+            if (value.isPressed)
+            {
+                IsAttackPressed = true;
+                OnAttackPressed?.Invoke();
+            }
+        }
+
         #endregion
 
         #region Unity Lifecycle
@@ -143,6 +192,8 @@ namespace Player.StateMachine
         {
             // Reset one-frame flags
             IsJumpPressed = false;
+            IsBlockPressed = false;
+            IsAttackPressed = false;
 
             if (jumpBufferTimer > 0f)
             {

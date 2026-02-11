@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: f5772df0eabb44c318c4959ae144eab0
 ModelImporter:
-  serializedVersion: 22103
+  serializedVersion: 22200
   internalIDToNameTable:
   - first:
       74: 8993902097722301239
@@ -19,8 +19,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -60,17 +58,24 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.25435144
-        functionName: BladeTriggerOn
+      - time: 0
+        functionName: OnAttackWindup
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.28496367
-        functionName: BladeTriggerOff
+      - time: 0.21947311
+        functionName: OnAttackSlash
         data: 
-        objectReferenceParameter: {instanceID: 0}
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.42055345
+        functionName: OnAttackRecovery
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
@@ -86,6 +91,7 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
+    importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1

@@ -7,17 +7,13 @@ namespace Player.StateMachine.States
         private WeightedLocomotion locomotion;
         private Vector2 smoothVelocity;
         private Vector2 velocityRef;
-        private Vector2 lastMoveDirection;
-        
         private const float SMOOTH_TIME = 0.1f;
-        
+
         public override void OnEnter()
         {
             bool isEquipped = Animator.GetBool(IsEquippedHash);
             bool isLockedOn = Motor.IsLockedOn;
-            
-            lastMoveDirection = Input.MoveInput;
-            
+
             locomotion = new WeightedLocomotion(
                 Animator,
                 () => GetWalkStartAnimation(isEquipped, isLockedOn),
@@ -27,7 +23,7 @@ namespace Player.StateMachine.States
                 loopDuration: 0.25f,
                 stopDuration: 0.1f
             );
-            
+
             if (isLockedOn || !isEquipped)
             {
                 locomotion.ForceLoop();
@@ -38,25 +34,25 @@ namespace Player.StateMachine.States
                 locomotion.Begin();
                 smoothVelocity = Vector2.zero;
             }
-            
+
             Animator.SetBool(IsMovingHash, true);
             Animator.SetBool(IsSprintingHash, false);
-            
+
             velocityRef = Vector2.zero;
         }
-        
+
         private string GetWalkStartAnimation(bool isEquipped, bool isLockedOn)
         {
             if (!isEquipped)
             {
                 return "Walk Start";
             }
-            
+
             if (!isLockedOn)
             {
                 return "Walk Start F";
             }
-            
+
             Vector2 input = Input.MoveInput;
             if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
             {
@@ -67,19 +63,19 @@ namespace Player.StateMachine.States
                 return input.y >= 0 ? "Walk Start F" : "Walk Start B";
             }
         }
-        
+
         private string GetWalkStopAnimation(bool isEquipped, bool isLockedOn)
         {
             if (!isEquipped)
             {
                 return "Walk Stop";
             }
-            
+
             if (!isLockedOn)
             {
                 return "Walk Stop F";
             }
-            
+
             Vector2 vel = smoothVelocity;
             if (Mathf.Abs(vel.x) > Mathf.Abs(vel.y))
             {
@@ -90,18 +86,13 @@ namespace Player.StateMachine.States
                 return vel.y >= 0 ? "Walk Stop F" : "Walk Stop B";
             }
         }
-        
+
         public override void OnUpdate()
         {
             locomotion.Update(Input.HasMovementInput);
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
-            
-            if (Input.HasMovementInput)
-            {
-                lastMoveDirection = Input.MoveInput;
-            }
         }
-        
+
         public override void OnFixedUpdate()
         {
             if (Owner.IsTransitioningWeapon)
@@ -114,24 +105,42 @@ namespace Player.StateMachine.States
 
             RotateWithContext();
         }
-        
+
         public override IState CheckTransitions()
         {
+            if (Input.IsAttackPressed && Motor.IsGrounded)
+            {
+                if (!Owner.IsEquipped)
+                {
+                    Owner.RequestEquip();
+                    return null;
+                }
+
+                var attackState = Owner.GetState<AttackState>();
+                attackState.SetComboIndex(0);
+                return attackState;
+            }
+
+            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
+            {
+                return Owner.GetState<BlockingState>();
+            }
+
             if (Input.IsJumpPressed && Motor.IsGrounded)
             {
                 return Owner.GetState<JumpStartState>();
             }
-            
+
             if (!Motor.IsGrounded)
             {
                 return Owner.GetState<JumpLoopState>();
             }
-            
+
             if (Input.IsSprinting && Input.HasMovementInput)
             {
                 return Owner.GetState<SprintState>();
             }
-            
+
             if (locomotion.CurrentPhase == WeightedLocomotion.Phase.Stop &&
                 locomotion.IsStopComplete())
             {
@@ -144,15 +153,15 @@ namespace Player.StateMachine.States
 
                 return Owner.GetState<IdleState>();
             }
-            
+
             if (!Input.HasMovementInput && locomotion.IsLooping)
             {
                 locomotion.RequestStop();
             }
-            
+
             return null;
         }
-        
+
         public override void OnExit()
         {
             locomotion?.Reset();

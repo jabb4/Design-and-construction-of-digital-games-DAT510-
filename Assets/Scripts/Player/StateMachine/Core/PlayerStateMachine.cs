@@ -2,8 +2,41 @@ namespace Player.StateMachine
 {
     using UnityEngine;
     using System;
-    using System.Collections.Generic;
     using Player.StateMachine.States;
+
+    public enum AttackPoseDirection
+    {
+        None,
+        LeftUp,
+        RightUp,
+        LeftDown,
+        RightDown
+    }
+
+    public enum AttackPhase
+    {
+        Windup,
+        Slash,
+        Recovery
+    }
+
+    [Serializable]
+    public struct AttackStep
+    {
+        public string AnimationStateName;
+        public AttackPoseDirection StartPose;
+        public AttackPoseDirection EndPose;
+        public float Damage;
+        public float SlashStartTime;
+        public float RecoveryStartTime;
+        public float ComboWindowStart;
+        public float ExitTime;
+    }
+
+    public interface IAttackPhaseListener
+    {
+        void OnAttackPhase(AttackPhase phase);
+    }
 
     /// <summary>
     /// Main state machine controller for the player character.
@@ -18,11 +51,17 @@ namespace Player.StateMachine
         [SerializeField] private bool startEquipped = false;
 
         [Header("Weapon Settings")]
-        [SerializeField] private float unequipDelay = 3f;
+        [SerializeField] private float unequipDelay = 10f;
 
+        [Header("Attack Movement")]
+        [SerializeField] private float attackForwardDistance = 0.50f;
+        [SerializeField, Min(0.01f)] private float attackPushDuration = 0.12f;
+        [SerializeField, Range(0.05f, 0.95f)] private float attackPushEndSpeedFraction = 0.2f;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugInfo = true;
+        [SerializeField] private bool slowMotionEnabled = false;
+        [SerializeField, Range(0.05f, 1f)] private float slowMotionScale = 0.2f;
 
         // Weapon state
         /// <summary>
@@ -58,6 +97,11 @@ namespace Player.StateMachine
         /// </summary>
         public event Action<bool> OnWeaponStateChanged;
 
+        /// <summary>
+        /// Fired when the current attack step changes.
+        /// </summary>
+        public event Action<global::Player.StateMachine.AttackStep> OnAttackStepChanged;
+
         // Components
         /// <summary>
         /// Reference to the Animator component.
@@ -78,6 +122,15 @@ namespace Player.StateMachine
         /// Reference to the CameraController (found at runtime).
         /// </summary>
         public CameraController CameraController { get; private set; }
+
+        /// <summary>
+        /// Current attack step metadata for parry reactions.
+        /// </summary>
+        public global::Player.StateMachine.AttackStep? CurrentAttackStep { get; private set; }
+
+        public float AttackForwardDistance => attackForwardDistance;
+        public float AttackPushDuration => attackPushDuration;
+        public float AttackPushEndSpeedFraction => attackPushEndSpeedFraction;
 
         // Internal state management
         private float unequipTimer = -1f;
@@ -104,6 +157,7 @@ namespace Player.StateMachine
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
         private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
         private static readonly int IsSprintingHash = Animator.StringToHash("IsSprinting");
+        private static readonly int IsBlockingHash = Animator.StringToHash("IsBlocking");
         private static readonly int IsTransitioningWeaponHash = Animator.StringToHash("IsTransitioningWeapon");
         private static readonly int UnequipVariantHash = Animator.StringToHash("UnequipVariant");
 
@@ -123,6 +177,8 @@ namespace Player.StateMachine
 
         private void Update()
         {
+            UpdateTimeScale();
+
             // Update weapon state timer
             UpdateWeaponState();
 
@@ -146,6 +202,11 @@ namespace Player.StateMachine
             UpdateAnimatorParameters();
         }
 
+        private void OnValidate()
+        {
+            UpdateTimeScale();
+        }
+
         private void FixedUpdate()
         {
             if (IsTransitioningWeapon)
@@ -160,6 +221,23 @@ namespace Player.StateMachine
 
         private void OnDestroy()
         {
+            if (slowMotionEnabled)
+            {
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = 0.02f;
+            }
+        }
+
+        private void UpdateTimeScale()
+        {
+            if (!slowMotionEnabled)
+            {
+                return;
+            }
+
+            float clampedScale = Mathf.Clamp(slowMotionScale, 0.01f, 1f);
+            Time.timeScale = clampedScale;
+            Time.fixedDeltaTime = 0.02f * clampedScale;
         }
 
         #endregion
@@ -191,6 +269,8 @@ namespace Player.StateMachine
             {
                 return;
             }
+
+            ClearCurrentAttack();
 
             IState oldState = CurrentState;
 
@@ -231,10 +311,8 @@ namespace Player.StateMachine
         /// </summary>
         public void RequestEquip()
         {
-            // Cancel any pending unequip
             CancelUnequipRequest();
 
-            // Already equipped or transitioning?
             if (IsEquipped || IsTransitioningWeapon)
             {
                 if (IsTransitioningWeapon)
@@ -252,7 +330,6 @@ namespace Player.StateMachine
         /// </summary>
         public void RequestUnequip()
         {
-            // Already unequipped or transitioning?
             if (!IsEquipped || IsTransitioningWeapon)
             {
                 if (IsTransitioningWeapon)
@@ -306,7 +383,11 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (Input != null && Input.HasMovementInput)
+            if (Input != null && Input.IsBlocking && Motor != null && Motor.IsGrounded)
+            {
+                ChangeState(GetState<BlockingState>());
+            }
+            else if (Input != null && Input.HasMovementInput)
             {
                 ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
             }
@@ -353,48 +434,83 @@ namespace Player.StateMachine
             }
         }
 
+        public void SetCurrentAttack(global::Player.StateMachine.AttackStep step)
+        {
+            CurrentAttackStep = step;
+            OnAttackStepChanged?.Invoke(step);
+        }
+
+        public void ClearCurrentAttack()
+        {
+            CurrentAttackStep = null;
+        }
+
+        public void NotifyAttackPhase(AttackPhase phase)
+        {
+            if (CurrentState is IAttackPhaseListener listener)
+            {
+                listener.OnAttackPhase(phase);
+            }
+        }
+
         private void UpdateWeaponState()
         {
-            if (CameraController != null)
-            {
-                bool isLockedOn = CameraController.IsLockedOn;
+            bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
+            bool isGrounded = Motor != null && Motor.IsGrounded;
+            bool canBlock = isGrounded;
+            bool isAttacking = CurrentState is global::Player.StateMachine.States.AttackState;
+            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock) || isAttacking;
+            bool isSprinting = Input != null && Input.IsSprinting;
+            bool isLanding = CurrentState is JumpEndState;
+            bool canUnequipNow = Motor != null && Motor.IsGrounded && !isSprinting && !isLanding;
 
-                if (isLockedOn && !IsEquipped && !IsTransitioningWeapon)
+            if (wantsEquip && !IsEquipped && !IsTransitioningWeapon)
+            {
+                if (isGrounded)
                 {
                     RequestEquip();
                 }
-                else if (!isLockedOn && IsEquipped && !hasPendingUnequipRequest)
-                {
-                    RequestUnequip();
-                }
+            }
+            else if (!wantsEquip && IsEquipped && !hasPendingUnequipRequest)
+            {
+                RequestUnequip();
+            }
 
-                if (hasPendingUnequipRequest)
+            if (hasPendingUnequipRequest)
+            {
+                if (wantsEquip)
                 {
-                    if (isLockedOn)
-                    {
-                        requestedEquipWhilePending = true;
-                        unequipTimer = unequipDelay;
-                    }
-                    else
-                    {
-                        requestedEquipWhilePending = false;
-                    }
+                    requestedEquipWhilePending = true;
+                    unequipTimer = unequipDelay;
+                }
+                else
+                {
+                    requestedEquipWhilePending = false;
                 }
             }
 
-            if (hasPendingUnequipRequest && unequipTimer > 0f &&
-                (CameraController == null || !CameraController.IsLockedOn))
+            if (hasPendingUnequipRequest && !wantsEquip)
             {
-                unequipTimer -= Time.deltaTime;
-
-                if (unequipTimer <= 0f)
+                if (!canUnequipNow)
                 {
-                    if (!requestedEquipWhilePending && (CameraController == null || !CameraController.IsLockedOn))
+                    unequipTimer = unequipDelay;
+                }
+                else
+                {
+                    if (unequipTimer > 0f)
                     {
-                        BeginUnequipTransition();
+                        unequipTimer -= Time.deltaTime;
                     }
-                    hasPendingUnequipRequest = false;
-                    requestedEquipWhilePending = false;
+
+                    if (unequipTimer <= 0f)
+                    {
+                        if (!requestedEquipWhilePending)
+                        {
+                            BeginUnequipTransition();
+                        }
+                        hasPendingUnequipRequest = false;
+                        requestedEquipWhilePending = false;
+                    }
                 }
             }
 
@@ -541,6 +657,7 @@ namespace Player.StateMachine
 
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
             Animator.SetBool("IsLockedOn", isLockedOn);
+            Animator.SetBool(IsBlockingHash, Input != null && Input.IsBlocking && IsEquipped && Motor != null && Motor.IsGrounded);
 
             if (IsTransitioningWeapon)
             {
@@ -573,6 +690,13 @@ namespace Player.StateMachine
             GUILayout.Label($"State: <b>{CurrentStateName}</b>");
             GUILayout.Label($"Equipped: <b>{IsEquipped}</b>");
             GUILayout.Label($"Transitioning: <b>{IsTransitioningWeapon}</b>");
+
+            if (CurrentState is AttackState attackState)
+            {
+                GUILayout.Label($"Attack Phase: <b>{attackState.CurrentPhase}</b>");
+            }
+
+            GUILayout.Label($"Slow Motion: <b>{(slowMotionEnabled ? $"On ({slowMotionScale:0.00}x)" : "Off")}</b>");
 
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
 

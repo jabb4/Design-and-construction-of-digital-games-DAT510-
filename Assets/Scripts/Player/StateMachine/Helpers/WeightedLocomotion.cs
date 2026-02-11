@@ -3,7 +3,7 @@ namespace Player.StateMachine
     using UnityEngine;
     using System;
     using System.Collections.Generic;
-    
+
     public class WeightedLocomotion
     {
         public enum Phase
@@ -13,11 +13,11 @@ namespace Player.StateMachine
             Loop,
             Stop
         }
-        
+
         public Phase CurrentPhase { get; private set; } = Phase.Inactive;
         public bool IsInterruptible => CurrentPhase == Phase.Start || CurrentPhase == Phase.Stop;
         public bool IsLooping => CurrentPhase == Phase.Loop;
-        
+
         private readonly Animator animator;
         private readonly Func<string> getStartAnimation;
         private readonly Func<string> getLoopAnimation;
@@ -25,10 +25,8 @@ namespace Player.StateMachine
         private readonly float startTransitionDuration;
         private readonly float loopTransitionDuration;
         private readonly float stopTransitionDuration;
-        
-        private static readonly HashSet<int> _loggedMissingStates = new();
         private static readonly int IsEquippedHash = Animator.StringToHash("IsEquipped");
-        
+
         public WeightedLocomotion(
             Animator animator,
             Func<string> getStartAnimation,
@@ -46,14 +44,14 @@ namespace Player.StateMachine
             this.loopTransitionDuration = loopDuration;
             this.stopTransitionDuration = stopDuration;
         }
-        
+
         public void Begin()
         {
             CurrentPhase = Phase.Start;
             string startAnim = getStartAnimation();
             SafeCrossFade(startAnim, startTransitionDuration);
         }
-        
+
         public void RequestStop()
         {
             if (CurrentPhase == Phase.Loop)
@@ -63,26 +61,26 @@ namespace Player.StateMachine
                 SafeCrossFade(stopAnim, stopTransitionDuration);
             }
         }
-        
+
         public void ForceLoop()
         {
             CurrentPhase = Phase.Loop;
             string loopAnim = getLoopAnimation();
             SafeCrossFade(loopAnim, loopTransitionDuration);
         }
-        
+
         public void Reset()
         {
             CurrentPhase = Phase.Inactive;
         }
-        
+
         public bool Update(bool hasInput)
         {
             switch (CurrentPhase)
             {
                 case Phase.Inactive:
                     return false;
-                
+
                 case Phase.Start:
                     if (IsStartComplete())
                     {
@@ -91,7 +89,7 @@ namespace Player.StateMachine
                         SafeCrossFade(loopAnim, loopTransitionDuration);
                     }
                     return false;
-                
+
                 case Phase.Loop:
                     if (!hasInput)
                     {
@@ -100,7 +98,7 @@ namespace Player.StateMachine
                         SafeCrossFade(stopAnim, stopTransitionDuration);
                     }
                     return false;
-                
+
                 case Phase.Stop:
                     if (hasInput)
                     {
@@ -109,36 +107,36 @@ namespace Player.StateMachine
                         SafeCrossFade(loopAnim, loopTransitionDuration);
                         return false;
                     }
-                    
+
                     if (IsStopComplete())
                     {
                         CurrentPhase = Phase.Inactive;
                         return true;
                     }
                     return false;
-                
+
                 default:
                     return false;
             }
         }
-        
+
         public bool IsStartComplete(float threshold = 0.9f)
         {
             string startAnim = getStartAnimation();
             return IsInAnimatorState(startAnim) && GetNormalizedTime() >= threshold;
         }
-        
+
         public bool IsStopComplete(float threshold = 0.9f)
         {
             string stopAnim = getStopAnimation();
             return IsInAnimatorState(stopAnim) && GetNormalizedTime() >= threshold;
         }
-        
+
         private void SafeCrossFade(string stateName, float duration, int layer = 0)
         {
             if (animator == null || animator.runtimeAnimatorController == null) return;
             if (string.IsNullOrEmpty(stateName)) return;
-            
+
             if (layer < 0) layer = 0;
             if (layer >= animator.layerCount) layer = 0;
 
@@ -161,13 +159,6 @@ namespace Player.StateMachine
             {
                 animator.CrossFadeInFixedTime(fullPathHash, duration, layer);
                 return;
-            }
-
-            int logKey = (animator.GetInstanceID() * 397) ^ stateName.GetHashCode();
-            if (!_loggedMissingStates.Contains(logKey))
-            {
-                _loggedMissingStates.Add(logKey);
-                Debug.LogWarning($"[WeightedLocomotion] State '{stateName}' not found. Run Tools → Setup Player Animator Controller.", animator);
             }
         }
 
@@ -204,19 +195,19 @@ namespace Player.StateMachine
 
             return false;
         }
-        
+
         private bool IsInAnimatorState(string stateName, int layer = 0)
         {
             if (animator == null) return false;
-            
+
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layer);
             return stateInfo.IsName(stateName);
         }
-        
+
         private float GetNormalizedTime(int layer = 0)
         {
             if (animator == null) return 0f;
-            
+
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layer);
             return stateInfo.normalizedTime;
         }
