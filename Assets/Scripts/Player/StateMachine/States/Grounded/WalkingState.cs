@@ -45,7 +45,8 @@ namespace Player.StateMachine.States
         {
             if (!isEquipped)
             {
-                return "Walk Start";
+                // Unequipped walking starts directly in loop (ForceLoop in OnEnter).
+                return "Walk Locomotion";
             }
 
             if (!isLockedOn)
