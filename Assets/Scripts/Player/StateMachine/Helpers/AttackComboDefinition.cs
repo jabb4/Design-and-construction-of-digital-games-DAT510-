@@ -10,7 +10,6 @@ namespace Player.StateMachine
         {
             new() {
                 AnimationStateName = "Stand_Attack_01 1",
-                StartPose = AttackPoseDirection.RightUp,
                 EndPose = AttackPoseDirection.LeftDown,
                 Damage = 10f,
                 SlashStartTime = 0.3f,
@@ -20,7 +19,6 @@ namespace Player.StateMachine
             },
             new() {
                 AnimationStateName = "Stand_Attack_03 2",
-                StartPose = AttackPoseDirection.LeftDown,
                 EndPose = AttackPoseDirection.RightUp,
                 Damage = 12f,
                 SlashStartTime = 0.3f,
@@ -30,7 +28,6 @@ namespace Player.StateMachine
             },
             new() {
                 AnimationStateName = "Stand_Attack_01 4",
-                StartPose = AttackPoseDirection.RightUp,
                 EndPose = AttackPoseDirection.RightDown,
                 Damage = 14f,
                 SlashStartTime = 0.4f,
@@ -40,7 +37,6 @@ namespace Player.StateMachine
             },
             new() {
                 AnimationStateName = "LightAttack01",
-                StartPose = AttackPoseDirection.RightDown,
                 EndPose = AttackPoseDirection.LeftUp,
                 Damage = 12f,
                 SlashStartTime = 0.3f,
@@ -50,7 +46,6 @@ namespace Player.StateMachine
             },
             new() {
                 AnimationStateName = "LightAttack06",
-                StartPose = AttackPoseDirection.LeftUp,
                 EndPose = AttackPoseDirection.LeftDown,
                 Damage = 15f,
                 SlashStartTime = 0.4f,
