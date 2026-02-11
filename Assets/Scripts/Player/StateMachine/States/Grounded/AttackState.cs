@@ -11,6 +11,7 @@ namespace Player.StateMachine.States
         private AttackPhase currentPhase;
         private bool hasEnteredRecovery;
         private bool hasPhaseEvents;
+        private bool hasLoggedMissingEventWarning;
         private float recoveryElapsed;
         private Vector3 attackDirection;
         private bool attackPushActive;
@@ -34,6 +35,7 @@ namespace Player.StateMachine.States
             currentPhase = AttackPhase.Windup;
             hasEnteredRecovery = false;
             hasPhaseEvents = false;
+            hasLoggedMissingEventWarning = false;
             recoveryElapsed = 0f;
             attackPushActive = false;
             attackPushElapsed = 0f;
@@ -64,9 +66,7 @@ namespace Player.StateMachine.States
                 return;
             }
 
-            float normalizedTime = GetAnimatorNormalizedTime();
-
-            UpdatePhaseFromTime(step, normalizedTime);
+            WarnIfMissingAttackEvents(step);
 
             if (hasEnteredRecovery)
             {
@@ -137,10 +137,6 @@ namespace Player.StateMachine.States
                 return Owner.GetState<IdleState>();
             }
 
-            float normalizedTime = GetAnimatorNormalizedTime();
-
-            UpdatePhaseFromTime(step, normalizedTime);
-
             if (hasEnteredRecovery && Input.IsAttackPressed)
             {
                 queuedNextAttack = true;
@@ -171,15 +167,14 @@ namespace Player.StateMachine.States
             }
 
             bool isInAttackState = IsAnimatorInState(step.AnimationStateName);
-            bool isComboWindowOpen = hasEnteredRecovery || (!hasPhaseEvents && isInAttackState && normalizedTime >= step.ComboWindowStart);
-            if (isComboWindowOpen && queuedNextAttack && comboIndex < Owner.AttackStepCount - 1)
+            if (hasEnteredRecovery && queuedNextAttack && comboIndex < Owner.AttackStepCount - 1)
             {
                 var nextState = Owner.GetState<AttackState>();
                 nextState.SetComboIndex(comboIndex + 1);
                 return nextState;
             }
 
-            if (isInAttackState && normalizedTime >= step.ExitTime)
+            if (isInAttackState && IsAnimationComplete(0.98f))
             {
                 Owner.ClearCurrentAttack();
                 return Input.HasMovementInput
@@ -260,25 +255,6 @@ namespace Player.StateMachine.States
             }
         }
 
-        private void UpdatePhaseFromTime(AttackStep step, float normalizedTime)
-        {
-            if (hasPhaseEvents || !IsAnimatorInState(step.AnimationStateName))
-            {
-                return;
-            }
-
-            if (normalizedTime >= step.RecoveryStartTime)
-            {
-                OnAttackPhase(AttackPhase.Recovery);
-                return;
-            }
-
-            if (normalizedTime >= step.SlashStartTime)
-            {
-                OnAttackPhase(AttackPhase.Slash);
-            }
-        }
-
         private void UpdateAttackDirectionFromTransform()
         {
             Vector3 forward = Owner.transform.forward;
@@ -300,6 +276,30 @@ namespace Player.StateMachine.States
 
             step = default;
             return false;
+        }
+
+        private void WarnIfMissingAttackEvents(AttackStep step)
+        {
+            if (hasPhaseEvents || hasLoggedMissingEventWarning)
+            {
+                return;
+            }
+
+            if (!IsAnimatorInState(step.AnimationStateName))
+            {
+                return;
+            }
+
+            if (GetAnimatorNormalizedTime() < 0.98f)
+            {
+                return;
+            }
+
+            hasLoggedMissingEventWarning = true;
+            Debug.LogWarning(
+                $"[AttackState] No attack phase events received for '{step.AnimationStateName}'. " +
+                "Add animation events that call OnAttackWindup, OnAttackSlash, and OnAttackRecovery.",
+                Animator);
         }
     }
 }
