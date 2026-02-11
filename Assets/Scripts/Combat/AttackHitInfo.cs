@@ -1,5 +1,4 @@
 using UnityEngine;
-using Player.StateMachine;
 
 namespace Combat
 {
@@ -7,7 +6,7 @@ namespace Combat
     {
         public float Damage;
         public ICombatant Attacker;
-        public AttackStep? AttackStep;
+        public AttackData? Attack;
         public Vector3 HitPoint;
     }
 }
