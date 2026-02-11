@@ -781,6 +781,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startEquipped: 0
   unequipDelay: 5
+  attackCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
   attackForwardDistance: 0.75
   attackPushDuration: 0.12
   attackPushEndSpeedFraction: 0.2

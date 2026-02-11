@@ -24,7 +24,8 @@ namespace Player.StateMachine.States
 
         public void SetComboIndex(int index)
         {
-            comboIndex = Mathf.Clamp(index, 0, AttackComboDefinition.Attacks.Length - 1);
+            int maxIndex = Mathf.Max(Owner.AttackStepCount - 1, 0);
+            comboIndex = Mathf.Clamp(index, 0, maxIndex);
         }
 
         public override void OnEnter()
@@ -43,7 +44,11 @@ namespace Player.StateMachine.States
 
             UpdateAttackDirectionFromTransform();
 
-            AttackStep step = AttackComboDefinition.Attacks[comboIndex];
+            if (!TryGetCurrentAttackStep(out AttackStep step))
+            {
+                Owner.ChangeState(Owner.GetState<IdleState>());
+                return;
+            }
             Owner.SetCurrentAttack(step);
 
             Animator.SetBool(IsMovingHash, false);
@@ -54,7 +59,11 @@ namespace Player.StateMachine.States
 
         public override void OnUpdate()
         {
-            AttackStep step = AttackComboDefinition.Attacks[comboIndex];
+            if (!TryGetCurrentAttackStep(out AttackStep step))
+            {
+                return;
+            }
+
             float normalizedTime = GetAnimatorNormalizedTime();
 
             UpdatePhaseFromTime(step, normalizedTime);
@@ -123,7 +132,11 @@ namespace Player.StateMachine.States
 
         public override IState CheckTransitions()
         {
-            AttackStep step = AttackComboDefinition.Attacks[comboIndex];
+            if (!TryGetCurrentAttackStep(out AttackStep step))
+            {
+                return Owner.GetState<IdleState>();
+            }
+
             float normalizedTime = GetAnimatorNormalizedTime();
 
             UpdatePhaseFromTime(step, normalizedTime);
@@ -159,7 +172,7 @@ namespace Player.StateMachine.States
 
             bool isInAttackState = IsAnimatorInState(step.AnimationStateName);
             bool isComboWindowOpen = hasEnteredRecovery || (!hasPhaseEvents && isInAttackState && normalizedTime >= step.ComboWindowStart);
-            if (isComboWindowOpen && queuedNextAttack && comboIndex < AttackComboDefinition.Attacks.Length - 1)
+            if (isComboWindowOpen && queuedNextAttack && comboIndex < Owner.AttackStepCount - 1)
             {
                 var nextState = Owner.GetState<AttackState>();
                 nextState.SetComboIndex(comboIndex + 1);
@@ -191,7 +204,11 @@ namespace Player.StateMachine.States
 
         public void OnAttackPhase(AttackPhase phase)
         {
-            AttackStep step = AttackComboDefinition.Attacks[comboIndex];
+            if (!TryGetCurrentAttackStep(out AttackStep step))
+            {
+                return;
+            }
+
             if (!IsAnimatorInState(step.AnimationStateName))
             {
                 return;
@@ -272,6 +289,17 @@ namespace Player.StateMachine.States
             }
 
             attackDirection = forward.normalized;
+        }
+
+        private bool TryGetCurrentAttackStep(out AttackStep step)
+        {
+            if (Owner.TryGetAttackStep(comboIndex, out step))
+            {
+                return true;
+            }
+
+            step = default;
+            return false;
         }
     }
 }

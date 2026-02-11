@@ -9,6 +9,9 @@ namespace Player.StateMachine
     [RequireComponent(typeof(CharacterMotor))]
     public partial class PlayerStateMachine : MonoBehaviour
     {
+        [Header("Combat")]
+        [SerializeField] private AttackComboAsset attackCombo;
+
         [Header("Attack Movement")]
         [SerializeField] private float attackForwardDistance = 0.50f;
         [SerializeField, Min(0.01f)] private float attackPushDuration = 0.12f;
@@ -26,6 +29,8 @@ namespace Player.StateMachine
         public CharacterMotor Motor { get; private set; }
         public CameraController CameraController { get; private set; }
         public AttackStep? CurrentAttackStep { get; private set; }
+        public AttackComboAsset AttackCombo => attackCombo;
+        public int AttackStepCount => attackCombo != null ? attackCombo.Count : 0;
 
         public float AttackForwardDistance => attackForwardDistance;
         public float AttackPushDuration => attackPushDuration;
@@ -34,6 +39,7 @@ namespace Player.StateMachine
         private void Awake()
         {
             InitializeComponents();
+            ValidateAttackComboConfiguration();
         }
 
         private void Start()
@@ -148,6 +154,17 @@ namespace Player.StateMachine
             }
         }
 
+        public bool TryGetAttackStep(int index, out AttackStep step)
+        {
+            if (attackCombo == null)
+            {
+                step = default;
+                return false;
+            }
+
+            return attackCombo.TryGetStep(index, out step);
+        }
+
         private void InitializeComponents()
         {
             Animator = GetComponent<Animator>();
@@ -173,6 +190,16 @@ namespace Player.StateMachine
             {
                 Debug.LogWarning("[PlayerStateMachine] CameraController not found in scene. Lock-on weapon behavior will not work.");
             }
+        }
+
+        private void ValidateAttackComboConfiguration()
+        {
+            if (attackCombo != null)
+            {
+                return;
+            }
+
+            Debug.LogWarning("[PlayerStateMachine] No AttackComboAsset assigned. Attack state will return to Idle.", this);
         }
     }
 }
