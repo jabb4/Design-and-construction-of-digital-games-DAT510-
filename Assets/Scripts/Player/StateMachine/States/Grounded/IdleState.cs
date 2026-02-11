@@ -2,7 +2,7 @@ namespace Player.StateMachine.States
 {
     using UnityEngine;
 
-    public class IdleState : PlayerStateBase
+    public class IdleState : GroundedStateBase
     {
         public override void OnEnter()
         {
@@ -55,27 +55,9 @@ namespace Player.StateMachine.States
                 return Owner.GetState<JumpLoopState>();
             }
 
-            if (Input.IsAttackPressed && Motor.IsGrounded)
+            if (TryGetCommonGroundedTransition(out IState nextState))
             {
-                if (!Owner.IsEquipped)
-                {
-                    Owner.RequestEquip();
-                    return null;
-                }
-
-                var attackState = Owner.GetState<AttackState>();
-                attackState.SetComboIndex(0);
-                return attackState;
-            }
-
-            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
-            {
-                return Owner.GetState<BlockingState>();
-            }
-
-            if (Input.IsJumpPressed && Motor.IsGrounded)
-            {
-                return Owner.GetState<JumpStartState>();
+                return nextState;
             }
 
             if (Input.MoveInput.sqrMagnitude > 0.01f)

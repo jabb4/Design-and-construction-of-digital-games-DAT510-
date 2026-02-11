@@ -2,7 +2,7 @@ namespace Player.StateMachine.States
 {
     using UnityEngine;
 
-    public class WalkingState : PlayerStateBase
+    public class WalkingState : GroundedStateBase
     {
         private WeightedLocomotion locomotion;
         private Vector2 smoothVelocity;
@@ -109,27 +109,9 @@ namespace Player.StateMachine.States
 
         public override IState CheckTransitions()
         {
-            if (Input.IsAttackPressed && Motor.IsGrounded)
+            if (TryGetCommonGroundedTransition(out IState nextState))
             {
-                if (!Owner.IsEquipped)
-                {
-                    Owner.RequestEquip();
-                    return null;
-                }
-
-                var attackState = Owner.GetState<AttackState>();
-                attackState.SetComboIndex(0);
-                return attackState;
-            }
-
-            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
-            {
-                return Owner.GetState<BlockingState>();
-            }
-
-            if (Input.IsJumpPressed && Motor.IsGrounded)
-            {
-                return Owner.GetState<JumpStartState>();
+                return nextState;
             }
 
             if (!Motor.IsGrounded)
