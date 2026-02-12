@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using Combat;
 
 [RequireComponent(typeof(HealthComponent))]
@@ -10,6 +11,8 @@ public class Enemy : MonoBehaviour, ICombatant
 
     private HealthComponent health;
     private CombatFlagsComponent flags;
+    private Rigidbody body;
+    private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
 
     public CombatTeam Team => CombatTeam.Enemy;
     public bool IsVulnerable => flags != null && flags.IsVulnerable;
@@ -39,11 +42,14 @@ public class Enemy : MonoBehaviour, ICombatant
             flags = gameObject.AddComponent<CombatFlagsComponent>();
         }
 
+        EnsureRigidbody();
+
         if (health != null)
         {
             health.OnDied += HandleDied;
         }
 
+        CacheOutcomeFeedbackHooks();
         SyncCombatFlags();
         EnsureHurtbox();
     }
@@ -62,6 +68,8 @@ public class Enemy : MonoBehaviour, ICombatant
         }
 
         DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
+        DispatchOutcomeFeedback(hit, resolution);
+
         if (resolution.Outcome == DamageOutcome.Ignored)
         {
             return;
@@ -147,5 +155,66 @@ public class Enemy : MonoBehaviour, ICombatant
         {
             hurtboxObject.layer = hurtboxLayer;
         }
+    }
+
+    private void EnsureRigidbody()
+    {
+        body = GetComponent<Rigidbody>();
+        if (body == null)
+        {
+            body = gameObject.AddComponent<Rigidbody>();
+        }
+
+        body.linearDamping = 0f;
+        body.angularDamping = 0.05f;
+        body.constraints = RigidbodyConstraints.FreezeRotation;
+        body.interpolation = RigidbodyInterpolation.Interpolate;
+        body.collisionDetectionMode = CollisionDetectionMode.Continuous;
+    }
+
+    private void CacheOutcomeFeedbackHooks()
+    {
+        outcomeFeedbackHooks.Clear();
+        GetComponents(outcomeFeedbackHooks);
+    }
+
+    private void DispatchOutcomeFeedback(AttackHitInfo hit, DamageResolution resolution)
+    {
+        if (outcomeFeedbackHooks.Count == 0)
+        {
+            return;
+        }
+
+        Vector3 pushDirection = ResolveDefenderPushDirection(hit.Attacker);
+        var context = new CombatOutcomeFeedbackContext
+        {
+            Hit = hit,
+            Resolution = resolution,
+            Defender = this,
+            DefenderPushDirection = pushDirection,
+            HitPoint = hit.HitPoint
+        };
+
+        for (int i = 0; i < outcomeFeedbackHooks.Count; i++)
+        {
+            outcomeFeedbackHooks[i]?.OnCombatOutcome(context);
+        }
+    }
+
+    private Vector3 ResolveDefenderPushDirection(ICombatant attacker)
+    {
+        if (attacker is Component attackerComponent)
+        {
+            Vector3 fromAttacker = transform.position - attackerComponent.transform.position;
+            fromAttacker.y = 0f;
+            if (fromAttacker.sqrMagnitude > 0.0001f)
+            {
+                return fromAttacker.normalized;
+            }
+        }
+
+        Vector3 fallback = -transform.forward;
+        fallback.y = 0f;
+        return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.back;
     }
 }

@@ -2197,9 +2197,11 @@ GameObject:
   - component: {fileID: 1186442657538826121}
   - component: {fileID: 2038420169931308288}
   - component: {fileID: 1331946697309384196}
+  - component: {fileID: 7443819372610488867}
   - component: {fileID: 5832811830406196893}
   - component: {fileID: 5908862388057485691}
   - component: {fileID: 315235738487360374}
+  - component: {fileID: 268441700114297531}
   m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
@@ -2270,6 +2272,33 @@ CapsuleCollider:
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
+--- !u!54 &7443819372610488867
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 1
 --- !u!114 &5832811830406196893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2314,6 +2343,34 @@ MonoBehaviour:
   isVulnerable: 1
   isAttacking: 0
   isBlocking: 0
+--- !u!114 &268441700114297531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ed8589239eb4e5f8a7f60ba8c0f5db1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blockedPushDistance: 0.4
+  blockedPushDuration: 0.14
+  parriedPushDistance: 0.25
+  parriedPushDuration: 0.12
+  pushEndSpeedFraction: 0.2
+  characterMotor: {fileID: 0}
+  fallbackRigidbody: {fileID: 7443819372610488867}
+  audioSource: {fileID: 0}
+  ignoredVfx: {fileID: 0}
+  fullHitVfx: {fileID: 0}
+  blockedVfx: {fileID: 0}
+  parriedVfx: {fileID: 0}
+  ignoredSfx: {fileID: 0}
+  fullHitSfx: {fileID: 0}
+  blockedSfx: {fileID: 0}
+  parriedSfx: {fileID: 0}
 --- !u!1 &6883821836884234579
 GameObject:
   m_ObjectHideFlags: 0

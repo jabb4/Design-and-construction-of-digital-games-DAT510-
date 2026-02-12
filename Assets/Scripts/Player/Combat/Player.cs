@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using Combat;
 using Player.StateMachine;
 
@@ -23,6 +24,7 @@ namespace Player.Combat
         private float lastParryPressTime = float.NegativeInfinity;
         private float blockLingerUntilTime = float.NegativeInfinity;
         private bool wasBlockInputHeldLastFrame;
+        private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
 
         public CombatTeam Team => CombatTeam.Player;
         public bool IsVulnerable => flags != null && flags.IsVulnerable;
@@ -55,6 +57,7 @@ namespace Player.Combat
             input = GetComponent<PlayerInputHandler>();
             stateMachine = GetComponent<PlayerStateMachine>();
             motor = GetComponent<CharacterMotor>();
+            CacheOutcomeFeedbackHooks();
             SyncCombatFlags();
         }
 
@@ -78,6 +81,8 @@ namespace Player.Combat
             }
 
             DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
+            DispatchOutcomeFeedback(hit, resolution);
+
             if (resolution.Outcome == DamageOutcome.Ignored)
             {
                 return;
@@ -195,6 +200,52 @@ namespace Player.Combat
         private void ResetBlockLingerState()
         {
             blockLingerUntilTime = float.NegativeInfinity;
+        }
+
+        private void CacheOutcomeFeedbackHooks()
+        {
+            outcomeFeedbackHooks.Clear();
+            GetComponents(outcomeFeedbackHooks);
+        }
+
+        private void DispatchOutcomeFeedback(AttackHitInfo hit, DamageResolution resolution)
+        {
+            if (outcomeFeedbackHooks.Count == 0)
+            {
+                return;
+            }
+
+            Vector3 pushDirection = ResolveDefenderPushDirection(hit.Attacker);
+            var context = new CombatOutcomeFeedbackContext
+            {
+                Hit = hit,
+                Resolution = resolution,
+                Defender = this,
+                DefenderPushDirection = pushDirection,
+                HitPoint = hit.HitPoint
+            };
+
+            for (int i = 0; i < outcomeFeedbackHooks.Count; i++)
+            {
+                outcomeFeedbackHooks[i]?.OnCombatOutcome(context);
+            }
+        }
+
+        private Vector3 ResolveDefenderPushDirection(ICombatant attacker)
+        {
+            if (attacker is Component attackerComponent)
+            {
+                Vector3 fromAttacker = transform.position - attackerComponent.transform.position;
+                fromAttacker.y = 0f;
+                if (fromAttacker.sqrMagnitude > 0.0001f)
+                {
+                    return fromAttacker.normalized;
+                }
+            }
+
+            Vector3 fallback = -transform.forward;
+            fallback.y = 0f;
+            return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.back;
         }
     }
 }

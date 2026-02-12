@@ -600,6 +600,7 @@ GameObject:
   - component: {fileID: 7310014916142166145}
   - component: {fileID: 690294675353372127}
   - component: {fileID: 123137565118712360}
+  - component: {fileID: 414120902355100112}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -817,7 +818,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockDamageMultiplier: 0.5
-  parryWindowDuration: 0.2
+  blockLingerDuration: 0.2
+  baseParryWindowDuration: 0.2
+  reducedParryWindowDuration: 0.1
+  rapidParryPressResetDelay: 0.5
 --- !u!114 &7310014916142166145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -864,6 +868,34 @@ MonoBehaviour:
   isVulnerable: 1
   isAttacking: 0
   isBlocking: 0
+--- !u!114 &414120902355100112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1616043764315128934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ed8589239eb4e5f8a7f60ba8c0f5db1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blockedPushDistance: 0.4
+  blockedPushDuration: 0.14
+  parriedPushDistance: 0.25
+  parriedPushDuration: 0.12
+  pushEndSpeedFraction: 0.2
+  characterMotor: {fileID: 4201500345713632758}
+  fallbackRigidbody: {fileID: 3761060987020003985}
+  audioSource: {fileID: 0}
+  ignoredVfx: {fileID: 0}
+  fullHitVfx: {fileID: 0}
+  blockedVfx: {fileID: 0}
+  parriedVfx: {fileID: 0}
+  ignoredSfx: {fileID: 0}
+  fullHitSfx: {fileID: 0}
+  blockedSfx: {fileID: 0}
+  parriedSfx: {fileID: 0}
 --- !u!1 &1618196678623144074
 GameObject:
   m_ObjectHideFlags: 0
