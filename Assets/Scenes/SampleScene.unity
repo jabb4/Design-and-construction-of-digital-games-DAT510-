@@ -664,10 +664,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 3120460261025740072, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: 20992a72cfae149a88596d4175412cd2, type: 2}
     - target: {fileID: 4201500345713632758, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: cameraTransform
       value: 
@@ -711,10 +707,6 @@ PrefabInstance:
     - target: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5310507565978196205, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
-      propertyPath: parryWindowSeconds
-      value: 0.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

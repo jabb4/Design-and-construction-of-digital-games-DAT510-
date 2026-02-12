@@ -56,6 +56,11 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 - Dull sound effect
 - Reduces damage dealt (50% reduction)
 
+**Block linger:**
+
+- Why it matters: It keeps combat outcomes consistent with player feel, so quick guard taps are not punished by frame-perfect release timing.
+- How it works: On guard release, blocking remains active for a short linger duration before turning off. Animation still follows live input (tap/hold), while linger only affects combat damage resolution.
+
 #### Perfect Parry
 
 - Triggered when guard is pressed and the hit lands **within the active parry window**

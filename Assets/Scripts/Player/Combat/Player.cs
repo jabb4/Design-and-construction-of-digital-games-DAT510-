@@ -9,6 +9,7 @@ namespace Player.Combat
     public class Player : MonoBehaviour, ICombatant
     {
         [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
+        [SerializeField, Min(0f)] private float blockLingerDuration = 0.2f;
         [SerializeField, Min(0f)] private float baseParryWindowDuration = 0.2f;
         [SerializeField, Min(0f)] private float reducedParryWindowDuration = 0.1f;
         [SerializeField, Min(0f)] private float rapidParryPressResetDelay = 0.5f;
@@ -20,6 +21,8 @@ namespace Player.Combat
         private CharacterMotor motor;
         private int rapidParryPressCount;
         private float lastParryPressTime = float.NegativeInfinity;
+        private float blockLingerUntilTime = float.NegativeInfinity;
+        private bool wasBlockInputHeldLastFrame;
 
         public CombatTeam Team => CombatTeam.Player;
         public bool IsVulnerable => flags != null && flags.IsVulnerable;
@@ -99,23 +102,11 @@ namespace Player.Combat
             bool isAlive = health == null || !health.IsDead;
             flags.IsVulnerable = isAlive;
 
-            bool canBlock = input != null &&
-                            input.IsBlocking &&
-                            stateMachine != null &&
-                            stateMachine.IsEquipped &&
-                            motor != null &&
-                            motor.IsGrounded &&
-                            isAlive;
+            bool canUseGuard = CanUseGuard(isAlive);
+            bool isBlockInputHeld = input != null && input.IsBlocking;
+            UpdateBlockingState(canUseGuard, isBlockInputHeld);
 
-            flags.IsBlocking = canBlock;
-
-            bool canOpenParryWindow = input != null &&
-                                      input.IsBlockPressed &&
-                                      stateMachine != null &&
-                                      stateMachine.IsEquipped &&
-                                      motor != null &&
-                                      motor.IsGrounded &&
-                                      isAlive;
+            bool canOpenParryWindow = input != null && input.IsBlockPressed && canUseGuard;
 
             if (canOpenParryWindow)
             {
@@ -125,7 +116,38 @@ namespace Player.Combat
             {
                 flags.CloseParryWindow();
                 ResetParrySpamState();
+                ResetBlockLingerState();
             }
+        }
+
+        private bool CanUseGuard(bool isAlive)
+        {
+            return input != null &&
+                   stateMachine != null &&
+                   stateMachine.IsEquipped &&
+                   motor != null &&
+                   motor.IsGrounded &&
+                   isAlive;
+        }
+
+        private void UpdateBlockingState(bool canUseGuard, bool isBlockInputHeld)
+        {
+            if (!canUseGuard)
+            {
+                flags.IsBlocking = false;
+                ResetBlockLingerState();
+                wasBlockInputHeldLastFrame = isBlockInputHeld;
+                return;
+            }
+
+            if (wasBlockInputHeldLastFrame && !isBlockInputHeld)
+            {
+                blockLingerUntilTime = Time.time + blockLingerDuration;
+            }
+
+            bool isBlockLingerActive = Time.time <= blockLingerUntilTime;
+            flags.IsBlocking = isBlockInputHeld || isBlockLingerActive;
+            wasBlockInputHeldLastFrame = isBlockInputHeld;
         }
 
         private void HandleParryPressed()
@@ -168,6 +190,11 @@ namespace Player.Combat
         {
             rapidParryPressCount = 0;
             lastParryPressTime = float.NegativeInfinity;
+        }
+
+        private void ResetBlockLingerState()
+        {
+            blockLingerUntilTime = float.NegativeInfinity;
         }
     }
 }
