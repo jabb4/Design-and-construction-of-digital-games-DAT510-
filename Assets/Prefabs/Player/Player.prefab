@@ -598,6 +598,8 @@ GameObject:
   - component: {fileID: 967580488707547334}
   - component: {fileID: 6955480933938230149}
   - component: {fileID: 7310014916142166145}
+  - component: {fileID: 690294675353372127}
+  - component: {fileID: 123137565118712360}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -632,7 +634,7 @@ Animator:
   m_GameObject: {fileID: 1616043764315128934}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: dee954a3a25ad4244bdd4fb3bc34c518, type: 3}
-  m_Controller: {fileID: 9100000, guid: dd924c7af58644000829320669e167c7, type: 2}
+  m_Controller: {fileID: 9100000, guid: 20992a72cfae149a88596d4175412cd2, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -779,8 +781,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 594920d6044f94a7bb436472a9009726, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startEquipped: 0
-  unequipDelay: 5
   attackCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
   attackForwardDistance: 0.75
   attackPushDuration: 0.12
@@ -788,7 +788,9 @@ MonoBehaviour:
   showDebugInfo: 1
   slowMotionEnabled: 1
   slowMotionScale: 1
-  weaponTransitionTimeout: 0
+  startEquipped: 0
+  unequipDelay: 5
+  weaponTransitionTimeout: 3
 --- !u!114 &967580488707547334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -814,7 +816,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03c21fb6c981c4d68b993fa96d11d7a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isVulnerable: 1
+  blockDamageMultiplier: 0.5
+  parryWindowDuration: 0.2
 --- !u!114 &7310014916142166145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -831,6 +834,36 @@ MonoBehaviour:
   combatant: {fileID: 6955480933938230149}
   hitbox: {fileID: 4632005822953388673}
   weaponBoneName: katana_r
+--- !u!114 &690294675353372127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1616043764315128934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2db7d142b9cbf679083f80364e5fde9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 100
+  initializeCurrentToMaxOnAwake: 1
+--- !u!114 &123137565118712360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1616043764315128934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01d34682cb89e4ddd88303c8d1e6da1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isVulnerable: 1
+  isAttacking: 0
+  isBlocking: 0
 --- !u!1 &1618196678623144074
 GameObject:
   m_ObjectHideFlags: 0

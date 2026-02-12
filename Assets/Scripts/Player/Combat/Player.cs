@@ -9,6 +9,7 @@ namespace Player.Combat
     public class Player : MonoBehaviour, ICombatant
     {
         [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
+        [SerializeField, Min(0f)] private float parryWindowDuration = 0.2f;
 
         private HealthComponent health;
         private CombatFlagsComponent flags;
@@ -91,6 +92,23 @@ namespace Player.Combat
                             isAlive;
 
             flags.IsBlocking = canBlock;
+
+            bool canOpenParryWindow = input != null &&
+                                      input.IsBlockPressed &&
+                                      stateMachine != null &&
+                                      stateMachine.IsEquipped &&
+                                      motor != null &&
+                                      motor.IsGrounded &&
+                                      isAlive;
+
+            if (canOpenParryWindow)
+            {
+                flags.OpenParryWindow(parryWindowDuration);
+            }
+            else if (!isAlive)
+            {
+                flags.CloseParryWindow();
+            }
         }
     }
 }
