@@ -9,13 +9,17 @@ namespace Player.Combat
     public class Player : MonoBehaviour, ICombatant
     {
         [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
-        [SerializeField, Min(0f)] private float parryWindowDuration = 0.2f;
+        [SerializeField, Min(0f)] private float baseParryWindowDuration = 0.2f;
+        [SerializeField, Min(0f)] private float reducedParryWindowDuration = 0.1f;
+        [SerializeField, Min(0f)] private float rapidParryPressResetDelay = 0.5f;
 
         private HealthComponent health;
         private CombatFlagsComponent flags;
         private PlayerInputHandler input;
         private PlayerStateMachine stateMachine;
         private CharacterMotor motor;
+        private int rapidParryPressCount;
+        private float lastParryPressTime = float.NegativeInfinity;
 
         public CombatTeam Team => CombatTeam.Player;
         public bool IsVulnerable => flags != null && flags.IsVulnerable;
@@ -53,6 +57,13 @@ namespace Player.Combat
 
         private void Update()
         {
+            if (rapidParryPressCount > 0 &&
+                rapidParryPressResetDelay > 0f &&
+                Time.time - lastParryPressTime > rapidParryPressResetDelay)
+            {
+                ResetParrySpamState();
+            }
+
             SyncCombatFlags();
         }
 
@@ -67,6 +78,11 @@ namespace Player.Combat
             if (resolution.Outcome == DamageOutcome.Ignored)
             {
                 return;
+            }
+
+            if (resolution.Outcome == DamageOutcome.Parried)
+            {
+                ResetParrySpamState();
             }
 
             health.ApplyDamage(resolution.AppliedDamage);
@@ -103,12 +119,55 @@ namespace Player.Combat
 
             if (canOpenParryWindow)
             {
-                flags.OpenParryWindow(parryWindowDuration);
+                HandleParryPressed();
             }
             else if (!isAlive)
             {
                 flags.CloseParryWindow();
+                ResetParrySpamState();
             }
+        }
+
+        private void HandleParryPressed()
+        {
+            if (rapidParryPressResetDelay <= 0f || Time.time - lastParryPressTime > rapidParryPressResetDelay)
+            {
+                rapidParryPressCount = 0;
+            }
+
+            rapidParryPressCount++;
+            lastParryPressTime = Time.time;
+
+            float parryWindowDuration = GetParryWindowDuration(rapidParryPressCount);
+            if (parryWindowDuration > 0f)
+            {
+                flags.OpenParryWindow(parryWindowDuration);
+            }
+            else
+            {
+                flags.CloseParryWindow();
+            }
+        }
+
+        private float GetParryWindowDuration(int rapidPressCount)
+        {
+            if (rapidPressCount <= 2)
+            {
+                return baseParryWindowDuration;
+            }
+
+            if (rapidPressCount == 3)
+            {
+                return reducedParryWindowDuration;
+            }
+
+            return 0f;
+        }
+
+        private void ResetParrySpamState()
+        {
+            rapidParryPressCount = 0;
+            lastParryPressTime = float.NegativeInfinity;
         }
     }
 }

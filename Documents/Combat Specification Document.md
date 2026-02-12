@@ -230,11 +230,11 @@ When the window reaches `0.0s`, guard still blocks but no perfect parry is possi
 - No rapid presses for ~0.5 seconds
 - Successful perfect parry
 
-**After a successful perfect parry:**
+**Post-parry / post-block-release behaviour:**
 
-- Movement and attack are locked for 0.5 seconds
-- Blocking can continue during this lock
-- Parry animation should complete unless interrupted by a new hit/input state change
+- On a quick tap parry, the player can remain in `BlockingState` briefly even after releasing guard
+- During this short linger, other actions are temporarily hindered, creating the current post-parry lock feel
+- If guard is held longer, releasing block allows attacking almost immediately, which keeps combat responsive
 
 ### Enemy Behaviour
 
