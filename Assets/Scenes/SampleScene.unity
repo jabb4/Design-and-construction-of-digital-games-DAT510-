@@ -515,7 +515,7 @@ PrefabInstance:
     - target: {fileID: 2038420169931308288, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 7ceb598b1c781471d900e2f4343f2e4f, type: 2}
+      objectReference: {fileID: 9100000, guid: 75da2aa828267431aa4d7738d00d64da, type: 2}
     - target: {fileID: 6880349450255457242, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: m_Name
       value: Enemy (1)
@@ -573,6 +573,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2038420169931308288, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 75da2aa828267431aa4d7738d00d64da, type: 2}
     - target: {fileID: 6880349450255457242, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: m_Name
       value: Enemy
