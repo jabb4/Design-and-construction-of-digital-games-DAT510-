@@ -2198,10 +2198,12 @@ GameObject:
   - component: {fileID: 2038420169931308288}
   - component: {fileID: 1331946697309384196}
   - component: {fileID: 7443819372610488867}
-  - component: {fileID: 5832811830406196893}
   - component: {fileID: 5908862388057485691}
+  - component: {fileID: 5832811830406196893}
   - component: {fileID: 315235738487360374}
   - component: {fileID: 268441700114297531}
+  - component: {fileID: 844221109955667789}
+  - component: {fileID: 5732198460847952312}
   m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
@@ -2299,20 +2301,6 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 112
   m_CollisionDetection: 1
---- !u!114 &5832811830406196893
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6880349450255457242}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5dc8fec88eabe4b298c1add62ad768da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  blockDamageMultiplier: 0.5
-  disableGameObjectOnDeath: 1
 --- !u!114 &5908862388057485691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2328,6 +2316,20 @@ MonoBehaviour:
   maxHealth: 100
   currentHealth: 100
   initializeCurrentToMaxOnAwake: 1
+--- !u!114 &5832811830406196893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dc8fec88eabe4b298c1add62ad768da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blockDamageMultiplier: 0.5
+  disableGameObjectOnDeath: 1
 --- !u!114 &315235738487360374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2360,8 +2362,7 @@ MonoBehaviour:
   parriedPushDistance: 0.25
   parriedPushDuration: 0.12
   pushEndSpeedFraction: 0.2
-  characterMotor: {fileID: 0}
-  fallbackRigidbody: {fileID: 7443819372610488867}
+  impulseDriver: {fileID: 5732198460847952312}
   audioSource: {fileID: 0}
   ignoredVfx: {fileID: 0}
   fullHitVfx: {fileID: 0}
@@ -2371,6 +2372,37 @@ MonoBehaviour:
   fullHitSfx: {fileID: 0}
   blockedSfx: {fileID: 0}
   parriedSfx: {fileID: 0}
+--- !u!114 &844221109955667789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad530410f3ab4baa8cf374f192364850, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableSlashLunge: 1
+  lungeDistance: 0.55
+  lungeDuration: 0.14
+  lungeEndSpeedFraction: 0.2
+  impulseDriver: {fileID: 5732198460847952312}
+--- !u!114 &5732198460847952312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bf417c2f9b74f4b8cde71347ccfe4f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characterMotor: {fileID: 0}
+  fallbackRigidbody: {fileID: 7443819372610488867}
 --- !u!1 &6883821836884234579
 GameObject:
   m_ObjectHideFlags: 0
