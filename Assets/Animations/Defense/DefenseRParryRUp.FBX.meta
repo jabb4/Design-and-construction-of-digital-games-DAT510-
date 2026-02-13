@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: 09791bee472c74f0ebbf85b2b36d894a
+guid: 14227571696114a4b8edcf3a9979070c
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable:
   - first:
       74: 8993902097722301239
-    second: DefenseR_Parry_R2L_Up_InPlace
+    second: DefenseL_Parry_L2R_Up_InPlace
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -34,7 +34,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Parry_R2L_Up
+      name: RParry RUp
       takeName: Unreal Take
       internalID: 8993902097722301239
       firstFrame: 0
