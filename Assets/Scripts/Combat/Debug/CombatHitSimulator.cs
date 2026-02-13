@@ -13,13 +13,24 @@ namespace Combat.Debugging
 
         [Header("Hit Settings")]
         [SerializeField, Min(0f)] private float damage = 20f;
+        [SerializeField] private AttackDirectionHint attackDirection = AttackDirectionHint.LeftUp;
+        [SerializeField] private bool cycleDirectionsPerHit;
         [SerializeField] private Key triggerKey = Key.H;
         [SerializeField] private bool autoFire;
         [SerializeField, Min(0.05f)] private float autoFireInterval = 1f;
 
+        private static readonly AttackDirectionHint[] DirectionCycle =
+        {
+            AttackDirectionHint.LeftUp,
+            AttackDirectionHint.LeftDown,
+            AttackDirectionHint.RightUp,
+            AttackDirectionHint.RightDown
+        };
+
         private ICombatant targetCombatant;
         private float nextAutoFireTime;
         private bool hasLoggedMissingTargetWarning;
+        private int directionCycleIndex;
 
         public CombatTeam Team => CombatTeam.Enemy;
         public bool IsVulnerable => false;
@@ -84,7 +95,8 @@ namespace Combat.Debugging
                 Attack = new AttackData
                 {
                     AttackId = "debug_hit",
-                    Damage = damage
+                    Damage = damage,
+                    DirectionHint = ResolveDirectionHint()
                 },
                 HitPoint = hitPoint
             };
@@ -106,6 +118,18 @@ namespace Combat.Debugging
             }
 
             return keyboard[triggerKey].wasPressedThisFrame;
+        }
+
+        private AttackDirectionHint ResolveDirectionHint()
+        {
+            if (!cycleDirectionsPerHit)
+            {
+                return attackDirection;
+            }
+
+            AttackDirectionHint hint = DirectionCycle[directionCycleIndex];
+            directionCycleIndex = (directionCycleIndex + 1) % DirectionCycle.Length;
+            return hint;
         }
 
         private void ResolveTargetCombatant()
