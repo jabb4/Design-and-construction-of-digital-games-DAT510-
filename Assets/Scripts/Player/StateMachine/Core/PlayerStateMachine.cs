@@ -1,5 +1,6 @@
 namespace Player.StateMachine
 {
+    using System.Collections.Generic;
     using UnityEngine;
     using System;
     using Player.StateMachine.States;
@@ -11,11 +12,6 @@ namespace Player.StateMachine
     {
         [Header("Combat")]
         [SerializeField] private AttackComboAsset attackCombo;
-
-        [Header("Attack Movement")]
-        [SerializeField] private float attackForwardDistance = 0.50f;
-        [SerializeField, Min(0.01f)] private float attackPushDuration = 0.12f;
-        [SerializeField, Range(0.05f, 0.95f)] private float attackPushEndSpeedFraction = 0.2f;
 
         public IState CurrentState { get; private set; }
         public string CurrentStateName => CurrentState?.StateName ?? "None";
@@ -32,9 +28,7 @@ namespace Player.StateMachine
         public AttackComboAsset AttackCombo => attackCombo;
         public int AttackStepCount => attackCombo != null ? attackCombo.Count : 0;
 
-        public float AttackForwardDistance => attackForwardDistance;
-        public float AttackPushDuration => attackPushDuration;
-        public float AttackPushEndSpeedFraction => attackPushEndSpeedFraction;
+        private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
 
         private void Awake()
         {
@@ -148,9 +142,14 @@ namespace Player.StateMachine
 
         public void NotifyAttackPhase(AttackPhase phase)
         {
-            if (CurrentState is IAttackPhaseListener listener)
+            if (CurrentState is not IAttackPhaseListener listener)
             {
-                listener.OnAttackPhase(phase);
+                return;
+            }
+
+            if (listener.OnAttackPhase(phase))
+            {
+                DispatchAttackFeedback(phase);
             }
         }
 
@@ -200,6 +199,67 @@ namespace Player.StateMachine
             }
 
             Debug.LogWarning("[PlayerStateMachine] No AttackComboAsset assigned. Attack state will return to Idle.", this);
+        }
+
+        private void DispatchAttackFeedback(AttackPhase phase)
+        {
+            attackFeedbackHooks.Clear();
+            GetComponents(attackFeedbackHooks);
+            if (attackFeedbackHooks.Count == 0)
+            {
+                return;
+            }
+
+            global::Combat.AttackData? attack = null;
+            if (CurrentAttackStep.HasValue)
+            {
+                AttackStep current = CurrentAttackStep.Value;
+                attack = new global::Combat.AttackData
+                {
+                    AttackId = current.AnimationStateName,
+                    Damage = current.Damage
+                };
+            }
+
+            var context = new global::Combat.CombatAttackFeedbackContext
+            {
+                Phase = MapAttackPhase(phase),
+                Attack = attack,
+                Attacker = GetComponent<global::Combat.ICombatant>(),
+                AttackDirection = ResolveAttackDirection()
+            };
+
+            for (int i = 0; i < attackFeedbackHooks.Count; i++)
+            {
+                attackFeedbackHooks[i]?.OnCombatAttackPhase(context);
+            }
+        }
+
+        private static global::Combat.CombatAttackPhase MapAttackPhase(AttackPhase phase)
+        {
+            switch (phase)
+            {
+                case AttackPhase.Windup:
+                    return global::Combat.CombatAttackPhase.Windup;
+                case AttackPhase.Slash:
+                    return global::Combat.CombatAttackPhase.Slash;
+                case AttackPhase.Recovery:
+                    return global::Combat.CombatAttackPhase.Recovery;
+                default:
+                    return global::Combat.CombatAttackPhase.Recovery;
+            }
+        }
+
+        private Vector3 ResolveAttackDirection()
+        {
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude <= 0.0001f)
+            {
+                return Vector3.forward;
+            }
+
+            return forward.normalized;
         }
     }
 }

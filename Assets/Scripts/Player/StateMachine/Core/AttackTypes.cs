@@ -28,6 +28,6 @@ namespace Player.StateMachine
 
     public interface IAttackPhaseListener
     {
-        void OnAttackPhase(AttackPhase phase);
+        bool OnAttackPhase(AttackPhase phase);
     }
 }
