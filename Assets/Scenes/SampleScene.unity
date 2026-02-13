@@ -152,6 +152,8 @@ MonoBehaviour:
   targetPointOverride: {fileID: 0}
   autoFindPlayerTarget: 1
   damage: 10
+  attackDirection: 1
+  cycleDirectionsPerHit: 1
   triggerKey: 22
   autoFire: 0
   autoFireInterval: 1
@@ -665,6 +667,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 3120460261025740072, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 4196af3bdf17143d0b246d36a5673167, type: 2}
     - target: {fileID: 4201500345713632758, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: cameraTransform
       value: 
