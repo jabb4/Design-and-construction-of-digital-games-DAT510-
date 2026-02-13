@@ -24,8 +24,10 @@ namespace Player.StateMachine
             Animator.SetBool(IsTransitioningWeaponHash, IsTransitioningWeapon);
 
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
+            bool isBlockingByInput = Input != null && Input.IsBlocking && IsEquipped && Motor != null && Motor.IsGrounded;
+            bool isBlockingForAnimator = isBlockingByInput || IsDefenseReactionActive;
             Animator.SetBool("IsLockedOn", isLockedOn);
-            Animator.SetBool(IsBlockingHash, Input != null && Input.IsBlocking && IsEquipped && Motor != null && Motor.IsGrounded);
+            Animator.SetBool(IsBlockingHash, isBlockingForAnimator);
 
             if (!IsTransitioningWeapon)
             {

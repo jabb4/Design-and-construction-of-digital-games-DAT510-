@@ -4,5 +4,6 @@ namespace Combat
     {
         public string AttackId;
         public float Damage;
+        public AttackDirectionHint DirectionHint;
     }
 }

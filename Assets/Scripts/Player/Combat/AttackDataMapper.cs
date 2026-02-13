@@ -10,7 +10,8 @@ namespace Player.Combat
             return new AttackData
             {
                 AttackId = step.AnimationStateName,
-                Damage = step.Damage
+                Damage = step.Damage,
+                DirectionHint = AttackComboDirectionResolver.MapFromPoseDirection(step.EndPose)
             };
         }
     }

@@ -7,18 +7,17 @@ namespace Player.StateMachine
         private Vector2 smoothVelocity;
         private Vector2 velocityRef;
         private const float SMOOTH_TIME = 0.1f;
-        private const string DefenseIdleStateName = "DefenseIdle";
-        private const string StandToDefenseLeft = "Idle2DefenseL";
-        private const string DefenseToStandLeft = "Defense2IdleL";
         private bool isExiting;
+        private GuardSide activeGuardSide;
 
         public override void OnEnter()
         {
             isExiting = false;
+            activeGuardSide = Owner.CurrentGuardSide;
 
-            if (!CrossFade(StandToDefenseLeft, 0.1f))
+            if (!CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f))
             {
-                CrossFade(DefenseIdleStateName, 0.1f);
+                CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.1f);
             }
 
             Animator.SetBool(IsMovingHash, Input.HasMovementInput);
@@ -47,6 +46,15 @@ namespace Player.StateMachine
                 return;
             }
 
+            if (Owner.CurrentGuardSide != activeGuardSide && !Owner.IsDefenseReactionActive)
+            {
+                activeGuardSide = Owner.CurrentGuardSide;
+                if (!isExiting)
+                {
+                    CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.08f);
+                }
+            }
+
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
         }
 
@@ -55,6 +63,14 @@ namespace Player.StateMachine
             if (Owner.IsTransitioningWeapon)
             {
                 Motor.Move(Vector2.zero, useSprint: false);
+                return;
+            }
+
+            if (Owner.IsDefenseReactionActive)
+            {
+                // Match constrained movement behavior used by other one-shot combat animations.
+                Motor.Move(Vector2.zero, useSprint: false);
+                RotateWithContext(requireMovementInput: true);
                 return;
             }
 
@@ -71,19 +87,26 @@ namespace Player.StateMachine
 
             if (!Input.IsBlocking)
             {
+                if (Owner.IsDefenseReactionActive)
+                {
+                    return null;
+                }
+
                 if (!isExiting)
                 {
                     isExiting = true;
-                    CrossFade(DefenseToStandLeft, 0.1f);
+                    activeGuardSide = Owner.CurrentGuardSide;
+                    CrossFade(Owner.GetDefenseExitStateName(activeGuardSide), 0.1f);
                 }
 
                 return null;
             }
 
-            if (isExiting)
+            if (isExiting && !Owner.IsDefenseReactionActive)
             {
                 isExiting = false;
-                CrossFade(StandToDefenseLeft, 0.1f);
+                activeGuardSide = Owner.CurrentGuardSide;
+                CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f);
             }
 
             if (Input.IsJumpPressed && Motor.IsGrounded)

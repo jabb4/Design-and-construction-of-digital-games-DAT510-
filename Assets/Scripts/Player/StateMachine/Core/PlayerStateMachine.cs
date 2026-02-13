@@ -214,11 +214,7 @@ namespace Player.StateMachine
             if (CurrentAttackStep.HasValue)
             {
                 AttackStep current = CurrentAttackStep.Value;
-                attack = new global::Combat.AttackData
-                {
-                    AttackId = current.AnimationStateName,
-                    Damage = current.Damage
-                };
+                attack = global::Player.Combat.AttackDataMapper.ToAttackData(current);
             }
 
             var context = new global::Combat.CombatAttackFeedbackContext
