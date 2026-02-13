@@ -1,9 +1,15 @@
 namespace Player.StateMachine
 {
+    using UnityEngine;
+
     public partial class PlayerStateMachine
     {
         public GuardSide CurrentGuardSide { get; private set; } = GuardSide.Left;
         public bool IsDefenseReactionActive { get; private set; }
+        public bool IsDefenseAttackUnlocked =>
+            !IsDefenseReactionActive || Time.time >= defenseAttackUnlockTime;
+
+        private float defenseAttackUnlockTime = float.NegativeInfinity;
 
         public void SetGuardSide(GuardSide side)
         {
@@ -13,6 +19,23 @@ namespace Player.StateMachine
         public void SetDefenseReactionActive(bool isActive)
         {
             IsDefenseReactionActive = isActive;
+            if (!isActive)
+            {
+                defenseAttackUnlockTime = float.NegativeInfinity;
+            }
+        }
+
+        public void BeginDefenseReaction(float attackUnlockDelaySeconds)
+        {
+            IsDefenseReactionActive = true;
+            float delay = Mathf.Max(0f, attackUnlockDelaySeconds);
+            defenseAttackUnlockTime = Time.time + delay;
+        }
+
+        public void EndDefenseReaction()
+        {
+            IsDefenseReactionActive = false;
+            defenseAttackUnlockTime = float.NegativeInfinity;
         }
 
         public string GetDefenseEnterStateName()

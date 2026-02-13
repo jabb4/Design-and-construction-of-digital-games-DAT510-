@@ -943,6 +943,7 @@ MonoBehaviour:
   returnCrossFadeDuration: 0.08
   reactionCompleteThreshold: 0.95
   reactionTimeoutSeconds: 1.5
+  attackUnlockDelayAfterDefenseSeconds: 0.5
   animator: {fileID: 3120460261025740072}
   stateMachine: {fileID: 4902239012376648936}
   input: {fileID: 149019199505688004}

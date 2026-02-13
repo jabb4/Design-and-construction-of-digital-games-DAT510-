@@ -68,9 +68,8 @@ namespace Player.StateMachine
 
             if (Owner.IsDefenseReactionActive)
             {
-                // Match constrained movement behavior used by other one-shot combat animations.
+                // Freeze both movement and facing while defense reaction one-shots are active.
                 Motor.Move(Vector2.zero, useSprint: false);
-                RotateWithContext(requireMovementInput: true);
                 return;
             }
 
@@ -83,6 +82,20 @@ namespace Player.StateMachine
             if (!Owner.IsEquipped)
             {
                 return Owner.GetState<States.IdleState>();
+            }
+
+            if (Owner.IsDefenseReactionActive &&
+                Owner.IsDefenseAttackUnlocked &&
+                Input.IsAttackPressed &&
+                Motor.IsGrounded)
+            {
+                // Allow earlier attack cancel after successful defense,
+                // while movement remains constrained until reaction end.
+                Owner.EndDefenseReaction();
+
+                States.AttackState attackState = Owner.GetState<States.AttackState>();
+                attackState.SetComboIndex(0);
+                return attackState;
             }
 
             if (!Input.IsBlocking)

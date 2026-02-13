@@ -18,6 +18,7 @@ namespace Player.Combat
         [SerializeField, Min(0.01f)] private float returnCrossFadeDuration = 0.08f;
         [SerializeField, Range(0.5f, 1f)] private float reactionCompleteThreshold = 0.95f;
         [SerializeField, Min(0.1f)] private float reactionTimeoutSeconds = 1.5f;
+        [SerializeField, Min(0f)] private float attackUnlockDelayAfterDefenseSeconds = 0.12f;
 
         [Header("Optional References")]
         [SerializeField] private Animator animator;
@@ -43,6 +44,7 @@ namespace Player.Combat
             returnCrossFadeDuration = Mathf.Max(0.01f, returnCrossFadeDuration);
             reactionCompleteThreshold = Mathf.Clamp(reactionCompleteThreshold, 0.5f, 1f);
             reactionTimeoutSeconds = Mathf.Max(0.1f, reactionTimeoutSeconds);
+            attackUnlockDelayAfterDefenseSeconds = Mathf.Max(0f, attackUnlockDelayAfterDefenseSeconds);
             ResolveReferences();
         }
 
@@ -198,7 +200,7 @@ namespace Player.Combat
                 return;
             }
 
-            stateMachine.SetDefenseReactionActive(true);
+            stateMachine.BeginDefenseReaction(attackUnlockDelayAfterDefenseSeconds);
             reactionActive = true;
             activeReactionStateName = reactionStateName;
             activeReactionStateHash = Animator.StringToHash(reactionStateName);
@@ -208,7 +210,7 @@ namespace Player.Combat
         private void EndReaction()
         {
             reactionActive = false;
-            stateMachine?.SetDefenseReactionActive(false);
+            stateMachine?.EndDefenseReaction();
 
             if (stateMachine == null || input == null || !input.IsBlocking)
             {
@@ -228,7 +230,7 @@ namespace Player.Combat
             reactionActive = false;
             activeReactionStateName = null;
             activeReactionStateHash = 0;
-            stateMachine?.SetDefenseReactionActive(false);
+            stateMachine?.EndDefenseReaction();
         }
 
         private void ResolveReferences()
