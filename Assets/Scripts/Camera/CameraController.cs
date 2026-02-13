@@ -240,18 +240,5 @@ public class CameraController : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(playerTransform.position, lockBreakDistance);
-
-        Transform currentTarget = GetLockedTarget();
-        if (currentTarget != null)
-        {
-            Camera activeCamera = cam != null ? cam : GetComponent<Camera>();
-            if (activeCamera != null)
-            {
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawLine(
-                    activeCamera.transform.position,
-                    TargetPointResolver.ResolveTargetPoint(currentTarget, targetPointHeightOffset));
-            }
-        }
     }
 }
