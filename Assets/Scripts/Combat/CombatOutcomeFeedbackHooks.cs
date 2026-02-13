@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using UnityEngine;
-using Player.StateMachine;
 
 namespace Combat
 {
@@ -16,8 +14,7 @@ namespace Combat
         [SerializeField, Range(0.05f, 0.95f)] private float pushEndSpeedFraction = 0.20f;
 
         [Header("Optional References")]
-        [SerializeField] private CharacterMotor characterMotor;
-        [SerializeField] private Rigidbody fallbackRigidbody;
+        [SerializeField] private CombatHorizontalImpulseDriver impulseDriver;
         [SerializeField] private AudioSource audioSource;
 
         [Header("Optional VFX")]
@@ -37,12 +34,9 @@ namespace Combat
         public event Action<CombatOutcomeFeedbackContext> OnBlocked;
         public event Action<CombatOutcomeFeedbackContext> OnParried;
 
-        private static readonly WaitForFixedUpdate FixedStepYield = new WaitForFixedUpdate();
-        private Coroutine recoilRoutine;
-
         private void Awake()
         {
-            ResolveOptionalReferences();
+            ResolveOptionalReferences(allowRuntimeCreate: true);
         }
 
         private void OnValidate()
@@ -51,17 +45,15 @@ namespace Combat
             blockedPushDuration = Mathf.Max(0.01f, blockedPushDuration);
             parriedPushDistance = Mathf.Max(0f, parriedPushDistance);
             parriedPushDuration = Mathf.Max(0.01f, parriedPushDuration);
+            ResolveOptionalReferences(allowRuntimeCreate: false);
         }
 
         private void OnDisable()
         {
-            if (recoilRoutine != null)
+            if (impulseDriver != null)
             {
-                StopCoroutine(recoilRoutine);
-                recoilRoutine = null;
+                impulseDriver.StopActiveImpulse();
             }
-
-            ClearHorizontalMotion();
         }
 
         public void OnCombatOutcome(CombatOutcomeFeedbackContext context)
@@ -104,141 +96,25 @@ namespace Combat
 
         private void StartRecoil(Vector3 inputDirection, float distance, float duration)
         {
-            if (!isActiveAndEnabled || !HasMovementBackend() || distance <= 0f || duration <= 0f)
+            if (!isActiveAndEnabled || distance <= 0f || duration <= 0f || impulseDriver == null)
             {
                 return;
             }
 
-            Vector3 direction = FlattenDirection(inputDirection);
-            if (direction.sqrMagnitude < 0.0001f)
-            {
-                return;
-            }
-
-            if (recoilRoutine != null)
-            {
-                StopCoroutine(recoilRoutine);
-                recoilRoutine = null;
-            }
-
-            ClearHorizontalMotion();
-            recoilRoutine = StartCoroutine(ApplyRecoil(direction, distance, duration));
+            impulseDriver.PlayImpulse(inputDirection, distance, duration, pushEndSpeedFraction);
         }
 
-        private IEnumerator ApplyRecoil(Vector3 direction, float distance, float duration)
+        private void ResolveOptionalReferences(bool allowRuntimeCreate)
         {
-            float elapsed = 0f;
-            float remainingDistance = distance;
-            float endFraction = Mathf.Clamp(pushEndSpeedFraction, 0.05f, 0.95f);
-            float decay = -Mathf.Log(endFraction) / duration;
-            float initialSpeed;
-
-            if (decay > 0f)
+            if (impulseDriver == null)
             {
-                float denom = 1f - Mathf.Exp(-decay * duration);
-                initialSpeed = denom <= 0f ? distance / duration : (distance * decay / denom);
-            }
-            else
-            {
-                initialSpeed = distance / duration;
+                impulseDriver = GetComponent<CombatHorizontalImpulseDriver>();
             }
 
-            while (elapsed < duration && remainingDistance > 0.0001f)
+            if (impulseDriver == null && allowRuntimeCreate)
             {
-                yield return FixedStepYield;
-
-                float dt = Time.fixedDeltaTime;
-                if (dt <= 0f)
-                {
-                    continue;
-                }
-
-                float t0 = elapsed;
-                float t1 = Mathf.Min(t0 + dt, duration);
-                float distanceThisStep;
-
-                if (decay > 0f)
-                {
-                    float exp0 = Mathf.Exp(-decay * t0);
-                    float exp1 = Mathf.Exp(-decay * t1);
-                    distanceThisStep = (initialSpeed / decay) * (exp0 - exp1);
-                }
-                else
-                {
-                    float remainingTime = Mathf.Max(duration - t0, 0.0001f);
-                    distanceThisStep = remainingDistance * (t1 - t0) / remainingTime;
-                }
-
-                distanceThisStep = Mathf.Min(distanceThisStep, remainingDistance);
-                float speed = distanceThisStep / dt;
-                SetHorizontalMotion(direction * speed);
-
-                elapsed = t1;
-                remainingDistance -= distanceThisStep;
+                impulseDriver = gameObject.AddComponent<CombatHorizontalImpulseDriver>();
             }
-
-            ClearHorizontalMotion();
-            recoilRoutine = null;
-        }
-
-        private void SetHorizontalMotion(Vector3 velocity)
-        {
-            if (characterMotor != null)
-            {
-                characterMotor.SetHorizontalVelocity(velocity);
-                return;
-            }
-
-            if (fallbackRigidbody == null)
-            {
-                return;
-            }
-
-            Vector3 current = fallbackRigidbody.linearVelocity;
-            current.x = velocity.x;
-            current.z = velocity.z;
-            fallbackRigidbody.linearVelocity = current;
-        }
-
-        private void ClearHorizontalMotion()
-        {
-            SetHorizontalMotion(Vector3.zero);
-        }
-
-        private bool HasMovementBackend()
-        {
-            return characterMotor != null || fallbackRigidbody != null;
-        }
-
-        private void ResolveOptionalReferences()
-        {
-            if (characterMotor == null)
-            {
-                characterMotor = GetComponent<CharacterMotor>();
-            }
-
-            if (fallbackRigidbody == null)
-            {
-                fallbackRigidbody = GetComponent<Rigidbody>();
-            }
-        }
-
-        private Vector3 FlattenDirection(Vector3 direction)
-        {
-            direction.y = 0f;
-            if (direction.sqrMagnitude > 0.0001f)
-            {
-                return direction.normalized;
-            }
-
-            Vector3 fallback = -transform.forward;
-            fallback.y = 0f;
-            if (fallback.sqrMagnitude > 0.0001f)
-            {
-                return fallback.normalized;
-            }
-
-            return Vector3.zero;
         }
     }
 }
