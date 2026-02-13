@@ -123,6 +123,10 @@ namespace Player.Combat
                 ResetParrySpamState();
                 ResetBlockLingerState();
             }
+            else if (!canUseGuard)
+            {
+                flags.CloseParryWindow();
+            }
         }
 
         private bool CanUseGuard(bool isAlive)
