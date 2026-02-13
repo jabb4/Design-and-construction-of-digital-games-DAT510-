@@ -77,6 +77,29 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 | Block         | Reduced health damage |
 | Perfect parry | No damage             |
 
+### Combat Movement Feedback
+
+To make outcomes readable in moment-to-moment play, combat applies short horizontal motion feedback in addition to damage/audio/VFX outcomes.
+
+#### Defender pushback on defended hits
+
+- Triggered on `Blocked` and `Parried` outcomes
+- Applies to the defender (player or enemy)
+- Push direction is based on attacker-to-defender direction on the XZ plane
+- If attacker direction is unavailable, fallback uses defender backward direction
+- `Blocked` pushback is stronger than `Parried` pushback
+
+This creates a clear physical response on successful defense and helps communicate outcome strength.
+
+#### Attacker lunge on basic attack slash
+
+- Triggered on attack `Slash` phase
+- Applies a short forward horizontal impulse to the attacker
+- Uses current attack facing direction on the XZ plane
+- Intended as a slight commitment step to improve impact and spacing feel
+
+This keeps attack animations feeling connected to movement.
+
 ---
 
 ## Animation & Character Behavior Strategy
