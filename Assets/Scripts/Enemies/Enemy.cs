@@ -12,6 +12,8 @@ public class Enemy : MonoBehaviour, ICombatant
     private HealthComponent health;
     private CombatFlagsComponent flags;
     private Rigidbody body;
+    private global::Combat.CombatHorizontalImpulseDriver impulseDriver;
+    private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
 
     public CombatTeam Team => CombatTeam.Enemy;
@@ -43,12 +45,14 @@ public class Enemy : MonoBehaviour, ICombatant
         }
 
         EnsureRigidbody();
+        EnsureImpulseDriver();
 
         if (health != null)
         {
             health.OnDied += HandleDied;
         }
 
+        CacheAttackFeedbackHooks();
         CacheOutcomeFeedbackHooks();
         SyncCombatFlags();
         EnsureHurtbox();
@@ -172,6 +176,46 @@ public class Enemy : MonoBehaviour, ICombatant
         body.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
+    private void EnsureImpulseDriver()
+    {
+        impulseDriver = GetComponent<global::Combat.CombatHorizontalImpulseDriver>();
+        if (impulseDriver == null)
+        {
+            impulseDriver = gameObject.AddComponent<global::Combat.CombatHorizontalImpulseDriver>();
+        }
+    }
+
+    private void CacheAttackFeedbackHooks()
+    {
+        attackFeedbackHooks.Clear();
+        GetComponents(attackFeedbackHooks);
+    }
+
+    public void NotifyAttackPhase(
+        global::Combat.CombatAttackPhase phase,
+        global::Combat.AttackData? attack = null,
+        Vector3? attackDirection = null)
+    {
+        if (attackFeedbackHooks.Count == 0)
+        {
+            return;
+        }
+
+        Vector3 direction = attackDirection ?? ResolveAttackDirection();
+        var context = new global::Combat.CombatAttackFeedbackContext
+        {
+            Phase = phase,
+            Attack = attack,
+            Attacker = this,
+            AttackDirection = direction
+        };
+
+        for (int i = 0; i < attackFeedbackHooks.Count; i++)
+        {
+            attackFeedbackHooks[i]?.OnCombatAttackPhase(context);
+        }
+    }
+
     private void CacheOutcomeFeedbackHooks()
     {
         outcomeFeedbackHooks.Clear();
@@ -216,5 +260,17 @@ public class Enemy : MonoBehaviour, ICombatant
         Vector3 fallback = -transform.forward;
         fallback.y = 0f;
         return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.back;
+    }
+
+    private Vector3 ResolveAttackDirection()
+    {
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude > 0.0001f)
+        {
+            return forward.normalized;
+        }
+
+        return Vector3.forward;
     }
 }
