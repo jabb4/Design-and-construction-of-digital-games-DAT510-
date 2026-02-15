@@ -153,12 +153,30 @@ MonoBehaviour:
   playerTransform: {fileID: 0}
   offset: {x: 0, y: 3, z: -6}
   rotationSpeed: 1
-  cameraSmoothSpeed: 20
+  freeCameraSmoothing: 30
+  lockOnCameraSmoothing: 20
   minVerticalAngle: -25
   maxVerticalAngle: 50
   fieldOfView: 45
+  cameraCollisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  collisionRadius: 0.25
+  collisionSafetyOffset: 0.1
+  collisionMinDistance: 1.2
+  collisionInSpeed: 16
+  collisionOutSpeed: 8
   targetSwitchSensitivity: 10
+  targetSwitchCooldown: 0.2
   lockOnRange: 30
   enemyLayer:
     serializedVersion: 2
     m_Bits: 8
+  lineOfSightBlockerLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  lockBreakDistance: 35
+  lineOfSightGraceSeconds: 0.5
+  targetPointHeightOffset: 1.2
+  retargetOnInvalid: 1
+  enableLockOnDebugLogs: 0
