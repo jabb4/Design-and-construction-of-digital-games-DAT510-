@@ -2,12 +2,22 @@ using UnityEngine;
 
 public sealed class CameraOrbitRig
 {
+    private const float PlayerLookHeight = 1.5f;
+
     private readonly Transform cameraTransform;
     private readonly Vector3 offset;
     private readonly float rotationSpeed;
-    private readonly float cameraSmoothSpeed;
+    private readonly float freeCameraSmoothing;
+    private readonly float lockOnCameraSmoothing;
     private readonly float minVerticalAngle;
     private readonly float maxVerticalAngle;
+    private readonly CameraCollisionSolver collisionSolver;
+    private readonly LayerMask collisionMask;
+    private readonly float collisionRadius;
+    private readonly float collisionSafetyOffset;
+    private readonly float collisionMinDistance;
+    private readonly float collisionInSpeed;
+    private readonly float collisionOutSpeed;
 
     private float currentHorizontalAngle;
     private float currentVerticalAngle;
@@ -16,16 +26,32 @@ public sealed class CameraOrbitRig
         Transform cameraTransform,
         Vector3 offset,
         float rotationSpeed,
-        float cameraSmoothSpeed,
+        float freeCameraSmoothing,
+        float lockOnCameraSmoothing,
         float minVerticalAngle,
-        float maxVerticalAngle)
+        float maxVerticalAngle,
+        CameraCollisionSolver collisionSolver,
+        LayerMask collisionMask,
+        float collisionRadius,
+        float collisionSafetyOffset,
+        float collisionMinDistance,
+        float collisionInSpeed,
+        float collisionOutSpeed)
     {
         this.cameraTransform = cameraTransform;
         this.offset = offset;
         this.rotationSpeed = rotationSpeed;
-        this.cameraSmoothSpeed = cameraSmoothSpeed;
+        this.freeCameraSmoothing = Mathf.Max(0f, freeCameraSmoothing);
+        this.lockOnCameraSmoothing = Mathf.Max(0f, lockOnCameraSmoothing);
         this.minVerticalAngle = minVerticalAngle;
         this.maxVerticalAngle = maxVerticalAngle;
+        this.collisionSolver = collisionSolver ?? new CameraCollisionSolver();
+        this.collisionMask = collisionMask;
+        this.collisionRadius = collisionRadius;
+        this.collisionSafetyOffset = collisionSafetyOffset;
+        this.collisionMinDistance = collisionMinDistance;
+        this.collisionInSpeed = collisionInSpeed;
+        this.collisionOutSpeed = collisionOutSpeed;
 
         SyncFreeAnglesFromCurrent();
     }
@@ -43,10 +69,26 @@ public sealed class CameraOrbitRig
 
         Quaternion rotation = Quaternion.Euler(currentVerticalAngle, currentHorizontalAngle, 0f);
         Vector3 desiredPosition = playerTransform.position + rotation * offset;
-        Quaternion desiredRotation = Quaternion.LookRotation(playerTransform.position + Vector3.up * 1.5f - desiredPosition);
+        Vector3 playerAimPoint = ResolvePlayerAimPoint(playerTransform);
+        Vector3 resolvedPosition = collisionSolver.ResolvePosition(
+            playerAimPoint,
+            desiredPosition,
+            cameraTransform.position,
+            collisionMask,
+            collisionRadius,
+            collisionSafetyOffset,
+            collisionMinDistance,
+            collisionInSpeed,
+            collisionOutSpeed,
+            deltaTime,
+            playerTransform,
+            smoothWhenClear: false,
+            smoothWhenColliding: false);
+        Quaternion desiredRotation = ResolveLookRotation(playerAimPoint - resolvedPosition, cameraTransform.rotation);
 
-        cameraTransform.position = Vector3.Lerp(cameraTransform.position, desiredPosition, deltaTime * cameraSmoothSpeed);
-        cameraTransform.rotation = Quaternion.Lerp(cameraTransform.rotation, desiredRotation, deltaTime * cameraSmoothSpeed);
+        float smoothingFactor = ComputeSmoothingFactor(freeCameraSmoothing, deltaTime);
+        cameraTransform.position = Vector3.Lerp(cameraTransform.position, resolvedPosition, smoothingFactor);
+        cameraTransform.rotation = Quaternion.Slerp(cameraTransform.rotation, desiredRotation, smoothingFactor);
     }
 
     public void UpdateLockOn(Transform playerTransform, Transform lockedTarget, float deltaTime)
@@ -58,10 +100,29 @@ public sealed class CameraOrbitRig
 
         Vector3 directionToTarget = (lockedTarget.position - playerTransform.position).normalized;
         Vector3 desiredCameraPosition = playerTransform.position - directionToTarget * offset.magnitude + Vector3.up * offset.y;
-        Quaternion desiredCameraRotation = Quaternion.LookRotation(lockedTarget.position + Vector3.up - desiredCameraPosition);
+        Vector3 playerAimPoint = ResolvePlayerAimPoint(playerTransform);
+        Vector3 resolvedPosition = collisionSolver.ResolvePosition(
+            playerAimPoint,
+            desiredCameraPosition,
+            cameraTransform.position,
+            collisionMask,
+            collisionRadius,
+            collisionSafetyOffset,
+            collisionMinDistance,
+            collisionInSpeed,
+            collisionOutSpeed,
+            deltaTime,
+            playerTransform,
+            smoothWhenClear: false,
+            smoothWhenColliding: false);
 
-        cameraTransform.position = Vector3.Lerp(cameraTransform.position, desiredCameraPosition, deltaTime * cameraSmoothSpeed);
-        cameraTransform.rotation = Quaternion.Lerp(cameraTransform.rotation, desiredCameraRotation, deltaTime * cameraSmoothSpeed);
+        Quaternion desiredCameraRotation = ResolveLookRotation(
+            lockedTarget.position + Vector3.up - resolvedPosition,
+            cameraTransform.rotation);
+
+        float smoothingFactor = ComputeSmoothingFactor(lockOnCameraSmoothing, deltaTime);
+        cameraTransform.position = Vector3.Lerp(cameraTransform.position, resolvedPosition, smoothingFactor);
+        cameraTransform.rotation = Quaternion.Slerp(cameraTransform.rotation, desiredCameraRotation, smoothingFactor);
     }
 
     public void SyncFreeAnglesFromCurrent()
@@ -81,5 +142,31 @@ public sealed class CameraOrbitRig
         Vector3 cameraForwardNormalized = cameraTransform.forward.normalized;
         currentVerticalAngle = -Mathf.Asin(cameraForwardNormalized.y) * Mathf.Rad2Deg;
         currentVerticalAngle = Mathf.Clamp(currentVerticalAngle, minVerticalAngle, maxVerticalAngle);
+    }
+
+    private static Vector3 ResolvePlayerAimPoint(Transform playerTransform)
+    {
+        return playerTransform.position + Vector3.up * PlayerLookHeight;
+    }
+
+    private static Quaternion ResolveLookRotation(Vector3 lookDirection, Quaternion fallbackRotation)
+    {
+        if (lookDirection.sqrMagnitude <= 0.0001f)
+        {
+            return fallbackRotation;
+        }
+
+        return Quaternion.LookRotation(lookDirection.normalized);
+    }
+
+    private static float ComputeSmoothingFactor(float smoothing, float deltaTime)
+    {
+        if (smoothing <= 0f)
+        {
+            return 1f;
+        }
+
+        float clampedDeltaTime = Mathf.Max(0f, deltaTime);
+        return 1f - Mathf.Exp(-smoothing * clampedDeltaTime);
     }
 }

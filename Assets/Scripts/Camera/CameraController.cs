@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Camera))]
 public class CameraController : MonoBehaviour
@@ -29,10 +30,23 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Vector3 offset = new Vector3(0f, 3.5f, -6f);
     [Range(0.1f, 10f)]
     [SerializeField] private float rotationSpeed = 1f;
-    [SerializeField] private float cameraSmoothSpeed = 20f;
+
+    [Header("Camera Smoothing")]
+    [SerializeField, Min(0f)] private float freeCameraSmoothing = 14f;
+    [FormerlySerializedAs("cameraSmoothSpeed")]
+    [SerializeField, Min(0f)] private float lockOnCameraSmoothing = 20f;
+
     [SerializeField] private float minVerticalAngle = -35f;
     [SerializeField] private float maxVerticalAngle = 50f;
     [SerializeField] private float fieldOfView = 60f;
+
+    [Header("Camera Collision")]
+    [SerializeField] private LayerMask cameraCollisionMask = ~0;
+    [SerializeField, Min(0.01f)] private float collisionRadius = 0.25f;
+    [SerializeField, Min(0f)] private float collisionSafetyOffset = 0.1f;
+    [SerializeField, Min(0f)] private float collisionMinDistance = 1.2f;
+    [SerializeField, Min(0f)] private float collisionInSpeed = 16f;
+    [SerializeField, Min(0f)] private float collisionOutSpeed = 8f;
 
     [Header("Target Switching")]
     [Range(5f, 15f)]
@@ -66,7 +80,22 @@ public class CameraController : MonoBehaviour
         cam = GetComponent<Camera>();
         cam.fieldOfView = fieldOfView;
 
-        cameraOrbitRig = new CameraOrbitRig(transform, offset, rotationSpeed, cameraSmoothSpeed, minVerticalAngle, maxVerticalAngle);
+        cameraCollisionMask = ResolveDefaultCameraCollisionMask(cameraCollisionMask);
+        cameraOrbitRig = new CameraOrbitRig(
+            transform,
+            offset,
+            rotationSpeed,
+            freeCameraSmoothing,
+            lockOnCameraSmoothing,
+            minVerticalAngle,
+            maxVerticalAngle,
+            new CameraCollisionSolver(),
+            cameraCollisionMask,
+            collisionRadius,
+            collisionSafetyOffset,
+            collisionMinDistance,
+            collisionInSpeed,
+            collisionOutSpeed);
         lockOnInputRouter = new LockOnInputRouter(targetSwitchCooldown);
         lockOnInputRouter.ToggleLockRequested += HandleToggleLockRequested;
 
@@ -240,5 +269,30 @@ public class CameraController : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(playerTransform.position, lockBreakDistance);
+    }
+
+    private static LayerMask ResolveDefaultCameraCollisionMask(LayerMask configuredMask)
+    {
+        if (configuredMask.value != ~0)
+        {
+            return configuredMask;
+        }
+
+        int resolvedMask = ~0;
+        ExcludeLayerByName(ref resolvedMask, "Enemy");
+        ExcludeLayerByName(ref resolvedMask, "Hitbox");
+        ExcludeLayerByName(ref resolvedMask, "Hurtbox");
+        ExcludeLayerByName(ref resolvedMask, "UI");
+        ExcludeLayerByName(ref resolvedMask, "Ignore Raycast");
+        return resolvedMask;
+    }
+
+    private static void ExcludeLayerByName(ref int mask, string layerName)
+    {
+        int layerIndex = LayerMask.NameToLayer(layerName);
+        if (layerIndex >= 0)
+        {
+            mask &= ~(1 << layerIndex);
+        }
     }
 }
