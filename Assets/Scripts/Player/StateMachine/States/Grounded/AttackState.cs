@@ -12,6 +12,7 @@ namespace Player.StateMachine.States
         private bool hasEnteredRecovery;
         private bool hasPhaseEvents;
         private bool hasLoggedMissingEventWarning;
+        private bool hasPlayedAttackAnimation;
         private float recoveryElapsed;
 
         public AttackPhase CurrentPhase => currentPhase;
@@ -29,6 +30,7 @@ namespace Player.StateMachine.States
             hasEnteredRecovery = false;
             hasPhaseEvents = false;
             hasLoggedMissingEventWarning = false;
+            hasPlayedAttackAnimation = false;
             recoveryElapsed = 0f;
 
             if (!TryGetCurrentAttackStep(out AttackStep step))
@@ -79,7 +81,13 @@ namespace Player.StateMachine.States
                 return Owner.GetState<IdleState>();
             }
 
-            if (hasEnteredRecovery && Input.IsAttackPressed)
+            bool isInAttackState = IsAnimatorInState(step.AnimationStateName);
+            if (isInAttackState)
+            {
+                hasPlayedAttackAnimation = true;
+            }
+
+            if (hasEnteredRecovery && isInAttackState && Input.IsAttackPressed)
             {
                 queuedNextAttack = true;
             }
@@ -108,7 +116,6 @@ namespace Player.StateMachine.States
                 }
             }
 
-            bool isInAttackState = IsAnimatorInState(step.AnimationStateName);
             if (hasEnteredRecovery && queuedNextAttack && comboIndex < Owner.AttackStepCount - 1)
             {
                 var nextState = Owner.GetState<AttackState>();
@@ -117,6 +124,14 @@ namespace Player.StateMachine.States
             }
 
             if (isInAttackState && IsAnimationComplete(0.98f))
+            {
+                Owner.ClearCurrentAttack();
+                return Input.HasMovementInput
+                    ? (Input.IsSprinting ? Owner.GetState<SprintState>() : Owner.GetState<WalkingState>())
+                    : Owner.GetState<IdleState>();
+            }
+
+            if (hasPlayedAttackAnimation && !isInAttackState)
             {
                 Owner.ClearCurrentAttack();
                 return Input.HasMovementInput
