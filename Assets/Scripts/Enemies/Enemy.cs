@@ -1,25 +1,60 @@
 using UnityEngine;
+using System.Collections.Generic;
 using Combat;
 
+[RequireComponent(typeof(HealthComponent))]
+[RequireComponent(typeof(CombatFlagsComponent))]
 public class Enemy : MonoBehaviour, ICombatant
 {
-    [Header("Health")]
-    [SerializeField] private float maxHealth = 100f;
-    [SerializeField] private float currentHealth = 100f;
+    [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
+    [SerializeField] private bool disableGameObjectOnDeath = true;
 
-    private bool isDead;
+    private HealthComponent health;
+    private CombatFlagsComponent flags;
+    private Rigidbody body;
+    private global::Combat.CombatHorizontalImpulseDriver impulseDriver;
+    private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
+    private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
 
     public CombatTeam Team => CombatTeam.Enemy;
-    public bool IsVulnerable => !isDead;
-    public bool IsAttacking => false;
+    public bool IsVulnerable => flags != null && flags.IsVulnerable;
+    public bool IsAttacking
+    {
+        get => flags != null && flags.IsAttacking;
+        set
+        {
+            if (flags != null)
+            {
+                flags.IsAttacking = value;
+            }
+        }
+    }
 
     private void Awake()
     {
-        if (currentHealth <= 0f)
+        health = GetComponent<HealthComponent>();
+        flags = GetComponent<CombatFlagsComponent>();
+        if (health == null)
         {
-            currentHealth = maxHealth;
+            health = gameObject.AddComponent<HealthComponent>();
         }
 
+        if (flags == null)
+        {
+            flags = gameObject.AddComponent<CombatFlagsComponent>();
+        }
+
+        EnsureRigidbody();
+        EnsureImpulseDriver();
+
+        if (health != null)
+        {
+            health.OnDied += HandleDied;
+        }
+
+        CacheAttackFeedbackHooks();
+        CacheOutcomeFeedbackHooks();
+        SyncCombatFlags();
         EnsureHurtbox();
     }
 
@@ -31,25 +66,56 @@ public class Enemy : MonoBehaviour, ICombatant
 
     public void ReceiveHit(AttackHitInfo hit)
     {
-        if (isDead)
+        if (health == null)
         {
             return;
         }
 
-        float damage = Mathf.Max(0f, hit.Damage);
-        currentHealth -= damage;
+        DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
+        DispatchOutcomeFeedback(hit, resolution);
 
-        if (currentHealth <= 0f)
+        if (resolution.Outcome == DamageOutcome.Ignored)
         {
-            Die();
+            return;
+        }
+
+        health.ApplyDamage(resolution.AppliedDamage);
+        SyncCombatFlags();
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null)
+        {
+            health.OnDied -= HandleDied;
         }
     }
 
-    private void Die()
+    private void HandleDied()
     {
-        isDead = true;
-        currentHealth = 0f;
-        gameObject.SetActive(false);
+        SyncCombatFlags();
+
+        if (disableGameObjectOnDeath)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
+    private void SyncCombatFlags()
+    {
+        if (flags == null)
+        {
+            return;
+        }
+
+        bool isAlive = health == null || !health.IsDead;
+        flags.IsVulnerable = isAlive;
+        flags.IsBlocking = false;
+
+        if (!isAlive)
+        {
+            flags.IsAttacking = false;
+        }
     }
 
     private void EnsureHurtbox()
@@ -93,5 +159,118 @@ public class Enemy : MonoBehaviour, ICombatant
         {
             hurtboxObject.layer = hurtboxLayer;
         }
+    }
+
+    private void EnsureRigidbody()
+    {
+        body = GetComponent<Rigidbody>();
+        if (body == null)
+        {
+            body = gameObject.AddComponent<Rigidbody>();
+        }
+
+        body.linearDamping = 0f;
+        body.angularDamping = 0.05f;
+        body.constraints = RigidbodyConstraints.FreezeRotation;
+        body.interpolation = RigidbodyInterpolation.Interpolate;
+        body.collisionDetectionMode = CollisionDetectionMode.Continuous;
+    }
+
+    private void EnsureImpulseDriver()
+    {
+        impulseDriver = GetComponent<global::Combat.CombatHorizontalImpulseDriver>();
+        if (impulseDriver == null)
+        {
+            impulseDriver = gameObject.AddComponent<global::Combat.CombatHorizontalImpulseDriver>();
+        }
+    }
+
+    private void CacheAttackFeedbackHooks()
+    {
+        attackFeedbackHooks.Clear();
+        GetComponents(attackFeedbackHooks);
+    }
+
+    public void NotifyAttackPhase(
+        global::Combat.CombatAttackPhase phase,
+        global::Combat.AttackData? attack = null,
+        Vector3? attackDirection = null)
+    {
+        if (attackFeedbackHooks.Count == 0)
+        {
+            return;
+        }
+
+        Vector3 direction = attackDirection ?? ResolveAttackDirection();
+        var context = new global::Combat.CombatAttackFeedbackContext
+        {
+            Phase = phase,
+            Attack = attack,
+            Attacker = this,
+            AttackDirection = direction
+        };
+
+        for (int i = 0; i < attackFeedbackHooks.Count; i++)
+        {
+            attackFeedbackHooks[i]?.OnCombatAttackPhase(context);
+        }
+    }
+
+    private void CacheOutcomeFeedbackHooks()
+    {
+        outcomeFeedbackHooks.Clear();
+        GetComponents(outcomeFeedbackHooks);
+    }
+
+    private void DispatchOutcomeFeedback(AttackHitInfo hit, DamageResolution resolution)
+    {
+        if (outcomeFeedbackHooks.Count == 0)
+        {
+            return;
+        }
+
+        Vector3 pushDirection = ResolveDefenderPushDirection(hit.Attacker);
+        var context = new CombatOutcomeFeedbackContext
+        {
+            Hit = hit,
+            Resolution = resolution,
+            Defender = this,
+            DefenderPushDirection = pushDirection,
+            HitPoint = hit.HitPoint
+        };
+
+        for (int i = 0; i < outcomeFeedbackHooks.Count; i++)
+        {
+            outcomeFeedbackHooks[i]?.OnCombatOutcome(context);
+        }
+    }
+
+    private Vector3 ResolveDefenderPushDirection(ICombatant attacker)
+    {
+        if (attacker is Component attackerComponent)
+        {
+            Vector3 fromAttacker = transform.position - attackerComponent.transform.position;
+            fromAttacker.y = 0f;
+            if (fromAttacker.sqrMagnitude > 0.0001f)
+            {
+                return fromAttacker.normalized;
+            }
+        }
+
+        Vector3 fallback = -transform.forward;
+        fallback.y = 0f;
+        return fallback.sqrMagnitude > 0.0001f ? fallback.normalized : Vector3.back;
+    }
+
+    private Vector3 ResolveAttackDirection()
+    {
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude > 0.0001f)
+        {
+            return forward.normalized;
+        }
+
+        return Vector3.forward;
     }
 }

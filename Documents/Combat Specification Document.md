@@ -19,14 +19,14 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 ### Player Mechanics
 
-| Feature       | Description                            |
-| ------------- | -------------------------------------- |
-| Movement      | WASD + SHIFT to sprint                 |
-| Camera        | Third-person camera with lock-on       |
-| Light Attack  | Sword slash                            |
-| Block         | Hold to block incoming attacks         |
-| Perfect Parry | Timed block during enemy attack window |
-| Health        | Player can die if health reaches zero  |
+| Feature       | Description                           |
+| ------------- | ------------------------------------- |
+| Movement      | WASD + SHIFT to sprint                |
+| Camera        | Third-person camera with lock-on      |
+| Light Attack  | Sword slash                           |
+| Block         | Guard input (tap or hold)             |
+| Perfect Parry | Timed deflect during parry window     |
+| Health        | Player can die if health reaches zero |
 
 ### Enemy Mechanics
 
@@ -50,17 +50,24 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 #### Block
 
-- Activated by holding the parry button (right click)
+- Activated by guard input (right click), using tap or hold
+- Holding keeps block active continuously
+- Tapping opens a short block linger window so block/parry can register without holding
 - Dull sound effect
 - Reduces damage dealt (50% reduction)
 
+**Block linger:**
+
+- Why it matters: It keeps combat outcomes consistent with player feel, so quick guard taps are not punished by frame-perfect release timing.
+- How it works: On guard release, blocking remains active for a short linger duration before turning off. Animation still follows live input (tap/hold), while linger only affects combat damage resolution.
+
 #### Perfect Parry
 
-- Triggered when the parry button is pressed and held; if impact occurs **within a short timing window** after the initial press, it counts as a perfect parry
+- Triggered when guard is pressed and the hit lands **within the active parry window**
 - Negates all damage
 - Plays special sound + VFX
 
-**Timing Window:** 0.2 seconds from the initial press (while still holding).
+**Base Timing Window:** 0.2 seconds from the latest guard press.
 
 ### Attack Resolution Rules
 
@@ -69,6 +76,29 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 | No block      | Full health damage    |
 | Block         | Reduced health damage |
 | Perfect parry | No damage             |
+
+### Combat Movement Feedback
+
+To make outcomes readable in moment-to-moment play, combat applies short horizontal motion feedback in addition to damage/audio/VFX outcomes.
+
+#### Defender pushback on defended hits
+
+- Triggered on `Blocked` and `Parried` outcomes
+- Applies to the defender (player or enemy)
+- Push direction is based on attacker-to-defender direction on the XZ plane
+- If attacker direction is unavailable, fallback uses defender backward direction
+- `Blocked` pushback is stronger than `Parried` pushback
+
+This creates a clear physical response on successful defense and helps communicate outcome strength.
+
+#### Attacker lunge on basic attack slash
+
+- Triggered on attack `Slash` phase
+- Applies a short forward horizontal impulse to the attacker
+- Uses current attack facing direction on the XZ plane
+- Intended as a slight commitment step to improve impact and spacing feel
+
+This keeps attack animations feeling connected to movement.
 
 ---
 
@@ -136,7 +166,7 @@ Every attack in the combo chain registers active hit detection during specific a
 
 #### Anti-spam system
 
-The player's parry mechanic includes an anti-spamming system that reduces the timing window for parries after successive missed attempts.
+The player's parry mechanic includes an anti-spamming system that reduces the timing window for parries after successive rapid presses.
 
 ---
 
@@ -212,7 +242,27 @@ After verifying the eligibility of a hit, we then check the receiver's current s
 
 Every time the player presses the parry button in quick succession without actively parrying an attack, it should diminish the timeframe in which the parry window is active. This is to prevent the player spamming the parry button.
 
-To achieve this we should add a parry counter that counts how many parries are pressed in a given time frame. Every parry spam without parrying an attack, should add to the counter until the max of 4. For the first two parry inputs, there should be no effect on the parry timing window, staying at 0.2 seconds. However on the third parry input, the parry window should be reduced by 0.1 seconds, and for the fourth, 0 seconds, meaning that all parries will register as blocks. This prevention mechanic can be reset by not spamming parry for a certain amount of time or by successfully parrying an attack, resetting the counter.
+To achieve this we use a parry counter that tracks rapid guard presses.
+
+| Rapid press count | Parry window |
+| ----------------- | ------------ |
+| 1                 | 0.2s         |
+| 2                 | 0.2s         |
+| 3                 | 0.1s         |
+| 4+                | 0.0s         |
+
+When the window reaches `0.0s`, guard still blocks but no perfect parry is possible.
+
+**Reset conditions:**
+
+- No rapid presses for ~0.5 seconds
+- Successful perfect parry
+
+**Post-parry / post-block-release behaviour:**
+
+- On a quick tap parry, the player can remain in `BlockingState` briefly even after releasing guard
+- During this short linger, other actions are temporarily hindered, creating the current post-parry lock feel
+- If guard is held longer, releasing block allows attacking almost immediately, which keeps combat responsive
 
 ### Enemy Behaviour
 

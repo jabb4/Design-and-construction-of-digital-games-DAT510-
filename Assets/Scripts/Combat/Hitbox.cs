@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Player.StateMachine;
 
 namespace Combat
 {
@@ -12,11 +11,11 @@ namespace Combat
         private ICombatant owner;
         private readonly HashSet<Hurtbox> alreadyHit = new HashSet<Hurtbox>();
         private bool active;
-        private AttackStep? currentAttack;
+        private AttackData? currentAttack;
 
         public ICombatant Owner => owner;
         public bool Active => active;
-        public AttackStep? CurrentAttack => currentAttack;
+        public AttackData? CurrentAttack => currentAttack;
 
         private void Awake()
         {
@@ -41,9 +40,9 @@ namespace Combat
             ownerObject = component != null ? component.gameObject : null;
         }
 
-        public void BeginAttack(AttackStep step)
+        public void BeginAttack(AttackData attack)
         {
-            currentAttack = step;
+            currentAttack = attack;
             alreadyHit.Clear();
         }
 
@@ -131,7 +130,7 @@ namespace Combat
             {
                 Damage = damage,
                 Attacker = owner,
-                AttackStep = currentAttack,
+                Attack = currentAttack,
                 HitPoint = hitPoint
             };
 

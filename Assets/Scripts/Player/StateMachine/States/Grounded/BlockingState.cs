@@ -7,18 +7,17 @@ namespace Player.StateMachine
         private Vector2 smoothVelocity;
         private Vector2 velocityRef;
         private const float SMOOTH_TIME = 0.1f;
-        private const string DefenseIdleStateName = "DefenseIdle";
-        private const string StandToDefenseLeft = "Idle2DefenseL";
-        private const string DefenseToStandLeft = "Defense2IdleL";
         private bool isExiting;
+        private GuardSide activeGuardSide;
 
         public override void OnEnter()
         {
             isExiting = false;
+            activeGuardSide = Owner.CurrentGuardSide;
 
-            if (!CrossFade(StandToDefenseLeft, 0.1f))
+            if (!CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f))
             {
-                CrossFade(DefenseIdleStateName, 0.1f);
+                CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.1f);
             }
 
             Animator.SetBool(IsMovingHash, Input.HasMovementInput);
@@ -47,6 +46,15 @@ namespace Player.StateMachine
                 return;
             }
 
+            if (Owner.CurrentGuardSide != activeGuardSide && !Owner.IsDefenseReactionActive)
+            {
+                activeGuardSide = Owner.CurrentGuardSide;
+                if (!isExiting)
+                {
+                    CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.08f);
+                }
+            }
+
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
         }
 
@@ -54,6 +62,13 @@ namespace Player.StateMachine
         {
             if (Owner.IsTransitioningWeapon)
             {
+                Motor.Move(Vector2.zero, useSprint: false);
+                return;
+            }
+
+            if (Owner.IsDefenseReactionActive)
+            {
+                // Freeze both movement and facing while defense reaction one-shots are active.
                 Motor.Move(Vector2.zero, useSprint: false);
                 return;
             }
@@ -69,21 +84,42 @@ namespace Player.StateMachine
                 return Owner.GetState<States.IdleState>();
             }
 
+            if (Owner.IsDefenseReactionActive &&
+                Owner.IsDefenseAttackUnlocked &&
+                Input.IsAttackPressed &&
+                Motor.IsGrounded)
+            {
+                // Allow earlier attack cancel after successful defense,
+                // while movement remains constrained until reaction end.
+                Owner.EndDefenseReaction();
+
+                States.AttackState attackState = Owner.GetState<States.AttackState>();
+                attackState.SetComboIndex(0);
+                return attackState;
+            }
+
             if (!Input.IsBlocking)
             {
+                if (Owner.IsDefenseReactionActive)
+                {
+                    return null;
+                }
+
                 if (!isExiting)
                 {
                     isExiting = true;
-                    CrossFade(DefenseToStandLeft, 0.1f);
+                    activeGuardSide = Owner.CurrentGuardSide;
+                    CrossFade(Owner.GetDefenseExitStateName(activeGuardSide), 0.1f);
                 }
 
                 return null;
             }
 
-            if (isExiting)
+            if (isExiting && !Owner.IsDefenseReactionActive)
             {
                 isExiting = false;
-                CrossFade(StandToDefenseLeft, 0.1f);
+                activeGuardSide = Owner.CurrentGuardSide;
+                CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f);
             }
 
             if (Input.IsJumpPressed && Motor.IsGrounded)
