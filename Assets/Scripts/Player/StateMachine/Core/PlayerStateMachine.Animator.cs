@@ -25,7 +25,8 @@ namespace Player.StateMachine
 
             bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
             bool isBlockingByInput = BlockHeld && IsEquipped && Motor != null && Motor.IsGrounded;
-            bool isBlockingForAnimator = isBlockingByInput || IsDefenseReactionActive;
+            bool isBlockingByState = CurrentState is global::Player.StateMachine.BlockingState;
+            bool isBlockingForAnimator = isBlockingByInput || isBlockingByState || IsDefenseReactionActive;
             Animator.SetBool("IsLockedOn", isLockedOn);
             Animator.SetBool(IsBlockingHash, isBlockingForAnimator);
 

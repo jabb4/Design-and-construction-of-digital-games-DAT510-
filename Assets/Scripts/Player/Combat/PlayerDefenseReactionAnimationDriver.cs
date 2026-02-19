@@ -195,7 +195,9 @@ namespace Player.Combat
 
         private void BeginReaction(string reactionStateName)
         {
-            if (!CrossFade(reactionStateName, reactionCrossFadeDuration))
+            // Always restart on new defense outcomes so rapid enemy chains stay readable.
+            if (!PlayFromStart(reactionStateName) &&
+                !CrossFade(reactionStateName, reactionCrossFadeDuration))
             {
                 return;
             }
@@ -338,6 +340,73 @@ namespace Player.Combat
                 return true;
             }
 
+            return false;
+        }
+
+        private bool PlayFromStart(string stateName, int layer = 0)
+        {
+            if (animator == null || animator.runtimeAnimatorController == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return false;
+            }
+
+            if (layer < 0 || layer >= animator.layerCount)
+            {
+                layer = 0;
+            }
+
+            if (!TryResolveStateHash(stateName, layer, out int stateHash))
+            {
+                animator.Play(stateName, layer, 0f);
+                animator.Update(0f);
+
+                AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(layer);
+                int shortNameHash = Animator.StringToHash(stateName);
+                return current.shortNameHash == shortNameHash || current.IsName(stateName);
+            }
+
+            animator.Play(stateHash, layer, 0f);
+            animator.Update(0f);
+            return true;
+        }
+
+        private bool TryResolveStateHash(string stateName, int layer, out int stateHash)
+        {
+            string layerName = animator.GetLayerName(layer);
+            bool isEquipped = stateMachine != null && stateMachine.IsEquipped;
+            string[] preferredPaths = isEquipped
+                ? new[]
+                {
+                    $"{layerName}.Grounded.Equip Locomotion.{stateName}",
+                    $"{layerName}.Airborne.Equip Jump.{stateName}",
+                    $"{layerName}.Grounded.Unequip Locomotion.{stateName}",
+                    $"{layerName}.Airborne.Unequip Jump.{stateName}",
+                    $"{layerName}.{stateName}",
+                    stateName
+                }
+                : new[]
+                {
+                    $"{layerName}.Grounded.Unequip Locomotion.{stateName}",
+                    $"{layerName}.Airborne.Unequip Jump.{stateName}",
+                    $"{layerName}.Grounded.Equip Locomotion.{stateName}",
+                    $"{layerName}.Airborne.Equip Jump.{stateName}",
+                    $"{layerName}.{stateName}",
+                    stateName
+                };
+
+            for (int i = 0; i < preferredPaths.Length; i++)
+            {
+                int candidateHash = Animator.StringToHash(preferredPaths[i]);
+                if (!animator.HasState(layer, candidateHash))
+                {
+                    continue;
+                }
+
+                stateHash = candidateHash;
+                return true;
+            }
+
+            stateHash = 0;
             return false;
         }
     }
