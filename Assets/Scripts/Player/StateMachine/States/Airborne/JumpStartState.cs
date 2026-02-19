@@ -19,7 +19,7 @@ namespace Player.StateMachine.States
             Motor.Move(Input.MoveInput, Input.IsSprinting);
         }
         
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
             bool inJumpStart = stateInfo.shortNameHash == JumpStartHash;
@@ -28,15 +28,15 @@ namespace Player.StateMachine.States
             {
                 if (IsAnimationComplete(0.8f) || Motor.Velocity.y < 0)
                 {
-                    return Owner.GetState<JumpLoopState>();
+                    return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.AnimationComplete);
                 }
             }
             else if (Motor.Velocity.y < 0)
             {
-                return Owner.GetState<JumpLoopState>();
+                return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne);
             }
             
-            return null;
+            return TransitionDecision.None;
         }
     }
 }

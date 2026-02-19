@@ -9,36 +9,36 @@ namespace Player.StateMachine.States
         /// Handles shared grounded transition checks for attack, block and jump.
         /// Returns true when a decision has been made (including "stay in current state").
         /// </summary>
-        protected bool TryGetCommonGroundedTransition(out IState nextState)
+        protected bool TryGetCommonGroundedTransition(out TransitionDecision decision)
         {
             if (Input.IsAttackPressed && Motor.IsGrounded)
             {
                 if (!Owner.IsEquipped)
                 {
                     Owner.RequestEquip();
-                    nextState = null;
+                    decision = TransitionDecision.None;
                     return true;
                 }
 
                 AttackState attackState = Owner.GetState<AttackState>();
                 attackState.SetComboIndex(0);
-                nextState = attackState;
+                decision = TransitionDecision.To(attackState, TransitionReason.InputAttack, priority: 20);
                 return true;
             }
 
             if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
             {
-                nextState = Owner.GetState<BlockingState>();
+                decision = TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.InputBlock, priority: 15);
                 return true;
             }
 
             if (Input.IsJumpPressed && Motor.IsGrounded)
             {
-                nextState = Owner.GetState<JumpStartState>();
+                decision = TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: 15);
                 return true;
             }
 
-            nextState = null;
+            decision = TransitionDecision.None;
             return false;
         }
     }

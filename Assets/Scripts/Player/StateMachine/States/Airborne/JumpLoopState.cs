@@ -20,14 +20,14 @@ namespace Player.StateMachine.States
             }
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             if (Motor.IsGrounded)
             {
-                return Owner.GetState<JumpEndState>();
+                return TransitionDecision.To(Owner.GetState<JumpEndState>(), TransitionReason.Landed, priority: 25);
             }
 
-            return null;
+            return TransitionDecision.None;
         }
     }
 }

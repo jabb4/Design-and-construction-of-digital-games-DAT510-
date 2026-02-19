@@ -59,10 +59,11 @@ namespace Player.StateMachine
             }
 
             // Check for state transitions
-            IState nextState = CurrentState?.CheckTransitions();
-            if (nextState != null && nextState != CurrentState)
+            TransitionDecision transition =
+                CurrentState != null ? CurrentState.EvaluateTransition() : TransitionDecision.None;
+            if (transition.HasTransition && transition.NextState != CurrentState)
             {
-                ChangeState(nextState);
+                ChangeState(transition.NextState);
             }
 
             // Update current state

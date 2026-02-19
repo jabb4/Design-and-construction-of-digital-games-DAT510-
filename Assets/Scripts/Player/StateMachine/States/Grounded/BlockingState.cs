@@ -78,11 +78,11 @@ namespace Player.StateMachine
             RotateWithContext(requireMovementInput: true);
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             if (!Owner.IsEquipped)
             {
-                return Owner.GetState<States.IdleState>();
+                return TransitionDecision.To(Owner.GetState<States.IdleState>(), TransitionReason.StandardFlow);
             }
 
             if (Owner.IsDefenseReactionActive &&
@@ -96,14 +96,14 @@ namespace Player.StateMachine
 
                 States.AttackState attackState = Owner.GetState<States.AttackState>();
                 attackState.SetComboIndex(0);
-                return attackState;
+                return TransitionDecision.To(attackState, TransitionReason.RecoveryInterrupt, priority: 30);
             }
 
             if (!Input.IsBlocking)
             {
                 if (Owner.IsDefenseReactionActive)
                 {
-                    return null;
+                    return TransitionDecision.None;
                 }
 
                 if (!isExiting)
@@ -113,7 +113,7 @@ namespace Player.StateMachine
                     CrossFade(Owner.GetDefenseExitStateName(activeGuardSide), 0.1f);
                 }
 
-                return null;
+                return TransitionDecision.None;
             }
 
             if (isExiting && !Owner.IsDefenseReactionActive)
@@ -125,15 +125,15 @@ namespace Player.StateMachine
 
             if (Input.IsJumpPressed && Motor.IsGrounded)
             {
-                return null;
+                return TransitionDecision.None;
             }
 
             if (Input.IsSprinting && Input.HasMovementInput)
             {
-                return null;
+                return TransitionDecision.None;
             }
 
-            return null;
+            return TransitionDecision.None;
         }
     }
 }

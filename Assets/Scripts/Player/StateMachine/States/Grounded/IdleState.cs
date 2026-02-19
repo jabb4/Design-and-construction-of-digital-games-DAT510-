@@ -49,29 +49,29 @@ namespace Player.StateMachine.States
             }
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             if (!Motor.IsGrounded)
             {
-                return Owner.GetState<JumpLoopState>();
+                return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: 25);
             }
 
-            if (TryGetCommonGroundedTransition(out IState nextState))
+            if (TryGetCommonGroundedTransition(out TransitionDecision decision))
             {
-                return nextState;
+                return decision;
             }
 
             if (Input.MoveInput.sqrMagnitude > 0.01f)
             {
                 if (Input.IsSprinting)
                 {
-                    return Owner.GetState<SprintState>();
+                    return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
                 }
 
-                return Owner.GetState<WalkingState>();
+                return TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
             }
 
-            return null;
+            return TransitionDecision.None;
         }
 
     }

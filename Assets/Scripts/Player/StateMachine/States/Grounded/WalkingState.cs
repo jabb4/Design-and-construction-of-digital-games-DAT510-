@@ -108,21 +108,21 @@ namespace Player.StateMachine.States
             RotateWithContext();
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
-            if (TryGetCommonGroundedTransition(out IState nextState))
+            if (TryGetCommonGroundedTransition(out TransitionDecision decision))
             {
-                return nextState;
+                return decision;
             }
 
             if (!Motor.IsGrounded)
             {
-                return Owner.GetState<JumpLoopState>();
+                return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: 25);
             }
 
             if (Input.IsSprinting && Input.HasMovementInput)
             {
-                return Owner.GetState<SprintState>();
+                return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
             }
 
             if (locomotion.CurrentPhase == WeightedLocomotion.Phase.Stop &&
@@ -131,11 +131,11 @@ namespace Player.StateMachine.States
                 if (Input.HasMovementInput)
                 {
                     return Input.IsSprinting
-                        ? Owner.GetState<SprintState>()
-                        : Owner.GetState<WalkingState>();
+                        ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
+                        : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
                 }
 
-                return Owner.GetState<IdleState>();
+                return TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.StandardFlow);
             }
 
             if (!Input.HasMovementInput && locomotion.IsLooping)
@@ -143,7 +143,7 @@ namespace Player.StateMachine.States
                 locomotion.RequestStop();
             }
 
-            return null;
+            return TransitionDecision.None;
         }
 
         public override void OnExit()

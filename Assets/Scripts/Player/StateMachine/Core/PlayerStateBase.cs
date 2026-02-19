@@ -152,8 +152,8 @@ namespace Player.StateMachine
         /// Checks for state transitions and returns the next state if a transition should occur.
         /// Must be implemented by concrete state classes.
         /// </summary>
-        /// <returns>The next state to transition to, or null to remain in this state.</returns>
-        public abstract IState CheckTransitions();
+        /// <returns>The transition decision for this frame.</returns>
+        public abstract TransitionDecision EvaluateTransition();
 
         #endregion
 

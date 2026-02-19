@@ -31,11 +31,11 @@ namespace Player.StateMachine.States
             }
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             if (Input.IsJumpBuffered && GetAnimatorNormalizedTime() >= 0.9f)
             {
-                return Owner.GetState<JumpStartState>();
+                return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: 20);
             }
 
             AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
@@ -47,20 +47,20 @@ namespace Player.StateMachine.States
                 {
                     if (Input.IsSprinting)
                     {
-                        return Owner.GetState<SprintState>();
+                        return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
                     }
                     else
                     {
-                        return Owner.GetState<WalkingState>();
+                        return TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
                     }
                 }
                 else
                 {
-                    return Owner.GetState<IdleState>();
+                    return TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.StandardFlow);
                 }
             }
             
-            return null;
+            return TransitionDecision.None;
         }
     }
 }

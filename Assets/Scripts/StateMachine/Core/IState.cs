@@ -1,5 +1,43 @@
 namespace StateMachine.Core
 {
+    public enum TransitionReason
+    {
+        None,
+        StandardFlow,
+        InputAttack,
+        InputBlock,
+        InputJump,
+        InputMove,
+        Airborne,
+        Landed,
+        AnimationComplete,
+        AttackCombo,
+        RecoveryInterrupt,
+        MissingData
+    }
+
+    public readonly struct TransitionDecision
+    {
+        public static TransitionDecision None => default;
+
+        public TransitionDecision(IState nextState, TransitionReason reason = TransitionReason.StandardFlow, int priority = 0)
+        {
+            NextState = nextState;
+            Reason = reason;
+            Priority = priority;
+        }
+
+        public IState NextState { get; }
+        public TransitionReason Reason { get; }
+        public int Priority { get; }
+        public bool HasTransition => NextState != null;
+
+        public static TransitionDecision To(IState nextState, TransitionReason reason = TransitionReason.StandardFlow, int priority = 0)
+        {
+            return nextState == null ? None : new TransitionDecision(nextState, reason, priority);
+        }
+    }
+
     /// <summary>
     /// Base interface for states in the hierarchical state machine.
     /// 
@@ -34,8 +72,8 @@ namespace StateMachine.Core
         /// - Perform visual updates
         /// - Execute frame-dependent logic
         /// 
-        /// Called after CheckTransitions() each frame.
-        /// Execution order: CheckTransitions() -> OnUpdate() -> (OnFixedUpdate if physics frame)
+        /// Called after EvaluateTransition() each frame.
+        /// Execution order: EvaluateTransition() -> OnUpdate() -> (OnFixedUpdate if physics frame)
         /// </summary>
         void OnUpdate();
         
@@ -78,20 +116,20 @@ namespace StateMachine.Core
         /// - Implement state machine logic
         /// 
         /// Execution flow:
-        /// 1. CheckTransitions() is called
-        /// 2. If it returns a non-null state, transition occurs:
+        /// 1. EvaluateTransition() is called
+        /// 2. If it returns a valid decision, transition occurs:
         ///    - Current state's OnExit() is called
         ///    - New state's OnEnter() is called
-        /// 3. If it returns null, the state remains active and OnUpdate() proceeds
+        /// 3. If it returns TransitionDecision.None, the state remains active and OnUpdate() proceeds
         /// 
         /// Important notes:
-        /// - Return null to stay in the current state
-        /// - Return a different IState instance to trigger a transition
+        /// - Return TransitionDecision.None to stay in the current state
+        /// - Return a decision with a different IState to trigger a transition
         /// - Transitions are evaluated every frame, so keep logic efficient
         /// - Avoid creating new state instances here; reference existing state objects
         /// </summary>
-        /// <returns>The next state to transition to, or null to stay in current state.</returns>
-        IState CheckTransitions();
+        /// <returns>A transition decision for this frame.</returns>
+        TransitionDecision EvaluateTransition();
         
         /// <summary>
         /// The name of this state for debugging.
