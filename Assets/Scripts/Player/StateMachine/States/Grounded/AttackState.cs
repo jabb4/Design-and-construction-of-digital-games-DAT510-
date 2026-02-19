@@ -2,6 +2,7 @@ namespace Player.StateMachine.States
 {
     using UnityEngine;
     using Player.StateMachine;
+    using global::StateMachine.Core;
 
     public sealed class AttackState : PlayerStateBase, IAttackPhaseListener
     {

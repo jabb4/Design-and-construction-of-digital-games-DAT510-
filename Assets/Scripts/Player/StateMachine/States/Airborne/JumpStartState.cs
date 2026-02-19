@@ -1,5 +1,6 @@
 namespace Player.StateMachine.States
 {
+    using global::StateMachine.Core;
     using UnityEngine;
     
     public class JumpStartState : PlayerStateBase

@@ -1,6 +1,7 @@
 namespace Player.StateMachine
 {
     using System.Collections.Generic;
+    using global::StateMachine.Core;
     using UnityEngine;
     using System;
     using Player.StateMachine.States;

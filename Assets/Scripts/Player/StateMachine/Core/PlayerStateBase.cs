@@ -1,5 +1,6 @@
 namespace Player.StateMachine
 {
+    using global::StateMachine.Core;
     using UnityEngine;
 
     /// <summary>

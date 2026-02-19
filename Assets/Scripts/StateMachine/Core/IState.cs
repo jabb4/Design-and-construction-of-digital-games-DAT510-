@@ -1,8 +1,7 @@
-namespace Player.StateMachine
+namespace StateMachine.Core
 {
     /// <summary>
-    /// Interface for all player states in the hierarchical state machine.
-    /// Based on the Combat Specification Document's HFSM pattern.
+    /// Base interface for states in the hierarchical state machine.
     /// 
     /// This interface defines the core contract that all states must implement,
     /// providing lifecycle methods for state entry/exit, update loops, and transition logic.
