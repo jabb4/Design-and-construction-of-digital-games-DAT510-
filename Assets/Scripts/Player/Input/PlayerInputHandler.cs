@@ -217,9 +217,9 @@ namespace Player.StateMachine
 
         #region Private Fields
 
-        private readonly InputIntentBuffer jumpIntent = new InputIntentBuffer();
-        private readonly InputIntentBuffer blockIntent = new InputIntentBuffer();
-        private readonly InputIntentBuffer attackIntent = new InputIntentBuffer();
+        private readonly IntentBuffer jumpIntent = new IntentBuffer();
+        private readonly IntentBuffer blockIntent = new IntentBuffer();
+        private readonly IntentBuffer attackIntent = new IntentBuffer();
 
         #endregion
 
@@ -266,56 +266,5 @@ namespace Player.StateMachine
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Reusable press-plus-buffer intent helper for state-driven gameplay input.
-    /// </summary>
-    public sealed class InputIntentBuffer
-    {
-        private bool pressedThisFrame;
-        private float bufferTimer;
-
-        public bool IsPressedThisFrame => pressedThisFrame;
-        public bool IsBuffered => bufferTimer > 0f;
-
-        public void RecordPress(float bufferDurationSeconds = 0f)
-        {
-            pressedThisFrame = true;
-            if (bufferDurationSeconds > 0f)
-            {
-                bufferTimer = Mathf.Max(bufferTimer, bufferDurationSeconds);
-            }
-        }
-
-        public void Tick(float deltaTime)
-        {
-            if (bufferTimer <= 0f)
-            {
-                return;
-            }
-
-            bufferTimer -= deltaTime;
-            if (bufferTimer < 0f)
-            {
-                bufferTimer = 0f;
-            }
-        }
-
-        public void ResetFrameState()
-        {
-            pressedThisFrame = false;
-        }
-
-        public bool ConsumeBuffered()
-        {
-            if (bufferTimer <= 0f)
-            {
-                return false;
-            }
-
-            bufferTimer = 0f;
-            return true;
-        }
     }
 }

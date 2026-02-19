@@ -102,13 +102,13 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (Input != null && Input.IsBlocking && Motor != null && Motor.IsGrounded)
+            if (BlockHeld && Motor != null && Motor.IsGrounded)
             {
                 ChangeState(GetState<BlockingState>());
             }
-            else if (Input != null && Input.HasMovementInput)
+            else if (HasMoveIntent)
             {
-                ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
+                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
@@ -139,9 +139,9 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (Input != null && Input.HasMovementInput)
+            if (HasMoveIntent)
             {
-                ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
+                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
@@ -163,8 +163,8 @@ namespace Player.StateMachine
             bool isGrounded = Motor != null && Motor.IsGrounded;
             bool canBlock = isGrounded;
             bool isAttacking = CurrentState is AttackState;
-            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock) || isAttacking;
-            bool isSprinting = Input != null && Input.IsSprinting;
+            bool wantsEquip = isLockedOn || (BlockHeld && canBlock) || isAttacking;
+            bool isSprinting = SprintHeld;
             bool isLanding = CurrentState is JumpEndState;
             bool canUnequipNow = Motor != null && Motor.IsGrounded && !isSprinting && !isLanding;
 

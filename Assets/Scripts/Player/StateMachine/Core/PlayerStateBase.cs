@@ -38,11 +38,6 @@ namespace Player.StateMachine
         protected Animator Animator { get; private set; }
 
         /// <summary>
-        /// Reference to the PlayerInputHandler for reading player input.
-        /// </summary>
-        protected PlayerInputHandler Input { get; private set; }
-
-        /// <summary>
         /// Reference to the CharacterMotor for physics and movement control.
         /// </summary>
         protected CharacterMotor Motor { get; private set; }
@@ -111,13 +106,13 @@ namespace Player.StateMachine
         /// </summary>
         public virtual string StateName => GetType().Name;
 
-        protected Vector2 MoveIntent => Intent?.MoveIntent ?? (Input != null ? Input.MoveInput : Vector2.zero);
-        protected bool HasMoveIntent => Intent?.HasMoveIntent ?? (Input != null && Input.HasMovementInput);
-        protected bool SprintHeld => Intent?.SprintHeld ?? (Input != null && Input.IsSprinting);
-        protected bool BlockHeld => Intent?.BlockHeld ?? (Input != null && Input.IsBlocking);
-        protected bool JumpPressed => Intent?.JumpPressed ?? (Input != null && Input.IsJumpPressed);
-        protected bool JumpBuffered => Intent?.JumpBuffered ?? (Input != null && Input.IsJumpBuffered);
-        protected bool AttackPressed => Intent?.AttackPressed ?? (Input != null && Input.IsAttackPressed);
+        protected Vector2 MoveIntent => Intent != null ? Intent.MoveIntent : Vector2.zero;
+        protected bool HasMoveIntent => Intent != null && Intent.HasMoveIntent;
+        protected bool SprintHeld => Intent != null && Intent.SprintHeld;
+        protected bool BlockHeld => Intent != null && Intent.BlockHeld;
+        protected bool JumpPressed => Intent != null && Intent.JumpPressed;
+        protected bool JumpBuffered => Intent != null && Intent.JumpBuffered;
+        protected bool AttackPressed => Intent != null && Intent.AttackPressed;
 
         #endregion
 
@@ -134,7 +129,6 @@ namespace Player.StateMachine
             Owner = stateMachine;
             Context = context;
             Animator = context?.Animator;
-            Input = context?.Input;
             Motor = context?.Motor;
         }
 

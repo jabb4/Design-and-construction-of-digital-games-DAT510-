@@ -26,6 +26,7 @@ namespace Player.StateMachine
         public CharacterMotor Motor { get; private set; }
         public CameraController CameraController { get; private set; }
         public PlayerCombatStateContext CombatContext { get; private set; }
+        public IIntentSource IntentSource => CombatContext?.IntentSource;
         public AttackStep? CurrentAttackStep { get; private set; }
         public AttackComboAsset AttackCombo => attackCombo;
         public int AttackStepCount => attackCombo != null ? attackCombo.Count : 0;
@@ -33,6 +34,9 @@ namespace Player.StateMachine
         private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
         private readonly Dictionary<Type, PlayerStateBase> stateCache = new Dictionary<Type, PlayerStateBase>(16);
         private StateMachineRuntime runtime;
+        private bool HasMoveIntent => IntentSource != null && IntentSource.HasMoveIntent;
+        private bool SprintHeld => IntentSource != null && IntentSource.SprintHeld;
+        private bool BlockHeld => IntentSource != null && IntentSource.BlockHeld;
 
         private void Awake()
         {
@@ -169,7 +173,7 @@ namespace Player.StateMachine
                 Debug.LogWarning("[PlayerStateMachine] CameraController not found in scene. Lock-on weapon behavior will not work.");
             }
 
-            CombatContext = new PlayerCombatStateContext(this, Animator, Input, Motor);
+            CombatContext = new PlayerCombatStateContext(this, Animator, Input, Motor, intentSource: Input);
         }
 
         private void InitializeRuntime()
@@ -270,19 +274,21 @@ namespace Player.StateMachine
             PlayerStateMachine owner,
             Animator animator,
             PlayerInputHandler input,
-            CharacterMotor motor)
+            CharacterMotor motor,
+            IIntentSource intentSource = null)
         {
             Owner = owner;
             Animator = animator;
             Input = input;
             Motor = motor;
+            IntentSource = intentSource ?? input;
         }
 
         public PlayerStateMachine Owner { get; }
         public Animator Animator { get; }
         public PlayerInputHandler Input { get; }
         public CharacterMotor Motor { get; }
-        public IIntentSource IntentSource => Input;
+        public IIntentSource IntentSource { get; }
 
         public Transform ActorTransform => Owner != null ? Owner.transform : null;
         public bool IsGrounded => Motor != null && Motor.IsGrounded;
