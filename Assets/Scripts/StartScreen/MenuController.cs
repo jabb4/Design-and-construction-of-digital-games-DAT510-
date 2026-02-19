@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MenuButtons : MonoBehaviour
+public class MenuController : MonoBehaviour
 {
     public void NewGame()
     {
@@ -17,7 +17,7 @@ public class MenuButtons : MonoBehaviour
         SceneManager.LoadSceneAsync(2);
     }
 
-    public void QuitGame()
+    public void Exit()
     {
         Application.Quit();
     }

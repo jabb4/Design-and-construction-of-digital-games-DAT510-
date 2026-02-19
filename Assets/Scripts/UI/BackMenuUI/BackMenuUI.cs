@@ -4,10 +4,10 @@ using UnityEngine.InputSystem;
 
 public class BackMenuUI : MonoBehaviour
 {
-    public GameObject warningText;
-    public bool isInGame = false;
-    private float lastClickTime = -1f;
-    private const float DOUBLE_CLICK_TIME = 0.5f;
+    
+    [SerializeField] private bool isInGame = false;
+    [SerializeField] private GameObject backMenuBanner;
+    [SerializeField] private GameObject backMenuConfirmation;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -23,8 +23,8 @@ public class BackMenuUI : MonoBehaviour
 
     void OnEnable()
     {
-        if (isInGame) warningText.gameObject.SetActive(true);
-        else warningText.gameObject.SetActive(false);
+        backMenuConfirmation.SetActive(false);
+        backMenuBanner.SetActive(true);
     }
 
     public void Resume()
@@ -32,17 +32,24 @@ public class BackMenuUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void Exit()
+    private void ToggleConfirmation()
+    {
+        Debug.Log("Hello?????");
+        backMenuBanner.SetActive(false);
+        backMenuConfirmation.SetActive(true);
+    }
+
+    public void ConfirmExit()
+    {
+        SceneManager.LoadSceneAsync(1);
+    }
+
+    public void ExitToMainMenu()
     {
         if (isInGame)
         {
-            // If the time since the last click is greater than the threshold, 
-            // treat this as the first click of a double-click.
-            if (Time.unscaledTime - lastClickTime > DOUBLE_CLICK_TIME)
-            {
-                lastClickTime = Time.unscaledTime;
-                return;
-            }
+            ToggleConfirmation();
+            return;
         }
         SceneManager.LoadSceneAsync(1);
     }
