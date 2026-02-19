@@ -82,64 +82,23 @@ namespace Player.StateMachine.States
             }
 
             bool isInAttackState = IsAnimatorInState(step.AnimationStateName);
-            if (isInAttackState)
+            RegisterAttackPresence(isInAttackState);
+            BufferComboInputIfNeeded(isInAttackState);
+
+            IState recoveryTransition = TryGetRecoveryTransition();
+            if (recoveryTransition != null)
             {
-                hasPlayedAttackAnimation = true;
+                return recoveryTransition;
             }
 
-            if (hasEnteredRecovery && isInAttackState && Input.IsAttackPressed)
+            IState comboTransition = TryGetComboTransition();
+            if (comboTransition != null)
             {
-                queuedNextAttack = true;
+                return comboTransition;
             }
 
-            if (hasEnteredRecovery && Motor.IsGrounded)
-            {
-                if (Input.IsBlocking && Owner.IsEquipped)
-                {
-                    Owner.ClearCurrentAttack();
-                    return Owner.GetState<BlockingState>();
-                }
-
-                if (recoveryElapsed >= RecoveryMoveDelay)
-                {
-                    if (Input.IsJumpPressed)
-                    {
-                        Owner.ClearCurrentAttack();
-                        return Owner.GetState<JumpStartState>();
-                    }
-
-                    if (Input.HasMovementInput)
-                    {
-                        Owner.ClearCurrentAttack();
-                        return Input.IsSprinting ? Owner.GetState<SprintState>() : Owner.GetState<WalkingState>();
-                    }
-                }
-            }
-
-            if (hasEnteredRecovery && queuedNextAttack && comboIndex < Owner.AttackStepCount - 1)
-            {
-                var nextState = Owner.GetState<AttackState>();
-                nextState.SetComboIndex(comboIndex + 1);
-                return nextState;
-            }
-
-            if (isInAttackState && IsAnimationComplete(0.98f))
-            {
-                Owner.ClearCurrentAttack();
-                return Input.HasMovementInput
-                    ? (Input.IsSprinting ? Owner.GetState<SprintState>() : Owner.GetState<WalkingState>())
-                    : Owner.GetState<IdleState>();
-            }
-
-            if (hasPlayedAttackAnimation && !isInAttackState)
-            {
-                Owner.ClearCurrentAttack();
-                return Input.HasMovementInput
-                    ? (Input.IsSprinting ? Owner.GetState<SprintState>() : Owner.GetState<WalkingState>())
-                    : Owner.GetState<IdleState>();
-            }
-
-            return null;
+            IState exitTransition = TryGetAttackExitTransition(isInAttackState);
+            return exitTransition;
         }
 
         public override void OnExit()
@@ -185,6 +144,90 @@ namespace Player.StateMachine.States
 
             step = default;
             return false;
+        }
+
+        private void RegisterAttackPresence(bool isInAttackState)
+        {
+            if (isInAttackState)
+            {
+                hasPlayedAttackAnimation = true;
+            }
+        }
+
+        private void BufferComboInputIfNeeded(bool isInAttackState)
+        {
+            if (hasEnteredRecovery && isInAttackState && Input.IsAttackPressed)
+            {
+                queuedNextAttack = true;
+            }
+        }
+
+        private IState TryGetRecoveryTransition()
+        {
+            if (!hasEnteredRecovery || !Motor.IsGrounded)
+            {
+                return null;
+            }
+
+            if (Input.IsBlocking && Owner.IsEquipped)
+            {
+                Owner.ClearCurrentAttack();
+                return Owner.GetState<BlockingState>();
+            }
+
+            if (recoveryElapsed < RecoveryMoveDelay)
+            {
+                return null;
+            }
+
+            if (Input.IsJumpPressed)
+            {
+                Owner.ClearCurrentAttack();
+                return Owner.GetState<JumpStartState>();
+            }
+
+            if (Input.HasMovementInput)
+            {
+                Owner.ClearCurrentAttack();
+                return Input.IsSprinting ? Owner.GetState<SprintState>() : Owner.GetState<WalkingState>();
+            }
+
+            return null;
+        }
+
+        private IState TryGetComboTransition()
+        {
+            if (!hasEnteredRecovery || !queuedNextAttack || comboIndex >= Owner.AttackStepCount - 1)
+            {
+                return null;
+            }
+
+            var nextState = Owner.GetState<AttackState>();
+            nextState.SetComboIndex(comboIndex + 1);
+            return nextState;
+        }
+
+        private IState TryGetAttackExitTransition(bool isInAttackState)
+        {
+            if (isInAttackState && IsAnimationComplete(0.98f))
+            {
+                return ExitAttackToLocomotionOrIdle();
+            }
+
+            if (hasPlayedAttackAnimation && !isInAttackState)
+            {
+                return ExitAttackToLocomotionOrIdle();
+            }
+
+            return null;
+        }
+
+        private IState ExitAttackToLocomotionOrIdle()
+        {
+            Owner.ClearCurrentAttack();
+            return Input.HasMovementInput
+                ? (Input.IsSprinting ? Owner.GetState<SprintState>() : Owner.GetState<WalkingState>())
+                : Owner.GetState<IdleState>();
         }
 
         private void WarnIfMissingAttackEvents(AttackStep step)
