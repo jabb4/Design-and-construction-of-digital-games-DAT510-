@@ -85,8 +85,8 @@ namespace Player.StateMachine
                     if (IsStartComplete())
                     {
                         CurrentPhase = Phase.Loop;
-                        string loopAnim = getLoopAnimation();
-                        SafeCrossFade(loopAnim, loopTransitionDuration);
+                        string loopAnimStart = getLoopAnimation();
+                        SafeCrossFade(loopAnimStart, loopTransitionDuration);
                     }
                     return false;
 
@@ -96,6 +96,14 @@ namespace Player.StateMachine
                         CurrentPhase = Phase.Stop;
                         string stopAnim = getStopAnimation();
                         SafeCrossFade(stopAnim, stopTransitionDuration);
+                        return false;
+                    }
+
+                    // Recover when an enter-time crossfade was missed (for example during animation-event timing).
+                    string loopAnimCurrent = getLoopAnimation();
+                    if (!IsInOrTransitioningToState(loopAnimCurrent))
+                    {
+                        SafeCrossFade(loopAnimCurrent, loopTransitionDuration);
                     }
                     return false;
 
@@ -103,8 +111,8 @@ namespace Player.StateMachine
                     if (hasInput)
                     {
                         CurrentPhase = Phase.Loop;
-                        string loopAnim = getLoopAnimation();
-                        SafeCrossFade(loopAnim, loopTransitionDuration);
+                        string loopAnimResume = getLoopAnimation();
+                        SafeCrossFade(loopAnimResume, loopTransitionDuration);
                         return false;
                     }
 
@@ -198,10 +206,38 @@ namespace Player.StateMachine
 
         private bool IsInAnimatorState(string stateName, int layer = 0)
         {
-            if (animator == null) return false;
+            if (animator == null || string.IsNullOrEmpty(stateName)) return false;
 
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layer);
+            int shortNameHash = Animator.StringToHash(stateName);
+            if (stateInfo.shortNameHash == shortNameHash)
+            {
+                return true;
+            }
+
             return stateInfo.IsName(stateName);
+        }
+
+        private bool IsInOrTransitioningToState(string stateName, int layer = 0)
+        {
+            if (IsInAnimatorState(stateName, layer))
+            {
+                return true;
+            }
+
+            if (animator == null || string.IsNullOrEmpty(stateName) || !animator.IsInTransition(layer))
+            {
+                return false;
+            }
+
+            AnimatorStateInfo nextStateInfo = animator.GetNextAnimatorStateInfo(layer);
+            int shortNameHash = Animator.StringToHash(stateName);
+            if (nextStateInfo.shortNameHash == shortNameHash)
+            {
+                return true;
+            }
+
+            return nextStateInfo.IsName(stateName);
         }
 
         private float GetNormalizedTime(int layer = 0)

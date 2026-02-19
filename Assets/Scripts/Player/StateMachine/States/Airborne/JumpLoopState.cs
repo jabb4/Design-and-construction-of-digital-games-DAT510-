@@ -1,5 +1,6 @@
 namespace Player.StateMachine.States
 {
+    using global::StateMachine.Core;
     using UnityEngine;
 
     public class JumpLoopState : PlayerStateBase
@@ -11,7 +12,7 @@ namespace Player.StateMachine.States
 
         public override void OnFixedUpdate()
         {
-            Motor.Move(Input.MoveInput, Input.IsSprinting);
+            Motor.Move(MoveIntent, SprintHeld);
 
             if (Motor.Velocity.y < 0)
             {
@@ -19,14 +20,14 @@ namespace Player.StateMachine.States
             }
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             if (Motor.IsGrounded)
             {
-                return Owner.GetState<JumpEndState>();
+                return TransitionDecision.To(Owner.GetState<JumpEndState>(), TransitionReason.Landed, priority: TransitionPriorities.AirStateSync);
             }
 
-            return null;
+            return TransitionDecision.None;
         }
     }
 }

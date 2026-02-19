@@ -1,5 +1,7 @@
 namespace Player.StateMachine.States
 {
+    using Player.StateMachine.Transitions;
+    using global::StateMachine.Core;
     using UnityEngine;
 
     public class JumpEndState : PlayerStateBase
@@ -22,7 +24,7 @@ namespace Player.StateMachine.States
             landingTimer += Time.fixedDeltaTime;
             float blend = landingDuration <= 0f ? 1f : Mathf.Clamp01(landingTimer / landingDuration);
 
-            Motor.Move(Input.MoveInput, Input.IsSprinting, blend);
+            Motor.Move(MoveIntent, SprintHeld, blend);
 
             if (landingTimer >= landingDuration)
             {
@@ -30,11 +32,11 @@ namespace Player.StateMachine.States
             }
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
-            if (Input.IsJumpBuffered && GetAnimatorNormalizedTime() >= 0.9f)
+            if (JumpBuffered && GetAnimatorNormalizedTime() >= 0.9f)
             {
-                return Owner.GetState<JumpStartState>();
+                return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputPrimary);
             }
 
             AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
@@ -42,24 +44,10 @@ namespace Player.StateMachine.States
 
             if (inJumpEnd && IsAnimationComplete(0.9f))
             {
-                if (Input.HasMovementInput)
-                {
-                    if (Input.IsSprinting)
-                    {
-                        return Owner.GetState<SprintState>();
-                    }
-                    else
-                    {
-                        return Owner.GetState<WalkingState>();
-                    }
-                }
-                else
-                {
-                    return Owner.GetState<IdleState>();
-                }
+                return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
             }
             
-            return null;
+            return TransitionDecision.None;
         }
     }
 }
