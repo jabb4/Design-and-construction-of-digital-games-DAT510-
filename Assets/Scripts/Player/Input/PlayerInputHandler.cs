@@ -1,5 +1,6 @@
 namespace Player.StateMachine
 {
+    using global::StateMachine.Core;
     using UnityEngine;
     using UnityEngine.InputSystem;
     using System;
@@ -10,7 +11,7 @@ namespace Player.StateMachine
     /// This class wraps Unity's Input System and provides a consistent interface
     /// for the PlayerStateMachine to query input state.
     /// </summary>
-    public class PlayerInputHandler : MonoBehaviour
+    public class PlayerInputHandler : MonoBehaviour, IIntentSource
     {
         #region Input Properties
 
@@ -56,6 +57,16 @@ namespace Player.StateMachine
         /// Returns true if the player has significant movement input (above threshold).
         /// </summary>
         public bool HasMovementInput => MoveInput.magnitude > MovementThreshold;
+
+        // Shared intent contract aliases (player + AI compatibility surface).
+        public Vector2 MoveIntent => MoveInput;
+        public bool HasMoveIntent => HasMovementInput;
+        public bool SprintHeld => IsSprinting;
+        public bool BlockHeld => IsBlocking;
+        public bool BlockPressed => IsBlockPressed;
+        public bool JumpPressed => IsJumpPressed;
+        public bool JumpBuffered => IsJumpBuffered;
+        public bool AttackPressed => IsAttackPressed;
 
         #endregion
 

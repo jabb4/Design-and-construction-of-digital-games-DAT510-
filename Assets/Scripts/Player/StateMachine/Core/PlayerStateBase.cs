@@ -23,6 +23,16 @@ namespace Player.StateMachine
         protected PlayerCombatStateContext Context { get; private set; }
 
         /// <summary>
+        /// Shared actor context view used by reusable state-machine logic.
+        /// </summary>
+        protected IActorStateContext ActorContext => Context;
+
+        /// <summary>
+        /// Intent surface (player input or AI planner) for state logic.
+        /// </summary>
+        protected IIntentSource Intent => Context?.IntentSource;
+
+        /// <summary>
         /// Reference to the Animator component for animation control.
         /// </summary>
         protected Animator Animator { get; private set; }

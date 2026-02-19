@@ -262,7 +262,7 @@ namespace Player.StateMachine
         }
     }
 
-    public sealed class PlayerCombatStateContext
+    public sealed class PlayerCombatStateContext : IActorStateContext
     {
         private readonly Dictionary<int, float> timersByKey = new Dictionary<int, float>();
 
@@ -282,6 +282,7 @@ namespace Player.StateMachine
         public Animator Animator { get; }
         public PlayerInputHandler Input { get; }
         public CharacterMotor Motor { get; }
+        public IIntentSource IntentSource => Input;
 
         public Transform ActorTransform => Owner != null ? Owner.transform : null;
         public bool IsGrounded => Motor != null && Motor.IsGrounded;
