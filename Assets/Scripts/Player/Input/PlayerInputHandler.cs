@@ -33,24 +33,24 @@ namespace Player.StateMachine
         /// <summary>
         /// True only on the frame when block was pressed.
         /// </summary>
-        public bool IsBlockPressed { get; private set; }
+        public bool IsBlockPressed => blockIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True only on the frame when jump was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
-        public bool IsJumpPressed { get; private set; }
+        public bool IsJumpPressed => jumpIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True only on the frame when attack was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
-        public bool IsAttackPressed { get; private set; }
+        public bool IsAttackPressed => attackIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True while jump input is buffered.
         /// </summary>
-        public bool IsJumpBuffered => jumpBufferTimer > 0f;
+        public bool IsJumpBuffered => jumpIntent.IsBuffered;
 
         /// <summary>
         /// Returns true if the player has significant movement input (above threshold).
@@ -72,6 +72,10 @@ namespace Player.StateMachine
         [SerializeField]
         [Tooltip("Time window to buffer jump input (seconds)")]
         private float jumpBufferDuration = 0.2f;
+
+        [SerializeField]
+        [Tooltip("Time window to buffer attack input (seconds)")]
+        private float attackBufferDuration = 0f;
 
         /// <summary>
         /// Public accessor for the movement threshold.
@@ -146,8 +150,7 @@ namespace Player.StateMachine
         {
             if (value.isPressed)
             {
-                IsJumpPressed = true;
-                jumpBufferTimer = jumpBufferDuration;
+                jumpIntent.RecordPress(jumpBufferDuration);
                 OnJumpPressed?.Invoke();
             }
         }
@@ -162,7 +165,7 @@ namespace Player.StateMachine
             IsBlocking = value.isPressed;
             if (IsBlocking && !wasBlocking)
             {
-                IsBlockPressed = true;
+                blockIntent.RecordPress();
             }
         }
 
@@ -175,7 +178,7 @@ namespace Player.StateMachine
         {
             if (value.isPressed)
             {
-                IsAttackPressed = true;
+                attackIntent.RecordPress(attackBufferDuration);
                 OnAttackPressed?.Invoke();
             }
         }
@@ -191,25 +194,21 @@ namespace Player.StateMachine
         private void LateUpdate()
         {
             // Reset one-frame flags
-            IsJumpPressed = false;
-            IsBlockPressed = false;
-            IsAttackPressed = false;
+            jumpIntent.ResetFrameState();
+            blockIntent.ResetFrameState();
+            attackIntent.ResetFrameState();
 
-            if (jumpBufferTimer > 0f)
-            {
-                jumpBufferTimer -= Time.deltaTime;
-                if (jumpBufferTimer < 0f)
-                {
-                    jumpBufferTimer = 0f;
-                }
-            }
+            jumpIntent.Tick(Time.deltaTime);
+            attackIntent.Tick(Time.deltaTime);
         }
 
         #endregion
 
         #region Private Fields
 
-        private float jumpBufferTimer;
+        private readonly InputIntentBuffer jumpIntent = new InputIntentBuffer();
+        private readonly InputIntentBuffer blockIntent = new InputIntentBuffer();
+        private readonly InputIntentBuffer attackIntent = new InputIntentBuffer();
 
         #endregion
 
@@ -245,6 +244,67 @@ namespace Player.StateMachine
             return MoveInput.magnitude;
         }
 
+        public bool ConsumeJumpBuffer()
+        {
+            return jumpIntent.ConsumeBuffered();
+        }
+
+        public bool ConsumeAttackBuffer()
+        {
+            return attackIntent.ConsumeBuffered();
+        }
+
         #endregion
+    }
+
+    /// <summary>
+    /// Reusable press-plus-buffer intent helper for state-driven gameplay input.
+    /// </summary>
+    public sealed class InputIntentBuffer
+    {
+        private bool pressedThisFrame;
+        private float bufferTimer;
+
+        public bool IsPressedThisFrame => pressedThisFrame;
+        public bool IsBuffered => bufferTimer > 0f;
+
+        public void RecordPress(float bufferDurationSeconds = 0f)
+        {
+            pressedThisFrame = true;
+            if (bufferDurationSeconds > 0f)
+            {
+                bufferTimer = Mathf.Max(bufferTimer, bufferDurationSeconds);
+            }
+        }
+
+        public void Tick(float deltaTime)
+        {
+            if (bufferTimer <= 0f)
+            {
+                return;
+            }
+
+            bufferTimer -= deltaTime;
+            if (bufferTimer < 0f)
+            {
+                bufferTimer = 0f;
+            }
+        }
+
+        public void ResetFrameState()
+        {
+            pressedThisFrame = false;
+        }
+
+        public bool ConsumeBuffered()
+        {
+            if (bufferTimer <= 0f)
+            {
+                return false;
+            }
+
+            bufferTimer = 0f;
+            return true;
+        }
     }
 }
