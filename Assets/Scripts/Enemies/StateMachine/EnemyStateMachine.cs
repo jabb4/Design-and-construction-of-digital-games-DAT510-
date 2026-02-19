@@ -14,9 +14,20 @@ namespace Enemies.StateMachine
     [RequireComponent(typeof(EnemyNavAgentBridge))]
     public sealed class EnemyStateMachine : MonoBehaviour
     {
+        private static readonly int VelocityXHash = Animator.StringToHash("VelocityX");
+        private static readonly int VelocityZHash = Animator.StringToHash("VelocityZ");
+        private static readonly int SpeedHash = Animator.StringToHash("Speed");
+        private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
+        private static readonly int IsGroundedHash = Animator.StringToHash("IsGrounded");
+        private static readonly int IsSprintingHash = Animator.StringToHash("IsSprinting");
+        private static readonly int IsInAirHash = Animator.StringToHash("IsInAir");
+
         [Header("Combat")]
         [SerializeField] private EnemyCombatProfile combatProfile;
         [SerializeField, Min(0.05f)] private float targetRefreshIntervalSeconds = 0.2f;
+        [Header("Animation")]
+        [SerializeField, Min(0f)] private float locomotionSmoothingSeconds = 0.08f;
+        [SerializeField, Min(0f)] private float movingSpeedThreshold = 0.05f;
 
         public event Action<IState, IState> OnStateChanged;
 
@@ -59,6 +70,8 @@ namespace Enemies.StateMachine
         private Transform currentTarget;
         private ICombatant currentTargetCombatant;
         private float nextTargetRefreshAt = float.NegativeInfinity;
+        private Vector2 smoothedLocalVelocity;
+        private Vector2 smoothedLocalVelocityRef;
 
         private void Awake()
         {
@@ -276,6 +289,11 @@ namespace Enemies.StateMachine
                 layer = 0;
             }
 
+            if (TryCrossFadeWithSubStatePaths(stateName, duration, layer))
+            {
+                return true;
+            }
+
             int stateHash = Animator.StringToHash(stateName);
             if (Animator.HasState(layer, stateHash))
             {
@@ -293,6 +311,70 @@ namespace Enemies.StateMachine
             }
 
             return false;
+        }
+
+        public bool TryCrossFadeStateIfNotActive(string stateName, float duration = 0.08f, int layer = 0)
+        {
+            if (IsInOrTransitioningToState(stateName, layer))
+            {
+                return false;
+            }
+
+            return TryCrossFadeState(stateName, duration, layer);
+        }
+
+        private bool TryCrossFadeWithSubStatePaths(string stateName, float duration, int layer)
+        {
+            string layerName = Animator.GetLayerName(layer);
+            string[] preferredPaths =
+            {
+                $"{layerName}.Grounded.Equip Locomotion.{stateName}",
+                $"{layerName}.Grounded.Unequip Locomotion.{stateName}",
+                $"{layerName}.Airborne.Equip Jump.{stateName}",
+                $"{layerName}.Airborne.Unequip Jump.{stateName}"
+            };
+
+            for (int i = 0; i < preferredPaths.Length; i++)
+            {
+                int pathHash = Animator.StringToHash(preferredPaths[i]);
+                if (!Animator.HasState(layer, pathHash))
+                {
+                    continue;
+                }
+
+                Animator.CrossFadeInFixedTime(pathHash, duration, layer);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsInOrTransitioningToState(string stateName, int layer)
+        {
+            if (Animator == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return false;
+            }
+
+            if (layer < 0 || layer >= Animator.layerCount)
+            {
+                layer = 0;
+            }
+
+            int shortNameHash = Animator.StringToHash(stateName);
+            AnimatorStateInfo current = Animator.GetCurrentAnimatorStateInfo(layer);
+            if (current.shortNameHash == shortNameHash || current.IsName(stateName))
+            {
+                return true;
+            }
+
+            if (!Animator.IsInTransition(layer))
+            {
+                return false;
+            }
+
+            AnimatorStateInfo next = Animator.GetNextAnimatorStateInfo(layer);
+            return next.shortNameHash == shortNameHash || next.IsName(stateName);
         }
 
         private bool IsTargetStillValid()
@@ -320,6 +402,52 @@ namespace Enemies.StateMachine
             Animator.SetBool("IsEquipped", true);
             Animator.SetBool("IsTransitioningWeapon", false);
             Animator.SetBool("IsBlocking", false);
+            Animator.SetBool("IsLockedOn", HasTarget);
+            Animator.SetBool(IsGroundedHash, true);
+            Animator.SetBool(IsSprintingHash, false);
+            Animator.SetBool(IsInAirHash, false);
+
+            UpdateLocomotionAnimatorParameters();
+        }
+
+        private void UpdateLocomotionAnimatorParameters()
+        {
+            Vector3 worldVelocity = Vector3.zero;
+            if (NavBridge != null)
+            {
+                worldVelocity = NavBridge.CurrentVelocity;
+                Vector3 desiredVelocity = NavBridge.DesiredVelocity;
+                if (worldVelocity.sqrMagnitude < desiredVelocity.sqrMagnitude)
+                {
+                    worldVelocity = desiredVelocity;
+                }
+            }
+
+            worldVelocity.y = 0f;
+            Vector3 localVelocity3 = transform.InverseTransformDirection(worldVelocity);
+            Vector2 targetLocalVelocity = new Vector2(localVelocity3.x, localVelocity3.z);
+
+            if (locomotionSmoothingSeconds > 0f)
+            {
+                smoothedLocalVelocity = Vector2.SmoothDamp(
+                    smoothedLocalVelocity,
+                    targetLocalVelocity,
+                    ref smoothedLocalVelocityRef,
+                    locomotionSmoothingSeconds);
+            }
+            else
+            {
+                smoothedLocalVelocity = targetLocalVelocity;
+                smoothedLocalVelocityRef = Vector2.zero;
+            }
+
+            float speed = smoothedLocalVelocity.magnitude;
+            bool isMoving = speed > movingSpeedThreshold;
+
+            Animator.SetFloat(VelocityXHash, smoothedLocalVelocity.x);
+            Animator.SetFloat(VelocityZHash, smoothedLocalVelocity.y);
+            Animator.SetFloat(SpeedHash, speed);
+            Animator.SetBool(IsMovingHash, isMoving);
         }
 
         private void ValidateConfiguration()

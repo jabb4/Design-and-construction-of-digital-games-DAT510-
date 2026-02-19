@@ -29,6 +29,10 @@ namespace Enemies.AI
         private float orbitRadius = 2.75f;
         private float orbitAngleDegrees;
 
+        public Vector3 CurrentVelocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
+        public Vector3 DesiredVelocity => navMeshAgent != null ? navMeshAgent.desiredVelocity : Vector3.zero;
+        public bool IsStopped => mode == MoveMode.Stopped;
+
         private void Awake()
         {
             ResolveReferences();

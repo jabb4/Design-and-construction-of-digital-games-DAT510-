@@ -27,7 +27,7 @@ namespace Enemies.StateMachine.States
                 Enemy.CloseParryWindow();
             }
 
-            Owner?.TryCrossFadeState("DefenseIdle", 0.1f);
+            Owner?.TryCrossFadeState("Idle", 0.1f);
         }
 
         public override void OnUpdate()
@@ -126,10 +126,12 @@ namespace Enemies.StateMachine.States
             if (Owner.DistanceToTarget > Owner.EngageRange)
             {
                 Owner.NavBridge.SetPursue(Owner.CurrentTarget, Owner.AttackRange);
+                Owner.TryCrossFadeStateIfNotActive("Walk Locomotion", 0.1f);
             }
             else
             {
                 Owner.NavBridge.SetOrbit(Owner.CurrentTarget, orbitRadius);
+                Owner.TryCrossFadeStateIfNotActive("Walk Locomotion", 0.1f);
             }
         }
     }

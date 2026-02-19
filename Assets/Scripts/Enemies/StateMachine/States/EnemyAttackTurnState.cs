@@ -154,10 +154,12 @@ namespace Enemies.StateMachine.States
             if (Owner.DistanceToTarget > Owner.AttackRange)
             {
                 Owner.NavBridge.SetPursue(Owner.CurrentTarget, Owner.AttackRange * 0.85f);
+                Owner.TryCrossFadeStateIfNotActive("Walk Locomotion", 0.1f);
             }
             else
             {
                 Owner.NavBridge.Stop();
+                Owner.TryCrossFadeStateIfNotActive("Idle", 0.08f);
             }
         }
     }
