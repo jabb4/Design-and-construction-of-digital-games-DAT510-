@@ -14,8 +14,8 @@ namespace Player.StateMachine
         [Header("Combat")]
         [SerializeField] private AttackComboAsset attackCombo;
 
-        public IState CurrentState { get; private set; }
-        public string CurrentStateName => CurrentState?.StateName ?? "None";
+        public IState CurrentState => runtime?.CurrentState;
+        public string CurrentStateName => runtime?.CurrentStateName ?? "None";
 
         public event Action<IState, IState> OnStateChanged;
         public event Action<bool> OnWeaponStateChanged;
@@ -31,10 +31,13 @@ namespace Player.StateMachine
         public int AttackStepCount => attackCombo != null ? attackCombo.Count : 0;
 
         private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
+        private readonly Dictionary<Type, PlayerStateBase> stateCache = new Dictionary<Type, PlayerStateBase>(16);
+        private StateMachineRuntime runtime;
 
         private void Awake()
         {
             InitializeComponents();
+            InitializeRuntime();
             ValidateAttackComboConfiguration();
         }
 
@@ -58,16 +61,7 @@ namespace Player.StateMachine
                 return;
             }
 
-            // Check for state transitions
-            TransitionDecision transition =
-                CurrentState != null ? CurrentState.EvaluateTransition() : TransitionDecision.None;
-            if (transition.HasTransition && transition.NextState != CurrentState)
-            {
-                ChangeState(transition.NextState);
-            }
-
-            // Update current state
-            CurrentState?.OnUpdate();
+            runtime?.Tick();
 
             UpdateAnimatorParameters();
         }
@@ -80,7 +74,7 @@ namespace Player.StateMachine
                 return;
             }
 
-            CurrentState?.OnFixedUpdate();
+            runtime?.FixedTick();
         }
 
         public void ChangeState<T>() where T : PlayerStateBase, new()
@@ -97,38 +91,20 @@ namespace Player.StateMachine
                 return;
             }
 
-            // Don't change if already in this state
-            if (CurrentState == newState)
-            {
-                return;
-            }
-
-            ClearCurrentAttack();
-
-            IState oldState = CurrentState;
-
-            // Exit current state
-            CurrentState?.OnExit();
-
-            // Change state
-            CurrentState = newState;
-
-            // Enter new state
-            CurrentState?.OnEnter();
-
-            // Fire event
-            OnStateChanged?.Invoke(oldState, newState);
-
-            if (showDebugInfo)
-            {
-                Debug.Log($"[PlayerStateMachine] State changed: {oldState?.StateName ?? "None"} -> {CurrentState.StateName}");
-            }
+            runtime?.ChangeState(newState);
         }
 
         public T GetState<T>() where T : PlayerStateBase, new()
         {
+            Type stateType = typeof(T);
+            if (stateCache.TryGetValue(stateType, out PlayerStateBase cachedState))
+            {
+                return (T)cachedState;
+            }
+
             T newState = new T();
             newState.Initialize(this, CombatContext);
+            stateCache[stateType] = newState;
             return newState;
         }
 
@@ -194,6 +170,28 @@ namespace Player.StateMachine
             }
 
             CombatContext = new PlayerCombatStateContext(this, Animator, Input, Motor);
+        }
+
+        private void InitializeRuntime()
+        {
+            runtime = new StateMachineRuntime();
+            runtime.StateChanging += HandleStateChanging;
+            runtime.StateChanged += HandleStateChanged;
+        }
+
+        private void HandleStateChanging(IState previous, IState next)
+        {
+            ClearCurrentAttack();
+        }
+
+        private void HandleStateChanged(IState previous, IState current)
+        {
+            OnStateChanged?.Invoke(previous, current);
+
+            if (showDebugInfo)
+            {
+                Debug.Log($"[PlayerStateMachine] State changed: {previous?.StateName ?? "None"} -> {current?.StateName ?? "None"}");
+            }
         }
 
         private void ValidateAttackComboConfiguration()
