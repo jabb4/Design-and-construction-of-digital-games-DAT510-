@@ -21,7 +21,6 @@ namespace Enemies.Combat
         [SerializeField] private Animator animator;
         [SerializeField] private Enemy enemy;
         [SerializeField] private EnemyStateMachine stateMachine;
-        [SerializeField] private AttackComboDirectionResolver comboDirectionResolver;
 
         private static readonly HashSet<int> LoggedMissingStates = new HashSet<int>();
 
@@ -29,6 +28,7 @@ namespace Enemies.Combat
         private string activeReactionStateName;
         private int activeReactionStateHash;
         private float reactionTimeoutAt;
+        public bool IsReactionActive => reactionActive;
 
         private void Awake()
         {
@@ -118,12 +118,6 @@ namespace Enemies.Combat
                     return attack.DirectionHint;
                 }
 
-                if (comboDirectionResolver != null &&
-                    comboDirectionResolver.TryResolve(attack.AttackId, out AttackDirectionHint fromResolver))
-                {
-                    return fromResolver;
-                }
-
                 if (stateMachine != null &&
                     stateMachine.AttackCombo != null &&
                     AttackComboDirectionResolver.TryResolveFromCombo(stateMachine.AttackCombo, attack.AttackId, out AttackDirectionHint fromCombo))
@@ -184,7 +178,10 @@ namespace Enemies.Combat
 
         private void BeginReaction(string reactionStateName)
         {
-            if (!CrossFade(reactionStateName, reactionCrossFadeDuration))
+            // Force restart on every parry so consecutive deflects are always visible.
+            // Fallback to crossfade only if direct restart cannot resolve the state path.
+            if (!PlayFromStart(reactionStateName) &&
+                !CrossFade(reactionStateName, reactionCrossFadeDuration))
             {
                 return;
             }
@@ -229,10 +226,6 @@ namespace Enemies.Combat
                 stateMachine = GetComponent<EnemyStateMachine>();
             }
 
-            if (comboDirectionResolver == null)
-            {
-                comboDirectionResolver = GetComponent<AttackComboDirectionResolver>();
-            }
         }
 
         private bool CrossFade(string stateName, float duration, int layer = 0)
@@ -289,7 +282,9 @@ namespace Enemies.Combat
             string[] preferredPaths =
             {
                 $"{layerName}.Grounded.Equip Locomotion.{stateName}",
+                $"{layerName}.Grounded.Unequip Locomotion.{stateName}",
                 $"{layerName}.Airborne.Equip Jump.{stateName}",
+                $"{layerName}.Airborne.Unequip Jump.{stateName}",
             };
 
             for (int i = 0; i < preferredPaths.Length; i++)
@@ -305,6 +300,90 @@ namespace Enemies.Combat
                 return true;
             }
 
+            return false;
+        }
+
+        private bool PlayFromStart(string stateName, int layer = 0)
+        {
+            if (animator == null || animator.runtimeAnimatorController == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return false;
+            }
+
+            if (layer < 0 || layer >= animator.layerCount)
+            {
+                layer = 0;
+            }
+
+            if (!TryResolveStateHash(stateName, layer, out int stateHash))
+            {
+                animator.Play(stateName, layer, 0f);
+                animator.Update(0f);
+
+                AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(layer);
+                int shortNameHash = Animator.StringToHash(stateName);
+                return current.shortNameHash == shortNameHash || current.IsName(stateName);
+            }
+
+            animator.Play(stateHash, layer, 0f);
+            animator.Update(0f);
+            return true;
+        }
+
+        private bool IsInOrTransitioningToState(string stateName, int layer = 0)
+        {
+            if (animator == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return false;
+            }
+
+            if (layer < 0 || layer >= animator.layerCount)
+            {
+                layer = 0;
+            }
+
+            int shortNameHash = Animator.StringToHash(stateName);
+            AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(layer);
+            if (current.shortNameHash == shortNameHash || current.IsName(stateName))
+            {
+                return true;
+            }
+
+            if (!animator.IsInTransition(layer))
+            {
+                return false;
+            }
+
+            AnimatorStateInfo next = animator.GetNextAnimatorStateInfo(layer);
+            return next.shortNameHash == shortNameHash || next.IsName(stateName);
+        }
+
+        private bool TryResolveStateHash(string stateName, int layer, out int stateHash)
+        {
+            string layerName = animator.GetLayerName(layer);
+            string[] preferredPaths =
+            {
+                $"{layerName}.Grounded.Equip Locomotion.{stateName}",
+                $"{layerName}.Grounded.Unequip Locomotion.{stateName}",
+                $"{layerName}.Airborne.Equip Jump.{stateName}",
+                $"{layerName}.Airborne.Unequip Jump.{stateName}",
+                $"{layerName}.{stateName}",
+                stateName
+            };
+
+            for (int i = 0; i < preferredPaths.Length; i++)
+            {
+                int candidateHash = Animator.StringToHash(preferredPaths[i]);
+                if (!animator.HasState(layer, candidateHash))
+                {
+                    continue;
+                }
+
+                stateHash = candidateHash;
+                return true;
+            }
+
+            stateHash = 0;
             return false;
         }
     }

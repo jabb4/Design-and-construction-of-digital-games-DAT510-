@@ -21,6 +21,7 @@ namespace Enemies.StateMachine
         private static readonly int IsGroundedHash = Animator.StringToHash("IsGrounded");
         private static readonly int IsSprintingHash = Animator.StringToHash("IsSprinting");
         private static readonly int IsInAirHash = Animator.StringToHash("IsInAir");
+        private static readonly int IsBlockingHash = Animator.StringToHash("IsBlocking");
 
         [Header("Combat")]
         [SerializeField] private EnemyCombatProfile combatProfile;
@@ -69,6 +70,7 @@ namespace Enemies.StateMachine
         private StateMachineRuntime runtime;
         private Transform currentTarget;
         private ICombatant currentTargetCombatant;
+        private Enemies.Combat.EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private float nextTargetRefreshAt = float.NegativeInfinity;
         private Vector2 smoothedLocalVelocity;
         private Vector2 smoothedLocalVelocityRef;
@@ -79,6 +81,7 @@ namespace Enemies.StateMachine
             Animator = GetComponent<Animator>();
             IntentSource = GetComponent<EnemyIntentSource>();
             NavBridge = GetComponent<EnemyNavAgentBridge>();
+            defenseReactionDriver = GetComponent<Enemies.Combat.EnemyDefenseReactionAnimationDriver>();
 
             runtime = new StateMachineRuntime();
             runtime.StateChanging += HandleStateChanging;
@@ -414,7 +417,15 @@ namespace Enemies.StateMachine
 
             Animator.SetBool("IsEquipped", true);
             Animator.SetBool("IsTransitioningWeapon", false);
-            Animator.SetBool("IsBlocking", false);
+
+            bool hasParryWindow = Enemy != null && Enemy.IsParryWindowActive;
+            bool hasDefenseReaction = defenseReactionDriver != null && defenseReactionDriver.IsReactionActive;
+            bool isDefenseTurn = CurrentState is States.EnemyDefenseTurnState;
+            bool isBlockingForAnimator = isDefenseTurn || hasParryWindow || hasDefenseReaction;
+
+            // Animation-side guard keeps defense/parry sub-state transitions valid.
+            // Combat still remains parry-only because Enemy/CombatFlags never set gameplay blocking.
+            Animator.SetBool(IsBlockingHash, isBlockingForAnimator);
             Animator.SetBool("IsLockedOn", HasTarget);
             Animator.SetBool(IsGroundedHash, true);
             Animator.SetBool(IsSprintingHash, false);

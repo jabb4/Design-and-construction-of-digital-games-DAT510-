@@ -1,5 +1,6 @@
 namespace Enemies.StateMachine.States
 {
+    using Enemies.Combat;
     using global::StateMachine.Core;
     using UnityEngine;
 
@@ -11,6 +12,7 @@ namespace Enemies.StateMachine.States
         private float counterReadyAt;
         private float defenseUntilAt;
         private float lastTargetAttackSeenAt;
+        private EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private bool counterQueued;
 
         public override void OnEnter()
@@ -31,6 +33,10 @@ namespace Enemies.StateMachine.States
                 Enemy.OnParriedAttack += HandleParriedAttack;
                 Enemy.CloseParryWindow();
             }
+
+            defenseReactionDriver = Owner != null
+                ? Owner.GetComponent<EnemyDefenseReactionAnimationDriver>()
+                : null;
 
             Owner?.TryCrossFadeState("Idle", 0.1f);
         }
@@ -55,21 +61,24 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
-            float parryThreatMemory = Profile != null ? Profile.ParryThreatMemoryDuration : 0.15f;
+            float cooldown = Profile != null ? Profile.ParryAttemptCooldown : 0.35f;
+            float configuredParryThreatMemory = Profile != null ? Profile.ParryThreatMemoryDuration : 0.15f;
+            float parryThreatMemory = Mathf.Max(configuredParryThreatMemory, cooldown + 0.05f);
             bool isAttackThreatActive = Owner.IsTargetAttacking || Time.time - lastTargetAttackSeenAt <= parryThreatMemory;
             if (!isAttackThreatActive)
             {
                 return;
             }
 
-            float parryTriggerRange = Profile != null ? Profile.ParryTriggerRange : Mathf.Max(Owner.AttackRange, 3f);
+            float orbitRadius = Profile != null ? Profile.OrbitRadius : 2.75f;
+            float configuredParryTriggerRange = Profile != null ? Profile.ParryTriggerRange : Mathf.Max(Owner.AttackRange, 3f);
+            float parryTriggerRange = Mathf.Max(configuredParryTriggerRange, orbitRadius + 0.1f);
             if (Owner.DistanceToTarget > parryTriggerRange)
             {
                 return;
             }
 
             float parryWindow = Profile != null ? Profile.ParryWindowDuration : 0.2f;
-            float cooldown = Profile != null ? Profile.ParryAttemptCooldown : 0.35f;
 
             Enemy.OpenParryWindow(parryWindow);
             nextParryAttemptAt = Time.time + cooldown;
@@ -140,6 +149,19 @@ namespace Enemies.StateMachine.States
             if (!Owner.HasTarget)
             {
                 Owner.NavBridge.Stop();
+                return;
+            }
+
+            bool reactionActive = defenseReactionDriver != null && defenseReactionDriver.IsReactionActive;
+            bool parryWindowActive = Enemy != null && Enemy.IsParryWindowActive;
+            if (reactionActive || parryWindowActive)
+            {
+                Owner.NavBridge.Stop();
+                if (!reactionActive)
+                {
+                    Owner.TryCrossFadeStateIfNotActive("DefenseIdle", 0.08f);
+                }
+
                 return;
             }
 
