@@ -58,6 +58,11 @@ namespace Enemies.AI
                 return;
             }
 
+            if (!IsAgentReadyForCommands())
+            {
+                return;
+            }
+
             if (impulseDriver != null && impulseDriver.IsImpulseActive)
             {
                 PauseAgent();
@@ -106,12 +111,22 @@ namespace Enemies.AI
 
         private void UpdatePursue()
         {
+            if (!IsAgentReadyForCommands())
+            {
+                return;
+            }
+
             navMeshAgent.stoppingDistance = stoppingDistance;
             navMeshAgent.SetDestination(target.position);
         }
 
         private void UpdateOrbit()
         {
+            if (!IsAgentReadyForCommands())
+            {
+                return;
+            }
+
             Vector3 center = target.position;
             orbitAngleDegrees += orbitAngularSpeedDegrees * Time.deltaTime;
             float radians = orbitAngleDegrees * Mathf.Deg2Rad;
@@ -129,7 +144,7 @@ namespace Enemies.AI
 
         private void PauseAgent()
         {
-            if (navMeshAgent == null)
+            if (!IsAgentReadyForCommands())
             {
                 return;
             }
@@ -143,10 +158,12 @@ namespace Enemies.AI
 
         private void ResumeAgent()
         {
-            if (navMeshAgent != null)
+            if (!IsAgentReadyForCommands())
             {
-                navMeshAgent.isStopped = false;
+                return;
             }
+
+            navMeshAgent.isStopped = false;
         }
 
         private void ConfigureAgent()
@@ -170,6 +187,14 @@ namespace Enemies.AI
             {
                 impulseDriver = GetComponent<CombatHorizontalImpulseDriver>();
             }
+        }
+
+        private bool IsAgentReadyForCommands()
+        {
+            return navMeshAgent != null &&
+                   navMeshAgent.isActiveAndEnabled &&
+                   navMeshAgent.enabled &&
+                   navMeshAgent.isOnNavMesh;
         }
     }
 }
