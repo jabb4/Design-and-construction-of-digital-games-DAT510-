@@ -96,7 +96,7 @@ namespace Enemies.StateMachine.States
             return TransitionDecision.None;
         }
 
-        private void HandleParriedAttack(Combat.AttackHitInfo hit)
+        private void HandleParriedAttack(global::Combat.AttackHitInfo hit)
         {
             successfulParries++;
             if (successfulParries < requiredParries)

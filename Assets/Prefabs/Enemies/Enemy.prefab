@@ -2204,6 +2204,12 @@ GameObject:
   - component: {fileID: 268441700114297531}
   - component: {fileID: 844221109955667789}
   - component: {fileID: 5732198460847952312}
+  - component: {fileID: 4001000000000000011}
+  - component: {fileID: 4001000000000000012}
+  - component: {fileID: 4001000000000000013}
+  - component: {fileID: 4001000000000000014}
+  - component: {fileID: 4001000000000000015}
+  - component: {fileID: 4001000000000000016}
   m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
@@ -2239,7 +2245,7 @@ Animator:
   m_GameObject: {fileID: 6880349450255457242}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: dee954a3a25ad4244bdd4fb3bc34c518, type: 3}
-  m_Controller: {fileID: 9100000, guid: 593b7e3a01cff418fba5fef2eb994e3c, type: 2}
+  m_Controller: {fileID: 9100000, guid: 2275cc601bd34eee9dbaed7676c633ba, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -2403,6 +2409,98 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterMotor: {fileID: 0}
   fallbackRigidbody: {fileID: 7443819372610488867}
+--- !u!114 &4001000000000000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f74fb97132e54ca9960081470e26c474, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveThreshold: 0.1
+--- !u!114 &4001000000000000012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09e50da581584a7192a69b4fe7470e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  combatProfile: {fileID: 11400000, guid: 57cf64c5cada4398900d238f05d68c32, type: 2}
+  targetRefreshIntervalSeconds: 0.2
+--- !u!114 &4001000000000000013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79250e3170f3348da8c009f26d22716e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  navMeshAgent: {fileID: 0}
+  impulseDriver: {fileID: 5732198460847952312}
+  orbitAngularSpeedDegrees: 90
+  orbitDestinationTolerance: 0.25
+--- !u!114 &4001000000000000014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 549e32d88475546cd8e9196e9a191bab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateMachine: {fileID: 4001000000000000012}
+--- !u!114 &4001000000000000015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 955c4697a96b64283b1b389579abacdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateMachine: {fileID: 4001000000000000012}
+  combatant: {fileID: 5832811830406196893}
+  hitbox: {fileID: 8327949807240639356}
+  weaponBoneName: katana_r
+--- !u!114 &4001000000000000016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2659f650966704db38c1a45fdd8cca6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reactionCrossFadeDuration: 0.06
+  returnCrossFadeDuration: 0.08
+  reactionCompleteThreshold: 0.95
+  reactionTimeoutSeconds: 1.5
+  animator: {fileID: 2038420169931308288}
+  enemy: {fileID: 5832811830406196893}
+  stateMachine: {fileID: 4001000000000000012}
+  comboDirectionResolver: {fileID: 0}
 --- !u!1 &6883821836884234579
 GameObject:
   m_ObjectHideFlags: 0

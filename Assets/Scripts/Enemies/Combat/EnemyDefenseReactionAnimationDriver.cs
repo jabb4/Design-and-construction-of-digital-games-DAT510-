@@ -1,7 +1,7 @@
 namespace Enemies.Combat
 {
     using System.Collections.Generic;
-    using Combat;
+    using global::Combat;
     using Enemies.StateMachine;
     using UnityEngine;
 

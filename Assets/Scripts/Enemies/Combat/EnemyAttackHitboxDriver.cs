@@ -1,6 +1,6 @@
 namespace Enemies.Combat
 {
-    using Combat;
+    using global::Combat;
     using Enemies.StateMachine;
     using Player.Combat;
     using global::StateMachine.Core;

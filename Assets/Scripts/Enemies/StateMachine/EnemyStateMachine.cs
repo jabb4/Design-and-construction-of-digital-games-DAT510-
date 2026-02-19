@@ -2,7 +2,7 @@ namespace Enemies.StateMachine
 {
     using System;
     using System.Collections.Generic;
-    using Combat;
+    using global::Combat;
     using Enemies.AI;
     using global::StateMachine.Core;
     using Player.StateMachine;
@@ -74,11 +74,13 @@ namespace Enemies.StateMachine
 
         private void Start()
         {
+            ApplyEnemyAnimatorDefaults();
             ChangeState<States.EnemyIdleState>();
         }
 
         private void Update()
         {
+            ApplyEnemyAnimatorDefaults();
             runtime.Tick();
         }
 
@@ -303,7 +305,19 @@ namespace Enemies.StateMachine
             OnStateChanged?.Invoke(previous, current);
         }
 
-        private static CombatAttackPhase MapAttackPhase(AttackPhase phase)
+        private void ApplyEnemyAnimatorDefaults()
+        {
+            if (Animator == null)
+            {
+                return;
+            }
+
+            Animator.SetBool("IsEquipped", true);
+            Animator.SetBool("IsTransitioningWeapon", false);
+            Animator.SetBool("IsBlocking", false);
+        }
+
+        private static global::Combat.CombatAttackPhase MapAttackPhase(AttackPhase phase)
         {
             switch (phase)
             {

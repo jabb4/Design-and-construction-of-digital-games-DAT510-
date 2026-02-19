@@ -1,6 +1,6 @@
 namespace Enemies.AI
 {
-    using Combat;
+    using global::Combat;
     using UnityEngine;
     using UnityEngine.AI;
 
@@ -160,6 +160,10 @@ namespace Enemies.AI
             if (navMeshAgent == null)
             {
                 navMeshAgent = GetComponent<NavMeshAgent>();
+                if (navMeshAgent == null)
+                {
+                    navMeshAgent = gameObject.AddComponent<NavMeshAgent>();
+                }
             }
 
             if (impulseDriver == null)
