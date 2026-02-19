@@ -206,7 +206,8 @@ namespace Player.StateMachine.States
                 return TransitionDecision.None;
             }
 
-            var nextState = Owner.GetState<AttackState>();
+            var nextState = new AttackState();
+            nextState.Initialize(Owner, Context);
             nextState.SetComboIndex(comboIndex + 1);
             return TransitionDecision.To(nextState, TransitionReason.AttackCombo, priority: TransitionPriorities.ComboContinuation);
         }
