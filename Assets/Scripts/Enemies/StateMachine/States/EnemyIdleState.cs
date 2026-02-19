@@ -7,13 +7,20 @@ namespace Enemies.StateMachine.States
         public override void OnEnter()
         {
             Intent?.ClearAllIntents();
+            Enemy?.CloseParryWindow();
+            Owner?.TryCrossFadeState("Idle", 0.15f);
+        }
+
+        public override void OnUpdate()
+        {
+            FaceTarget();
         }
 
         public override TransitionDecision EvaluateTransition()
         {
-            if (Enemy == null || !Enemy.gameObject.activeInHierarchy)
+            if (TryTransitionDead(out TransitionDecision deadTransition))
             {
-                return TransitionDecision.To(Owner.GetState<EnemyDeadState>(), TransitionReason.StandardFlow);
+                return deadTransition;
             }
 
             if (Owner.TryRefreshTarget())

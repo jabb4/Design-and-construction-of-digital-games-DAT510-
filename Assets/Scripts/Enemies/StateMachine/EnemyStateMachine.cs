@@ -23,12 +23,32 @@ namespace Enemies.StateMachine
         public EnemyCombatProfile CombatProfile => combatProfile;
         public AttackStep? CurrentAttackStep { get; private set; }
         public AttackPhase CurrentAttackPhase { get; private set; } = AttackPhase.Recovery;
+        public int AttackPhaseVersion { get; private set; }
+        public int AttackRecoveryVersion { get; private set; }
         public int AttackStepCount => AttackCombo != null ? AttackCombo.Count : 0;
         public AttackComboAsset AttackCombo => combatProfile != null ? combatProfile.SharedCombo : null;
         public IState CurrentState => runtime != null ? runtime.CurrentState : null;
         public string CurrentStateName => runtime != null ? runtime.CurrentStateName : "None";
         public Transform CurrentTarget => currentTarget;
         public ICombatant CurrentTargetCombatant => currentTargetCombatant;
+        public bool IsAlive => Enemy != null && Enemy.IsAlive;
+        public bool HasTarget => currentTarget != null && currentTargetCombatant != null && currentTargetCombatant.IsVulnerable;
+        public bool IsTargetAttacking => currentTargetCombatant != null && currentTargetCombatant.IsAttacking;
+        public float DistanceToTarget
+        {
+            get
+            {
+                if (currentTarget == null)
+                {
+                    return float.PositiveInfinity;
+                }
+
+                return Vector3.Distance(transform.position, currentTarget.position);
+            }
+        }
+
+        public float AttackRange => combatProfile != null ? combatProfile.AttackRange : 2.5f;
+        public float EngageRange => combatProfile != null ? combatProfile.EngageRange : 7f;
 
         private readonly Dictionary<Type, EnemyStateBase> stateCache = new Dictionary<Type, EnemyStateBase>(8);
         private StateMachineRuntime runtime;
@@ -89,6 +109,10 @@ namespace Enemies.StateMachine
         {
             CurrentAttackStep = null;
             CurrentAttackPhase = AttackPhase.Recovery;
+            if (Enemy != null)
+            {
+                Enemy.IsAttacking = false;
+            }
         }
 
         public bool TryGetAttackStep(int index, out AttackStep step)
@@ -102,21 +126,88 @@ namespace Enemies.StateMachine
             return AttackCombo.TryGetStep(index, out step);
         }
 
+        public int SampleParriesBeforeCounter()
+        {
+            int min = 1;
+            int max = 1;
+            if (combatProfile != null)
+            {
+                min = Mathf.Max(1, combatProfile.MinParriesBeforeCounter);
+                max = Mathf.Max(min, combatProfile.MaxParriesBeforeCounter);
+            }
+
+            return UnityEngine.Random.Range(min, max + 1);
+        }
+
+        public int SampleAttackChainLength()
+        {
+            int min = 2;
+            int max = 5;
+            if (combatProfile != null)
+            {
+                min = Mathf.Max(1, combatProfile.MinAttackChain);
+                max = Mathf.Max(min, combatProfile.MaxAttackChain);
+            }
+
+            int sampled = UnityEngine.Random.Range(min, max + 1);
+            if (AttackStepCount > 0)
+            {
+                sampled = Mathf.Clamp(sampled, 1, AttackStepCount);
+            }
+
+            return sampled;
+        }
+
+        public bool TryPlayAttackStepByIndex(int index, float crossFadeDuration = 0.08f)
+        {
+            if (!TryGetAttackStep(index, out AttackStep step))
+            {
+                return false;
+            }
+
+            SetCurrentAttack(step);
+            CurrentAttackPhase = AttackPhase.Windup;
+            return TryCrossFadeState(step.AnimationStateName, crossFadeDuration);
+        }
+
+        public bool IsCurrentAttackAnimationComplete(float normalizedThreshold = 0.98f)
+        {
+            if (!CurrentAttackStep.HasValue || Animator == null)
+            {
+                return true;
+            }
+
+            AttackStep step = CurrentAttackStep.Value;
+            AnimatorStateInfo info = Animator.GetCurrentAnimatorStateInfo(0);
+            return info.IsName(step.AnimationStateName) && info.normalizedTime >= normalizedThreshold;
+        }
+
         public void NotifyAttackPhase(AttackPhase phase)
         {
             CurrentAttackPhase = phase;
+            AttackPhaseVersion++;
+            if (phase == AttackPhase.Recovery)
+            {
+                AttackRecoveryVersion++;
+            }
 
             if (Enemy == null)
             {
                 return;
             }
 
-            Enemy.NotifyAttackPhase(MapAttackPhase(phase));
+            AttackData? attack = null;
+            if (CurrentAttackStep.HasValue)
+            {
+                attack = global::Player.Combat.AttackDataMapper.ToAttackData(CurrentAttackStep.Value);
+            }
+
+            Enemy.NotifyAttackPhase(MapAttackPhase(phase), attack);
         }
 
         public bool TryRefreshTarget(bool force = false)
         {
-            if (!force && Time.time < nextTargetRefreshAt && currentTarget != null)
+            if (!force && Time.time < nextTargetRefreshAt && IsTargetStillValid())
             {
                 return true;
             }
@@ -158,6 +249,42 @@ namespace Enemies.StateMachine
             currentTarget = bestTarget;
             currentTargetCombatant = bestCombatant;
             return currentTarget != null;
+        }
+
+        public bool TryCrossFadeState(string stateName, float duration = 0.08f, int layer = 0)
+        {
+            if (Animator == null || Animator.runtimeAnimatorController == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return false;
+            }
+
+            if (layer < 0 || layer >= Animator.layerCount)
+            {
+                layer = 0;
+            }
+
+            int stateHash = Animator.StringToHash(stateName);
+            if (Animator.HasState(layer, stateHash))
+            {
+                Animator.CrossFadeInFixedTime(stateHash, duration, layer);
+                return true;
+            }
+
+            string layerName = Animator.GetLayerName(layer);
+            string fullPath = $"{layerName}.{stateName}";
+            int fullPathHash = Animator.StringToHash(fullPath);
+            if (Animator.HasState(layer, fullPathHash))
+            {
+                Animator.CrossFadeInFixedTime(fullPathHash, duration, layer);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsTargetStillValid()
+        {
+            return currentTarget != null && currentTargetCombatant != null && currentTargetCombatant.IsVulnerable;
         }
 
         private void HandleStateChanging(IState previous, IState next)

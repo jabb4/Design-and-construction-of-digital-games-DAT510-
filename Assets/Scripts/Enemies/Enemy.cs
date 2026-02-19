@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using Combat;
@@ -16,8 +17,13 @@ public class Enemy : MonoBehaviour, ICombatant
     private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
 
+    public event Action<AttackHitInfo, DamageResolution> OnDamageResolved;
+    public event Action<AttackHitInfo> OnParriedAttack;
+
     public CombatTeam Team => CombatTeam.Enemy;
     public bool IsVulnerable => flags != null && flags.IsVulnerable;
+    public bool IsAlive => health == null || !health.IsDead;
+    public bool IsParryWindowActive => flags != null && flags.IsParryWindowActive;
     public bool IsAttacking
     {
         get => flags != null && flags.IsAttacking;
@@ -71,7 +77,19 @@ public class Enemy : MonoBehaviour, ICombatant
             return;
         }
 
+        // Enemy defense is parry-only; blocking is never valid.
+        if (flags != null)
+        {
+            flags.IsBlocking = false;
+        }
+
         DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
+        OnDamageResolved?.Invoke(hit, resolution);
+        if (resolution.Outcome == DamageOutcome.Parried)
+        {
+            OnParriedAttack?.Invoke(hit);
+        }
+
         DispatchOutcomeFeedback(hit, resolution);
 
         if (resolution.Outcome == DamageOutcome.Ignored)
@@ -81,6 +99,22 @@ public class Enemy : MonoBehaviour, ICombatant
 
         health.ApplyDamage(resolution.AppliedDamage);
         SyncCombatFlags();
+    }
+
+    public void OpenParryWindow(float durationSeconds)
+    {
+        if (flags == null || !IsAlive)
+        {
+            return;
+        }
+
+        flags.IsBlocking = false;
+        flags.OpenParryWindow(durationSeconds);
+    }
+
+    public void CloseParryWindow()
+    {
+        flags?.CloseParryWindow();
     }
 
     private void OnDestroy()
@@ -93,6 +127,7 @@ public class Enemy : MonoBehaviour, ICombatant
 
     private void HandleDied()
     {
+        CloseParryWindow();
         SyncCombatFlags();
 
         if (disableGameObjectOnDeath)
@@ -115,6 +150,7 @@ public class Enemy : MonoBehaviour, ICombatant
         if (!isAlive)
         {
             flags.IsAttacking = false;
+            flags.CloseParryWindow();
         }
     }
 

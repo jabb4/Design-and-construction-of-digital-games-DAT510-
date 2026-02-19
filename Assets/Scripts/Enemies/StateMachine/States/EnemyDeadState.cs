@@ -7,6 +7,12 @@ namespace Enemies.StateMachine.States
         public override void OnEnter()
         {
             Intent?.ClearAllIntents();
+            Enemy?.CloseParryWindow();
+            if (Owner != null)
+            {
+                Owner.ClearCurrentAttack();
+                Owner.TryCrossFadeState("Idle", 0.05f);
+            }
         }
 
         public override TransitionDecision EvaluateTransition()

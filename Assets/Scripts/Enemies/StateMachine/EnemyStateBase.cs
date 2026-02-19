@@ -10,6 +10,7 @@ namespace Enemies.StateMachine
         protected Enemy Enemy => Owner != null ? Owner.Enemy : null;
         protected Animator Animator => Owner != null ? Owner.Animator : null;
         protected EnemyIntentSource Intent => Owner != null ? Owner.IntentSource : null;
+        protected EnemyCombatProfile Profile => Owner != null ? Owner.CombatProfile : null;
 
         public virtual string StateName => GetType().Name;
 
@@ -35,6 +36,18 @@ namespace Enemies.StateMachine
         }
 
         public abstract TransitionDecision EvaluateTransition();
+
+        protected bool TryTransitionDead(out TransitionDecision decision)
+        {
+            if (Owner != null && Owner.IsAlive)
+            {
+                decision = TransitionDecision.None;
+                return false;
+            }
+
+            decision = TransitionDecision.To(Owner.GetState<States.EnemyDeadState>(), TransitionReason.StandardFlow);
+            return true;
+        }
 
         protected void FaceTarget(float turnSpeedDegrees = 540f)
         {
