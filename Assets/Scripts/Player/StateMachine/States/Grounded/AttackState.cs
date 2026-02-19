@@ -1,8 +1,9 @@
 namespace Player.StateMachine.States
 {
-    using UnityEngine;
     using Player.StateMachine;
+    using Player.StateMachine.Transitions;
     using global::StateMachine.Core;
+    using UnityEngine;
 
     public sealed class AttackState : PlayerStateBase, IAttackPhaseListener
     {
@@ -188,12 +189,11 @@ namespace Player.StateMachine.States
                 return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputPrimary);
             }
 
-            if (HasMoveIntent)
+            TransitionDecision moveTransition = GroundedTransitionEvaluator.ToLocomotion(Owner, HasMoveIntent, SprintHeld);
+            if (moveTransition.HasTransition)
             {
                 Owner.ClearCurrentAttack();
-                return SprintHeld
-                    ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
-                    : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
+                return moveTransition;
             }
 
             return TransitionDecision.None;
@@ -229,11 +229,12 @@ namespace Player.StateMachine.States
         private TransitionDecision ExitAttackToLocomotionOrIdle()
         {
             Owner.ClearCurrentAttack();
-            return HasMoveIntent
-                ? (SprintHeld
-                    ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
-                    : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove))
-                : TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.AnimationComplete);
+            return GroundedTransitionEvaluator.ToLocomotionOrIdle(
+                Owner,
+                HasMoveIntent,
+                SprintHeld,
+                moveReason: TransitionReason.InputMove,
+                idleReason: TransitionReason.AnimationComplete);
         }
 
         private void WarnIfMissingAttackEvents(AttackStep step)

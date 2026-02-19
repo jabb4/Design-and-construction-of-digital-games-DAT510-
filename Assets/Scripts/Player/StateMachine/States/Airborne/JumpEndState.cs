@@ -1,5 +1,6 @@
 namespace Player.StateMachine.States
 {
+    using Player.StateMachine.Transitions;
     using global::StateMachine.Core;
     using UnityEngine;
 
@@ -43,21 +44,7 @@ namespace Player.StateMachine.States
 
             if (inJumpEnd && IsAnimationComplete(0.9f))
             {
-                if (HasMoveIntent)
-                {
-                    if (SprintHeld)
-                    {
-                        return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
-                    }
-                    else
-                    {
-                        return TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
-                    }
-                }
-                else
-                {
-                    return TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.StandardFlow);
-                }
+                return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
             }
             
             return TransitionDecision.None;

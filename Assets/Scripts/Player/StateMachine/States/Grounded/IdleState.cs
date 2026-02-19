@@ -1,5 +1,6 @@
 namespace Player.StateMachine.States
 {
+    using Player.StateMachine.Transitions;
     using global::StateMachine.Core;
     using UnityEngine;
 
@@ -51,9 +52,10 @@ namespace Player.StateMachine.States
 
         public override TransitionDecision EvaluateTransition()
         {
-            if (!Motor.IsGrounded)
+            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
+            if (airborneTransition.HasTransition)
             {
-                return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: TransitionPriorities.AirStateSync);
+                return airborneTransition;
             }
 
             if (TryGetCommonGroundedTransition(out TransitionDecision decision))
@@ -61,17 +63,7 @@ namespace Player.StateMachine.States
                 return decision;
             }
 
-            if (HasMoveIntent)
-            {
-                if (SprintHeld)
-                {
-                    return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
-                }
-
-                return TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
-            }
-
-            return TransitionDecision.None;
+            return GroundedTransitionEvaluator.ToLocomotion(Owner, HasMoveIntent, SprintHeld);
         }
 
     }

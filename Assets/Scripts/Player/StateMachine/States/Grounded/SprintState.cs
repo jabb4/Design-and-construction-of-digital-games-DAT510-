@@ -1,5 +1,6 @@
 namespace Player.StateMachine.States
 {
+    using Player.StateMachine.Transitions;
     using global::StateMachine.Core;
     using UnityEngine;
 
@@ -72,27 +73,22 @@ namespace Player.StateMachine.States
                 return decision;
             }
 
-            if (!Motor.IsGrounded)
+            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
+            if (airborneTransition.HasTransition)
             {
-                return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: TransitionPriorities.AirStateSync);
+                return airborneTransition;
             }
 
-            if (!SprintHeld && HasMoveIntent)
+            TransitionDecision walkTransition = GroundedTransitionEvaluator.ToWalkFromSprint(Owner, HasMoveIntent, SprintHeld);
+            if (walkTransition.HasTransition)
             {
-                return TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
+                return walkTransition;
             }
 
             if (locomotion.CurrentPhase == WeightedLocomotion.Phase.Stop &&
                 locomotion.IsStopComplete())
             {
-                if (HasMoveIntent)
-                {
-                    return SprintHeld
-                        ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
-                        : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
-                }
-
-                return TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.StandardFlow);
+                return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
             }
 
             return TransitionDecision.None;
