@@ -148,6 +148,17 @@ namespace Enemies.StateMachine.States
             if (!Owner.HasTarget)
             {
                 Owner.NavBridge.Stop();
+                if (!attackInProgress)
+                {
+                    Owner.TryCrossFadeStateIfNotActive("Idle", 0.08f);
+                }
+                return;
+            }
+
+            // Do not let locomotion crossfades interrupt an active attack clip.
+            if (attackInProgress)
+            {
+                Owner.NavBridge.Stop();
                 return;
             }
 
