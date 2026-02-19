@@ -40,6 +40,7 @@ namespace Enemies.StateMachine.States
             }
 
             FaceTarget();
+            UpdateMovementMode();
 
             if (!hasAttackToken)
             {
@@ -97,6 +98,7 @@ namespace Enemies.StateMachine.States
         {
             if (Owner != null)
             {
+                Owner.NavBridge?.Stop();
                 Owner.ClearCurrentAttack();
                 EnemyAttackTokenService.Release(Owner);
             }
@@ -133,6 +135,29 @@ namespace Enemies.StateMachine.States
             if (currentAttackIndex >= plannedChainLength || currentAttackIndex >= Owner.AttackStepCount)
             {
                 chainComplete = true;
+            }
+        }
+
+        private void UpdateMovementMode()
+        {
+            if (Owner == null || Owner.NavBridge == null)
+            {
+                return;
+            }
+
+            if (!Owner.HasTarget)
+            {
+                Owner.NavBridge.Stop();
+                return;
+            }
+
+            if (Owner.DistanceToTarget > Owner.AttackRange)
+            {
+                Owner.NavBridge.SetPursue(Owner.CurrentTarget, Owner.AttackRange * 0.85f);
+            }
+            else
+            {
+                Owner.NavBridge.Stop();
             }
         }
     }

@@ -11,15 +11,19 @@ namespace Enemies.StateMachine
     [RequireComponent(typeof(Enemy))]
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(EnemyIntentSource))]
+    [RequireComponent(typeof(EnemyNavAgentBridge))]
     public sealed class EnemyStateMachine : MonoBehaviour
     {
         [Header("Combat")]
         [SerializeField] private EnemyCombatProfile combatProfile;
         [SerializeField, Min(0.05f)] private float targetRefreshIntervalSeconds = 0.2f;
 
+        public event Action<IState, IState> OnStateChanged;
+
         public Enemy Enemy { get; private set; }
         public Animator Animator { get; private set; }
         public EnemyIntentSource IntentSource { get; private set; }
+        public EnemyNavAgentBridge NavBridge { get; private set; }
         public EnemyCombatProfile CombatProfile => combatProfile;
         public AttackStep? CurrentAttackStep { get; private set; }
         public AttackPhase CurrentAttackPhase { get; private set; } = AttackPhase.Recovery;
@@ -61,9 +65,11 @@ namespace Enemies.StateMachine
             Enemy = GetComponent<Enemy>();
             Animator = GetComponent<Animator>();
             IntentSource = GetComponent<EnemyIntentSource>();
+            NavBridge = GetComponent<EnemyNavAgentBridge>();
 
             runtime = new StateMachineRuntime();
             runtime.StateChanging += HandleStateChanging;
+            runtime.StateChanged += HandleStateChanged;
         }
 
         private void Start()
@@ -290,6 +296,11 @@ namespace Enemies.StateMachine
         private void HandleStateChanging(IState previous, IState next)
         {
             ClearCurrentAttack();
+        }
+
+        private void HandleStateChanged(IState previous, IState current)
+        {
+            OnStateChanged?.Invoke(previous, current);
         }
 
         private static CombatAttackPhase MapAttackPhase(AttackPhase phase)

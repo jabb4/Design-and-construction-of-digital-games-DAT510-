@@ -10,6 +10,7 @@ namespace Enemies.StateMachine.States
             Enemy?.CloseParryWindow();
             if (Owner != null)
             {
+                Owner.NavBridge?.Stop();
                 Owner.ClearCurrentAttack();
                 Owner.TryCrossFadeState("Idle", 0.05f);
             }

@@ -8,6 +8,7 @@ namespace Enemies.StateMachine.States
         {
             Intent?.ClearAllIntents();
             Enemy?.CloseParryWindow();
+            Owner?.NavBridge?.Stop();
             Owner?.TryCrossFadeState("Idle", 0.15f);
         }
 

@@ -33,6 +33,7 @@ namespace Enemies.StateMachine.States
         public override void OnUpdate()
         {
             FaceTarget();
+            UpdateMovementMode();
 
             if (Enemy == null || Owner == null || !Owner.HasTarget || counterQueued)
             {
@@ -63,6 +64,8 @@ namespace Enemies.StateMachine.States
 
         public override void OnExit()
         {
+            Owner?.NavBridge?.Stop();
+
             if (Enemy != null)
             {
                 Enemy.OnParriedAttack -= HandleParriedAttack;
@@ -104,6 +107,30 @@ namespace Enemies.StateMachine.States
             counterQueued = true;
             float prepDelay = Profile != null ? Profile.CounterPrepDelay : 0f;
             counterReadyAt = Time.time + Mathf.Max(0f, prepDelay);
+        }
+
+        private void UpdateMovementMode()
+        {
+            if (Owner == null || Owner.NavBridge == null)
+            {
+                return;
+            }
+
+            if (!Owner.HasTarget)
+            {
+                Owner.NavBridge.Stop();
+                return;
+            }
+
+            float orbitRadius = Profile != null ? Profile.OrbitRadius : 2.75f;
+            if (Owner.DistanceToTarget > Owner.EngageRange)
+            {
+                Owner.NavBridge.SetPursue(Owner.CurrentTarget, Owner.AttackRange);
+            }
+            else
+            {
+                Owner.NavBridge.SetOrbit(Owner.CurrentTarget, orbitRadius);
+            }
         }
     }
 }
