@@ -72,6 +72,11 @@ namespace Enemies.StateMachine
             runtime.StateChanged += HandleStateChanged;
         }
 
+        private void OnValidate()
+        {
+            ValidateConfiguration();
+        }
+
         private void Start()
         {
             ApplyEnemyAnimatorDefaults();
@@ -315,6 +320,34 @@ namespace Enemies.StateMachine
             Animator.SetBool("IsEquipped", true);
             Animator.SetBool("IsTransitioningWeapon", false);
             Animator.SetBool("IsBlocking", false);
+        }
+
+        private void ValidateConfiguration()
+        {
+            if (combatProfile == null)
+            {
+                Debug.LogWarning("[EnemyStateMachine] Missing EnemyCombatProfile.", this);
+                return;
+            }
+
+            if (combatProfile.SharedCombo == null)
+            {
+                Debug.LogWarning("[EnemyStateMachine] EnemyCombatProfile has no shared combo assigned.", combatProfile);
+            }
+
+            if (combatProfile.MinAttackChain < 2 || combatProfile.MaxAttackChain > 5)
+            {
+                Debug.LogWarning(
+                    $"[EnemyStateMachine] Attack chain range should stay within [2..5]. Current: [{combatProfile.MinAttackChain}..{combatProfile.MaxAttackChain}]",
+                    combatProfile);
+            }
+
+            if (combatProfile.MinParriesBeforeCounter < 1 || combatProfile.MaxParriesBeforeCounter > 5)
+            {
+                Debug.LogWarning(
+                    $"[EnemyStateMachine] Parries-before-counter range should stay within [1..5]. Current: [{combatProfile.MinParriesBeforeCounter}..{combatProfile.MaxParriesBeforeCounter}]",
+                    combatProfile);
+            }
         }
 
         private static global::Combat.CombatAttackPhase MapAttackPhase(AttackPhase phase)
