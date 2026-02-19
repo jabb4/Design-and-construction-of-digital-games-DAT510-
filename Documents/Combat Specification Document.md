@@ -13,6 +13,17 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 3. **Simple systems, clear feedback:** Every combat interaction must have obvious visual/audio feedback to feel satisfying to the player.
 4. **Handle small enemy groups:** Too many enemies will overwhelm the player.
 
+#### Combat duel flow
+
+Enemy behaviour should feel like a pressure exchange, not constant offense.
+
+- Defensive and offensive turns alternate in short cycles
+- Enemy parries some player attacks before taking initiative
+- An end-parry feedback acts as a clear momentum shift into counteroffense
+- Group pressure stays limited so 1v1 timing remains the core skill test
+
+This should give the combat more of a "back and forth" exchange, instead of it feeling one-sided to one combatant.
+
 ---
 
 ## Core Feature Set
@@ -30,11 +41,12 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 ### Enemy Mechanics
 
-| Feature    | Description                          |
-| ---------- | ------------------------------------ |
-| Attacks    | 3-4 melee attacks                    |
-| Telegraphs | Clear wind-up before each attack     |
-| Health     | Enemy can die if health reaches zero |
+| Feature     | Description                                                      |
+| ----------- | ---------------------------------------------------------------- |
+| Attacks     | Shared 5-step melee combo (same combo data source as the player) |
+| Telegraphs  | Clear wind-up before each attack                                 |
+| Block/parry | Timed parry responses with end-parry momentum shift              |
+| Health      | Enemy can die if health reaches zero                             |
 
 ---
 
@@ -147,6 +159,8 @@ Attack windows and eligibility checks are tied to animation events configured in
   - **Slash 1:** Wind-Up → Slash → Slow-down
   - **Slash 2:** Wind-Up → Slash → Slow-down
   - **Slash 3:** Wind-Up → Slash → Slow-down
+  - **Slash 4:** Wind-Up → Slash → Slow-down
+  - **Slash 5:** Wind-Up → Slash → Slow-down
 - **Dead:** Falls to the ground, game over
 
 #### Player Attack Chain
@@ -155,9 +169,9 @@ The player attack system implements a combo chain using a state machine approach
 
 When the attack input is pressed while in Idle or certain movement states, transition to Slash 1. Each slash state follows a phased animation: Wind-Up (telegraph) → Slash (hit frames) → Slow-down (recovery).
 
-- If attack input is detected during the Slow-down phase of Slash 1, transition immediately to Slash 2, skipping the full return to Idle.
-- Similarly for Slash 2 → Slash 3.
-- After Slash 3's Slow-down, or if no input is received, transition back to Idle.
+- If attack input is detected during the Slow-down phase of Slash 1, transition immediately to Slash 2.
+- Similarly for Slash 2 → Slash 3, Slash 3 → Slash 4, and Slash 4 → Slash 5.
+- After Slash 5's Slow-down, or if no input is received, transition back to Idle.
 - Each subsequent slash starts from the pose at the end of the previous Slow-down, ensuring seamless visual flow without redundant animations.
 
 This allows for combos, with timing windows for inputs during recovery phases to maintain responsiveness.
@@ -357,5 +371,5 @@ The combat system is successful if:
 ## Optional features if we have time
 
 - Heavy attacks that knocks the player back
-- Parry system with posture damage and breaking mechanics
 - Posture system for enemies and players
+  - Parry system with posture damage and stance breaking mechanics
