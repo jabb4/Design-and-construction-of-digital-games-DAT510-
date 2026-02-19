@@ -91,6 +91,7 @@ namespace StateMachine.Core
             {
                 stateScopedLayers.Clear();
                 scopedLayerSource.CollectTransitionLayers(stateScopedLayers);
+                stateScopedLayers.Sort((left, right) => left.EvaluationOrder.CompareTo(right.EvaluationOrder));
 
                 for (int i = 0; i < stateScopedLayers.Count; i++)
                 {
