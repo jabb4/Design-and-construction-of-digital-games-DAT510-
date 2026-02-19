@@ -115,14 +115,14 @@ namespace Enemies.Combat
                 AttackData attack = hit.Attack.Value;
                 if (attack.DirectionHint != AttackDirectionHint.None)
                 {
-                    return attack.DirectionHint;
+                    return MirrorPerspectiveHint(attack.DirectionHint);
                 }
 
                 if (stateMachine != null &&
                     stateMachine.AttackCombo != null &&
                     AttackComboDirectionResolver.TryResolveFromCombo(stateMachine.AttackCombo, attack.AttackId, out AttackDirectionHint fromCombo))
                 {
-                    return fromCombo;
+                    return MirrorPerspectiveHint(fromCombo);
                 }
             }
 
@@ -152,6 +152,23 @@ namespace Enemies.Combat
             }
 
             return isUp ? AttackDirectionHint.LeftUp : AttackDirectionHint.LeftDown;
+        }
+
+        private static AttackDirectionHint MirrorPerspectiveHint(AttackDirectionHint hint)
+        {
+            switch (hint)
+            {
+                case AttackDirectionHint.LeftUp:
+                    return AttackDirectionHint.RightUp;
+                case AttackDirectionHint.LeftDown:
+                    return AttackDirectionHint.RightDown;
+                case AttackDirectionHint.RightUp:
+                    return AttackDirectionHint.LeftUp;
+                case AttackDirectionHint.RightDown:
+                    return AttackDirectionHint.LeftDown;
+                default:
+                    return hint;
+            }
         }
 
         private static bool TryGetParryState(AttackDirectionHint hint, out string stateName)
