@@ -17,6 +17,11 @@ namespace Player.StateMachine
         protected PlayerStateMachine Owner { get; private set; }
 
         /// <summary>
+        /// Shared combat runtime context for this state instance.
+        /// </summary>
+        protected PlayerCombatStateContext Context { get; private set; }
+
+        /// <summary>
         /// Reference to the Animator component for animation control.
         /// </summary>
         protected Animator Animator { get; private set; }
@@ -104,16 +109,14 @@ namespace Player.StateMachine
         /// Called by the state machine when the state is created.
         /// </summary>
         /// <param name="stateMachine">The state machine that owns this state.</param>
-        /// <param name="animator">The animator component for animation control.</param>
-        /// <param name="inputHandler">The input handler for reading player input.</param>
-        /// <param name="motor">The character motor for physics and movement.</param>
-        public void Initialize(PlayerStateMachine stateMachine, Animator animator,
-                               PlayerInputHandler inputHandler, CharacterMotor motor)
+        /// <param name="context">Shared combat runtime context.</param>
+        public void Initialize(PlayerStateMachine stateMachine, PlayerCombatStateContext context)
         {
             Owner = stateMachine;
-            Animator = animator;
-            Input = inputHandler;
-            Motor = motor;
+            Context = context;
+            Animator = context?.Animator;
+            Input = context?.Input;
+            Motor = context?.Motor;
         }
 
         #endregion

@@ -24,6 +24,7 @@ namespace Player.StateMachine
         public PlayerInputHandler Input { get; private set; }
         public CharacterMotor Motor { get; private set; }
         public CameraController CameraController { get; private set; }
+        public PlayerCombatStateContext CombatContext { get; private set; }
         public AttackStep? CurrentAttackStep { get; private set; }
         public AttackComboAsset AttackCombo => attackCombo;
         public int AttackStepCount => attackCombo != null ? attackCombo.Count : 0;
@@ -125,7 +126,7 @@ namespace Player.StateMachine
         public T GetState<T>() where T : PlayerStateBase, new()
         {
             T newState = new T();
-            newState.Initialize(this, Animator, Input, Motor);
+            newState.Initialize(this, CombatContext);
             return newState;
         }
 
@@ -189,6 +190,8 @@ namespace Player.StateMachine
             {
                 Debug.LogWarning("[PlayerStateMachine] CameraController not found in scene. Lock-on weapon behavior will not work.");
             }
+
+            CombatContext = new PlayerCombatStateContext(this, Animator, Input, Motor);
         }
 
         private void ValidateAttackComboConfiguration()
@@ -256,6 +259,48 @@ namespace Player.StateMachine
             }
 
             return forward.normalized;
+        }
+    }
+
+    public sealed class PlayerCombatStateContext
+    {
+        private readonly Dictionary<int, float> timersByKey = new Dictionary<int, float>();
+
+        public PlayerCombatStateContext(
+            PlayerStateMachine owner,
+            Animator animator,
+            PlayerInputHandler input,
+            CharacterMotor motor)
+        {
+            Owner = owner;
+            Animator = animator;
+            Input = input;
+            Motor = motor;
+        }
+
+        public PlayerStateMachine Owner { get; }
+        public Animator Animator { get; }
+        public PlayerInputHandler Input { get; }
+        public CharacterMotor Motor { get; }
+
+        public Transform ActorTransform => Owner != null ? Owner.transform : null;
+        public bool IsGrounded => Motor != null && Motor.IsGrounded;
+        public bool IsLockedOn => Motor != null && Motor.IsLockedOn;
+        public Transform LockOnTarget => Motor != null ? Motor.GetLockOnTarget() : null;
+
+        public void SetTimer(int key, float remainingSeconds)
+        {
+            timersByKey[key] = Mathf.Max(0f, remainingSeconds);
+        }
+
+        public bool TryGetTimer(int key, out float remainingSeconds)
+        {
+            return timersByKey.TryGetValue(key, out remainingSeconds);
+        }
+
+        public void ClearTimer(int key)
+        {
+            timersByKey.Remove(key);
         }
     }
 }
