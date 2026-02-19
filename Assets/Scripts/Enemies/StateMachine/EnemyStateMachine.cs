@@ -165,6 +165,19 @@ namespace Enemies.StateMachine
             return UnityEngine.Random.Range(min, max + 1);
         }
 
+        public float SampleDefenseDurationSeconds()
+        {
+            float min = 0.9f;
+            float max = 1.8f;
+            if (combatProfile != null)
+            {
+                min = Mathf.Max(0.05f, combatProfile.MinDefenseDuration);
+                max = Mathf.Max(min, combatProfile.MaxDefenseDuration);
+            }
+
+            return UnityEngine.Random.Range(min, max);
+        }
+
         public int SampleAttackChainLength()
         {
             int min = 2;
@@ -474,6 +487,13 @@ namespace Enemies.StateMachine
             {
                 Debug.LogWarning(
                     $"[EnemyStateMachine] Parries-before-counter range should stay within [1..5]. Current: [{combatProfile.MinParriesBeforeCounter}..{combatProfile.MaxParriesBeforeCounter}]",
+                    combatProfile);
+            }
+
+            if (combatProfile.MinDefenseDuration <= 0f || combatProfile.MaxDefenseDuration < combatProfile.MinDefenseDuration)
+            {
+                Debug.LogWarning(
+                    $"[EnemyStateMachine] Defense duration range is invalid. Current: [{combatProfile.MinDefenseDuration}..{combatProfile.MaxDefenseDuration}]",
                     combatProfile);
             }
         }

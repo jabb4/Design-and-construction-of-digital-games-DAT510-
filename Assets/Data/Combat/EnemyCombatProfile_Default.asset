@@ -17,6 +17,8 @@ MonoBehaviour:
   maxAttackChain: 5
   minParriesBeforeCounter: 1
   maxParriesBeforeCounter: 5
+  minDefenseDuration: 0.9
+  maxDefenseDuration: 1.8
   parryWindowDuration: 0.2
   parryAttemptCooldown: 0.35
   counterPrepDelay: 0.15

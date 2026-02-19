@@ -18,6 +18,8 @@ namespace Enemies.AI
         [SerializeField, Min(1)] private int maxParriesBeforeCounter = 5;
 
         [Header("Defense Timing")]
+        [SerializeField, Min(0.05f)] private float minDefenseDuration = 0.9f;
+        [SerializeField, Min(0.05f)] private float maxDefenseDuration = 1.8f;
         [SerializeField, Min(0.01f)] private float parryWindowDuration = 0.2f;
         [SerializeField, Min(0.01f)] private float parryAttemptCooldown = 0.35f;
         [SerializeField, Min(0f)] private float counterPrepDelay = 0.15f;
@@ -32,6 +34,8 @@ namespace Enemies.AI
         public int MaxAttackChain => maxAttackChain;
         public int MinParriesBeforeCounter => minParriesBeforeCounter;
         public int MaxParriesBeforeCounter => maxParriesBeforeCounter;
+        public float MinDefenseDuration => minDefenseDuration;
+        public float MaxDefenseDuration => maxDefenseDuration;
         public float ParryWindowDuration => parryWindowDuration;
         public float ParryAttemptCooldown => parryAttemptCooldown;
         public float CounterPrepDelay => counterPrepDelay;
@@ -45,6 +49,8 @@ namespace Enemies.AI
             maxAttackChain = Mathf.Max(minAttackChain, maxAttackChain);
             minParriesBeforeCounter = Mathf.Max(1, minParriesBeforeCounter);
             maxParriesBeforeCounter = Mathf.Max(minParriesBeforeCounter, maxParriesBeforeCounter);
+            minDefenseDuration = Mathf.Max(0.05f, minDefenseDuration);
+            maxDefenseDuration = Mathf.Max(minDefenseDuration, maxDefenseDuration);
             parryWindowDuration = Mathf.Max(0.01f, parryWindowDuration);
             parryAttemptCooldown = Mathf.Max(0.01f, parryAttemptCooldown);
             counterPrepDelay = Mathf.Max(0f, counterPrepDelay);

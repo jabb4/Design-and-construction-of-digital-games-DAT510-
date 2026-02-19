@@ -9,6 +9,7 @@ namespace Enemies.StateMachine.States
         private int successfulParries;
         private float nextParryAttemptAt;
         private float counterReadyAt;
+        private float defenseUntilAt;
         private bool counterQueued;
 
         public override void OnEnter()
@@ -20,6 +21,8 @@ namespace Enemies.StateMachine.States
             counterQueued = false;
             counterReadyAt = float.PositiveInfinity;
             nextParryAttemptAt = Time.time;
+            float sampledDefenseDuration = Owner != null ? Owner.SampleDefenseDurationSeconds() : 1.2f;
+            defenseUntilAt = Time.time + sampledDefenseDuration;
 
             if (Enemy != null)
             {
@@ -91,6 +94,14 @@ namespace Enemies.StateMachine.States
                     Owner.GetState<EnemyAttackTurnState>(),
                     TransitionReason.AttackCombo,
                     priority: TransitionPriorities.ComboContinuation);
+            }
+
+            if (Time.time >= defenseUntilAt)
+            {
+                return TransitionDecision.To(
+                    Owner.GetState<EnemyAttackTurnState>(),
+                    TransitionReason.StandardFlow,
+                    priority: TransitionPriorities.Default);
             }
 
             return TransitionDecision.None;
