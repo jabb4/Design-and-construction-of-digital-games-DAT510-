@@ -1,6 +1,7 @@
 namespace StateMachine.Core
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Shared runtime loop for state-driven actors.
@@ -8,6 +9,9 @@ namespace StateMachine.Core
     /// </summary>
     public sealed class StateMachineRuntime
     {
+        private readonly List<ITransitionLayer> transitionLayers = new List<ITransitionLayer>(4);
+        private readonly List<ITransitionLayer> stateScopedLayers = new List<ITransitionLayer>(4);
+
         public event Action<IState, IState> StateChanging;
         public event Action<IState, IState> StateChanged;
 
@@ -16,9 +20,7 @@ namespace StateMachine.Core
 
         public void Tick()
         {
-            TransitionDecision decision = CurrentState != null
-                ? CurrentState.EvaluateTransition()
-                : TransitionDecision.None;
+            TransitionDecision decision = EvaluateTransition();
 
             if (decision.HasTransition && decision.NextState != CurrentState)
             {
@@ -48,6 +50,70 @@ namespace StateMachine.Core
             CurrentState.OnEnter();
 
             StateChanged?.Invoke(previous, CurrentState);
+        }
+
+        public void AddTransitionLayer(ITransitionLayer layer)
+        {
+            if (layer == null || transitionLayers.Contains(layer))
+            {
+                return;
+            }
+
+            transitionLayers.Add(layer);
+            transitionLayers.Sort((left, right) => left.EvaluationOrder.CompareTo(right.EvaluationOrder));
+        }
+
+        public void RemoveTransitionLayer(ITransitionLayer layer)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+
+            transitionLayers.Remove(layer);
+        }
+
+        private TransitionDecision EvaluateTransition()
+        {
+            if (CurrentState == null)
+            {
+                return TransitionDecision.None;
+            }
+
+            TransitionDecision decision = CurrentState.EvaluateTransition();
+
+            for (int i = 0; i < transitionLayers.Count; i++)
+            {
+                decision = SelectHigherPriority(decision, transitionLayers[i].Evaluate(CurrentState));
+            }
+
+            if (CurrentState is ITransitionLayerSource scopedLayerSource)
+            {
+                stateScopedLayers.Clear();
+                scopedLayerSource.CollectTransitionLayers(stateScopedLayers);
+
+                for (int i = 0; i < stateScopedLayers.Count; i++)
+                {
+                    decision = SelectHigherPriority(decision, stateScopedLayers[i].Evaluate(CurrentState));
+                }
+            }
+
+            return decision;
+        }
+
+        private static TransitionDecision SelectHigherPriority(TransitionDecision current, TransitionDecision candidate)
+        {
+            if (!candidate.HasTransition)
+            {
+                return current;
+            }
+
+            if (!current.HasTransition || candidate.Priority > current.Priority)
+            {
+                return candidate;
+            }
+
+            return current;
         }
     }
 }
