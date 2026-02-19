@@ -12,7 +12,7 @@ namespace Player.StateMachine.States
 
         public override void OnFixedUpdate()
         {
-            Motor.Move(Input.MoveInput, Input.IsSprinting);
+            Motor.Move(MoveIntent, SprintHeld);
 
             if (Motor.Velocity.y < 0)
             {

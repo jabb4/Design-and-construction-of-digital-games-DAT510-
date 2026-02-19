@@ -41,7 +41,7 @@ namespace Player.StateMachine.States
 
         public override void OnUpdate()
         {
-            locomotion.Update(Input.HasMovementInput && Input.IsSprinting);
+            locomotion.Update(HasMoveIntent && SprintHeld);
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
         }
 
@@ -59,7 +59,7 @@ namespace Player.StateMachine.States
             }
             else
             {
-                Motor.Move(Input.MoveInput, useSprint: true);
+                Motor.Move(MoveIntent, useSprint: true);
             }
 
             RotateWithContext(requireMovementInput: true);
@@ -77,7 +77,7 @@ namespace Player.StateMachine.States
                 return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: TransitionPriorities.AirStateSync);
             }
 
-            if (!Input.IsSprinting && Input.HasMovementInput)
+            if (!SprintHeld && HasMoveIntent)
             {
                 return TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
             }
@@ -85,9 +85,9 @@ namespace Player.StateMachine.States
             if (locomotion.CurrentPhase == WeightedLocomotion.Phase.Stop &&
                 locomotion.IsStopComplete())
             {
-                if (Input.HasMovementInput)
+                if (HasMoveIntent)
                 {
-                    return Input.IsSprinting
+                    return SprintHeld
                         ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
                         : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
                 }

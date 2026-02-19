@@ -61,9 +61,9 @@ namespace Player.StateMachine.States
                 return decision;
             }
 
-            if (Input.MoveInput.sqrMagnitude > 0.01f)
+            if (HasMoveIntent)
             {
-                if (Input.IsSprinting)
+                if (SprintHeld)
                 {
                     return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
                 }

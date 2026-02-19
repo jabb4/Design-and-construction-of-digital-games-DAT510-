@@ -21,7 +21,7 @@ namespace Player.StateMachine
                 CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.1f);
             }
 
-            Animator.SetBool(IsMovingHash, Input.HasMovementInput);
+            Animator.SetBool(IsMovingHash, HasMoveIntent);
             Animator.SetBool(IsSprintingHash, false);
 
             smoothVelocity = Vector2.zero;
@@ -34,7 +34,7 @@ namespace Player.StateMachine
             {
                 if (IsAnimationComplete(0.95f))
                 {
-                    if (Input.HasMovementInput)
+                    if (HasMoveIntent)
                     {
                         Owner.ChangeState(Owner.GetState<States.WalkingState>());
                     }
@@ -74,7 +74,7 @@ namespace Player.StateMachine
                 return;
             }
 
-            Motor.Move(Input.MoveInput, useSprint: false);
+            Motor.Move(MoveIntent, useSprint: false);
             RotateWithContext(requireMovementInput: true);
         }
 
@@ -87,7 +87,7 @@ namespace Player.StateMachine
 
             if (Owner.IsDefenseReactionActive &&
                 Owner.IsDefenseAttackUnlocked &&
-                Input.IsAttackPressed &&
+                AttackPressed &&
                 Motor.IsGrounded)
             {
                 // Allow earlier attack cancel after successful defense,
@@ -99,7 +99,7 @@ namespace Player.StateMachine
                 return TransitionDecision.To(attackState, TransitionReason.RecoveryInterrupt, priority: TransitionPriorities.RecoveryInterrupt);
             }
 
-            if (!Input.IsBlocking)
+            if (!BlockHeld)
             {
                 if (Owner.IsDefenseReactionActive)
                 {
@@ -123,12 +123,12 @@ namespace Player.StateMachine
                 CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f);
             }
 
-            if (Input.IsJumpPressed && Motor.IsGrounded)
+            if (JumpPressed && Motor.IsGrounded)
             {
                 return TransitionDecision.None;
             }
 
-            if (Input.IsSprinting && Input.HasMovementInput)
+            if (SprintHeld && HasMoveIntent)
             {
                 return TransitionDecision.None;
             }

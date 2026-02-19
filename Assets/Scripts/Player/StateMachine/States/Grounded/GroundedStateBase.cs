@@ -11,7 +11,7 @@ namespace Player.StateMachine.States
         /// </summary>
         protected bool TryGetCommonGroundedTransition(out TransitionDecision decision)
         {
-            if (Input.IsAttackPressed && Motor.IsGrounded)
+            if (AttackPressed && Motor.IsGrounded)
             {
                 if (!Owner.IsEquipped)
                 {
@@ -26,13 +26,13 @@ namespace Player.StateMachine.States
                 return true;
             }
 
-            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
+            if (BlockHeld && Owner.IsEquipped && Motor.IsGrounded)
             {
                 decision = TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.InputBlock, priority: TransitionPriorities.InputSecondary);
                 return true;
             }
 
-            if (Input.IsJumpPressed && Motor.IsGrounded)
+            if (JumpPressed && Motor.IsGrounded)
             {
                 decision = TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputSecondary);
                 return true;

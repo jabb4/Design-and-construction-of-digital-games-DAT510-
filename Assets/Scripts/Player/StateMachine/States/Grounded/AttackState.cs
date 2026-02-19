@@ -67,7 +67,7 @@ namespace Player.StateMachine.States
         {
             if (currentPhase == AttackPhase.Windup)
             {
-                if (Motor.IsLockedOn || Input.HasMovementInput)
+                if (Motor.IsLockedOn || HasMoveIntent)
                 {
                     RotateWithContext(requireMovementInput: true);
                 }
@@ -158,7 +158,7 @@ namespace Player.StateMachine.States
 
         private void BufferComboInputIfNeeded(bool isInAttackState)
         {
-            if (hasEnteredRecovery && isInAttackState && Input.IsAttackPressed)
+            if (hasEnteredRecovery && isInAttackState && AttackPressed)
             {
                 queuedNextAttack = true;
             }
@@ -171,7 +171,7 @@ namespace Player.StateMachine.States
                 return TransitionDecision.None;
             }
 
-            if (Input.IsBlocking && Owner.IsEquipped)
+            if (BlockHeld && Owner.IsEquipped)
             {
                 Owner.ClearCurrentAttack();
                 return TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.RecoveryInterrupt, priority: TransitionPriorities.RecoveryInterrupt);
@@ -182,16 +182,16 @@ namespace Player.StateMachine.States
                 return TransitionDecision.None;
             }
 
-            if (Input.IsJumpPressed)
+            if (JumpPressed)
             {
                 Owner.ClearCurrentAttack();
                 return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputPrimary);
             }
 
-            if (Input.HasMovementInput)
+            if (HasMoveIntent)
             {
                 Owner.ClearCurrentAttack();
-                return Input.IsSprinting
+                return SprintHeld
                     ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
                     : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
             }
@@ -229,8 +229,8 @@ namespace Player.StateMachine.States
         private TransitionDecision ExitAttackToLocomotionOrIdle()
         {
             Owner.ClearCurrentAttack();
-            return Input.HasMovementInput
-                ? (Input.IsSprinting
+            return HasMoveIntent
+                ? (SprintHeld
                     ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
                     : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove))
                 : TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.AnimationComplete);

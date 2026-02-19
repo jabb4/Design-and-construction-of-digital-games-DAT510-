@@ -23,7 +23,7 @@ namespace Player.StateMachine.States
             landingTimer += Time.fixedDeltaTime;
             float blend = landingDuration <= 0f ? 1f : Mathf.Clamp01(landingTimer / landingDuration);
 
-            Motor.Move(Input.MoveInput, Input.IsSprinting, blend);
+            Motor.Move(MoveIntent, SprintHeld, blend);
 
             if (landingTimer >= landingDuration)
             {
@@ -33,7 +33,7 @@ namespace Player.StateMachine.States
 
         public override TransitionDecision EvaluateTransition()
         {
-            if (Input.IsJumpBuffered && GetAnimatorNormalizedTime() >= 0.9f)
+            if (JumpBuffered && GetAnimatorNormalizedTime() >= 0.9f)
             {
                 return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputPrimary);
             }
@@ -43,9 +43,9 @@ namespace Player.StateMachine.States
 
             if (inJumpEnd && IsAnimationComplete(0.9f))
             {
-                if (Input.HasMovementInput)
+                if (HasMoveIntent)
                 {
-                    if (Input.IsSprinting)
+                    if (SprintHeld)
                     {
                         return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
                     }

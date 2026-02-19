@@ -111,6 +111,14 @@ namespace Player.StateMachine
         /// </summary>
         public virtual string StateName => GetType().Name;
 
+        protected Vector2 MoveIntent => Intent?.MoveIntent ?? (Input != null ? Input.MoveInput : Vector2.zero);
+        protected bool HasMoveIntent => Intent?.HasMoveIntent ?? (Input != null && Input.HasMovementInput);
+        protected bool SprintHeld => Intent?.SprintHeld ?? (Input != null && Input.IsSprinting);
+        protected bool BlockHeld => Intent?.BlockHeld ?? (Input != null && Input.IsBlocking);
+        protected bool JumpPressed => Intent?.JumpPressed ?? (Input != null && Input.IsJumpPressed);
+        protected bool JumpBuffered => Intent?.JumpBuffered ?? (Input != null && Input.IsJumpBuffered);
+        protected bool AttackPressed => Intent?.AttackPressed ?? (Input != null && Input.IsAttackPressed);
+
         #endregion
 
         #region Initialization
@@ -374,8 +382,8 @@ namespace Player.StateMachine
         protected Vector2 UpdateBlendTreeParameters(Vector2 currentVelocity, ref Vector2 velocityRef, float smoothTime, bool lockOn)
         {
             Vector2 targetVelocity = lockOn
-                ? Input.MoveInput
-                : new Vector2(0f, Input.MoveInput.magnitude);
+                ? MoveIntent
+                : new Vector2(0f, MoveIntent.magnitude);
 
             Vector2 smoothed = Vector2.SmoothDamp(currentVelocity, targetVelocity, ref velocityRef, smoothTime);
 
@@ -398,12 +406,12 @@ namespace Player.StateMachine
                 return;
             }
 
-            if (requireMovementInput && !Input.HasMovementInput)
+            if (requireMovementInput && !HasMoveIntent)
             {
                 return;
             }
 
-            Motor.RotateTowardsMovement(Input.MoveInput);
+            Motor.RotateTowardsMovement(MoveIntent);
         }
 
         #endregion

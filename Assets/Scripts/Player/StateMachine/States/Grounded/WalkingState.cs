@@ -28,7 +28,7 @@ namespace Player.StateMachine.States
             if (isLockedOn || !isEquipped)
             {
                 locomotion.ForceLoop();
-                smoothVelocity = isLockedOn ? Input.MoveInput : Vector2.zero;
+                smoothVelocity = isLockedOn ? MoveIntent : Vector2.zero;
             }
             else
             {
@@ -55,7 +55,7 @@ namespace Player.StateMachine.States
                 return "Walk Start F";
             }
 
-            Vector2 input = Input.MoveInput;
+            Vector2 input = MoveIntent;
             if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
             {
                 return input.x > 0 ? "Walk Start R" : "Walk Start L";
@@ -91,7 +91,7 @@ namespace Player.StateMachine.States
 
         public override void OnUpdate()
         {
-            locomotion.Update(Input.HasMovementInput);
+            locomotion.Update(HasMoveIntent);
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
         }
 
@@ -103,7 +103,7 @@ namespace Player.StateMachine.States
                 return;
             }
 
-            Motor.Move(Input.MoveInput, useSprint: false);
+            Motor.Move(MoveIntent, useSprint: false);
 
             RotateWithContext();
         }
@@ -120,7 +120,7 @@ namespace Player.StateMachine.States
                 return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: TransitionPriorities.AirStateSync);
             }
 
-            if (Input.IsSprinting && Input.HasMovementInput)
+            if (SprintHeld && HasMoveIntent)
             {
                 return TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove);
             }
@@ -128,9 +128,9 @@ namespace Player.StateMachine.States
             if (locomotion.CurrentPhase == WeightedLocomotion.Phase.Stop &&
                 locomotion.IsStopComplete())
             {
-                if (Input.HasMovementInput)
+                if (HasMoveIntent)
                 {
-                    return Input.IsSprinting
+                    return SprintHeld
                         ? TransitionDecision.To(Owner.GetState<SprintState>(), TransitionReason.InputMove)
                         : TransitionDecision.To(Owner.GetState<WalkingState>(), TransitionReason.InputMove);
                 }
@@ -138,7 +138,7 @@ namespace Player.StateMachine.States
                 return TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.StandardFlow);
             }
 
-            if (!Input.HasMovementInput && locomotion.IsLooping)
+            if (!HasMoveIntent && locomotion.IsLooping)
             {
                 locomotion.RequestStop();
             }
