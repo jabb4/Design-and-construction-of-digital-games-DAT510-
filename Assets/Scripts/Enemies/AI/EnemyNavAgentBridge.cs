@@ -164,10 +164,6 @@ namespace Enemies.AI
             if (navMeshAgent == null)
             {
                 navMeshAgent = GetComponent<NavMeshAgent>();
-                if (navMeshAgent == null)
-                {
-                    navMeshAgent = gameObject.AddComponent<NavMeshAgent>();
-                }
             }
 
             if (impulseDriver == null)
