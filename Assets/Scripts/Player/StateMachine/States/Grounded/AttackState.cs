@@ -15,6 +15,7 @@ namespace Player.StateMachine.States
         private bool hasLoggedMissingEventWarning;
         private bool hasPlayedAttackAnimation;
         private float recoveryElapsed;
+        private AttackAnimationAdapter animationAdapter;
 
         public AttackPhase CurrentPhase => currentPhase;
 
@@ -44,7 +45,7 @@ namespace Player.StateMachine.States
             Animator.SetBool(IsMovingHash, false);
             Animator.SetBool(IsSprintingHash, false);
 
-            CrossFade(step.AnimationStateName, 0.1f);
+            EnsureAnimationAdapter().Play(step, 0.1f);
         }
 
         public override void OnUpdate()
@@ -82,7 +83,7 @@ namespace Player.StateMachine.States
                 return Owner.GetState<IdleState>();
             }
 
-            bool isInAttackState = IsAnimatorInState(step.AnimationStateName);
+            bool isInAttackState = EnsureAnimationAdapter().IsPlaying(step);
             RegisterAttackPresence(isInAttackState);
             BufferComboInputIfNeeded(isInAttackState);
 
@@ -115,7 +116,7 @@ namespace Player.StateMachine.States
                 return false;
             }
 
-            if (!IsAnimatorInState(step.AnimationStateName))
+            if (!EnsureAnimationAdapter().IsPlaying(step))
             {
                 return false;
             }
@@ -210,7 +211,7 @@ namespace Player.StateMachine.States
 
         private IState TryGetAttackExitTransition(bool isInAttackState)
         {
-            if (isInAttackState && IsAnimationComplete(0.98f))
+            if (isInAttackState && EnsureAnimationAdapter().IsComplete(0.98f))
             {
                 return ExitAttackToLocomotionOrIdle();
             }
@@ -238,7 +239,7 @@ namespace Player.StateMachine.States
                 return;
             }
 
-            if (!IsAnimatorInState(step.AnimationStateName))
+            if (!EnsureAnimationAdapter().IsPlaying(step))
             {
                 return;
             }
@@ -250,9 +251,61 @@ namespace Player.StateMachine.States
 
             hasLoggedMissingEventWarning = true;
             Debug.LogWarning(
-                $"[AttackState] No attack phase events received for '{step.AnimationStateName}'. " +
+                $"[AttackState] No attack phase events received for '{EnsureAnimationAdapter().GetPresentationStateName(step)}'. " +
                 "Add animation events that call OnAttackWindup, OnAttackSlash, and OnAttackRecovery.",
                 Animator);
+        }
+
+        private AttackAnimationAdapter EnsureAnimationAdapter()
+        {
+            if (animationAdapter != null)
+            {
+                return animationAdapter;
+            }
+
+            animationAdapter = new AttackAnimationAdapter(
+                (stateName, duration) => CrossFade(stateName, duration),
+                stateName => IsAnimatorInState(stateName),
+                threshold => IsAnimationComplete(threshold));
+
+            return animationAdapter;
+        }
+
+        private sealed class AttackAnimationAdapter
+        {
+            private readonly System.Func<string, float, bool> playState;
+            private readonly System.Func<string, bool> isInState;
+            private readonly System.Func<float, bool> isComplete;
+
+            public AttackAnimationAdapter(
+                System.Func<string, float, bool> playState,
+                System.Func<string, bool> isInState,
+                System.Func<float, bool> isComplete)
+            {
+                this.playState = playState;
+                this.isInState = isInState;
+                this.isComplete = isComplete;
+            }
+
+            public void Play(AttackStep step, float blendDuration)
+            {
+                playState?.Invoke(step.AnimationStateName, blendDuration);
+            }
+
+            public bool IsPlaying(AttackStep step)
+            {
+                return isInState != null && isInState(step.AnimationStateName);
+            }
+
+            public bool IsComplete(float threshold)
+            {
+                return isComplete != null && isComplete(threshold);
+            }
+
+            public string GetPresentationStateName(AttackStep step)
+            {
+                return step.AnimationStateName;
+            }
         }
     }
 }
