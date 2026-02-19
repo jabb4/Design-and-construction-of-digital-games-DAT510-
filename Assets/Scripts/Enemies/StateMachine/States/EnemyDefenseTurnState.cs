@@ -10,6 +10,7 @@ namespace Enemies.StateMachine.States
         private float nextParryAttemptAt;
         private float counterReadyAt;
         private float defenseUntilAt;
+        private float lastTargetAttackSeenAt;
         private bool counterQueued;
 
         public override void OnEnter()
@@ -23,6 +24,7 @@ namespace Enemies.StateMachine.States
             nextParryAttemptAt = Time.time;
             float sampledDefenseDuration = Owner != null ? Owner.SampleDefenseDurationSeconds() : 1.2f;
             defenseUntilAt = Time.time + sampledDefenseDuration;
+            lastTargetAttackSeenAt = float.NegativeInfinity;
 
             if (Enemy != null)
             {
@@ -43,17 +45,25 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
+            if (Owner.IsTargetAttacking)
+            {
+                lastTargetAttackSeenAt = Time.time;
+            }
+
             if (Time.time < nextParryAttemptAt)
             {
                 return;
             }
 
-            if (!Owner.IsTargetAttacking)
+            float parryThreatMemory = Profile != null ? Profile.ParryThreatMemoryDuration : 0.15f;
+            bool isAttackThreatActive = Owner.IsTargetAttacking || Time.time - lastTargetAttackSeenAt <= parryThreatMemory;
+            if (!isAttackThreatActive)
             {
                 return;
             }
 
-            if (Owner.DistanceToTarget > Owner.EngageRange)
+            float parryTriggerRange = Profile != null ? Profile.ParryTriggerRange : Mathf.Max(Owner.AttackRange, 3f);
+            if (Owner.DistanceToTarget > parryTriggerRange)
             {
                 return;
             }

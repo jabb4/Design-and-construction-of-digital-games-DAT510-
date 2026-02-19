@@ -21,6 +21,8 @@ MonoBehaviour:
   maxDefenseDuration: 1.8
   parryWindowDuration: 0.2
   parryAttemptCooldown: 0.35
+  parryThreatMemoryDuration: 0.15
+  parryTriggerRange: 3
   counterPrepDelay: 0.15
   engageRange: 7
   orbitRadius: 2.75

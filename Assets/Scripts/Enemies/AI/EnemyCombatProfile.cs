@@ -22,6 +22,8 @@ namespace Enemies.AI
         [SerializeField, Min(0.05f)] private float maxDefenseDuration = 1.8f;
         [SerializeField, Min(0.01f)] private float parryWindowDuration = 0.2f;
         [SerializeField, Min(0.01f)] private float parryAttemptCooldown = 0.35f;
+        [SerializeField, Min(0f)] private float parryThreatMemoryDuration = 0.15f;
+        [SerializeField, Min(0.1f)] private float parryTriggerRange = 3f;
         [SerializeField, Min(0f)] private float counterPrepDelay = 0.15f;
 
         [Header("Spacing")]
@@ -38,6 +40,8 @@ namespace Enemies.AI
         public float MaxDefenseDuration => maxDefenseDuration;
         public float ParryWindowDuration => parryWindowDuration;
         public float ParryAttemptCooldown => parryAttemptCooldown;
+        public float ParryThreatMemoryDuration => parryThreatMemoryDuration;
+        public float ParryTriggerRange => parryTriggerRange;
         public float CounterPrepDelay => counterPrepDelay;
         public float EngageRange => engageRange;
         public float OrbitRadius => orbitRadius;
@@ -53,6 +57,8 @@ namespace Enemies.AI
             maxDefenseDuration = Mathf.Max(minDefenseDuration, maxDefenseDuration);
             parryWindowDuration = Mathf.Max(0.01f, parryWindowDuration);
             parryAttemptCooldown = Mathf.Max(0.01f, parryAttemptCooldown);
+            parryThreatMemoryDuration = Mathf.Max(0f, parryThreatMemoryDuration);
+            parryTriggerRange = Mathf.Max(0.1f, parryTriggerRange);
             counterPrepDelay = Mathf.Max(0f, counterPrepDelay);
             engageRange = Mathf.Max(0.1f, engageRange);
             orbitRadius = Mathf.Max(0.1f, orbitRadius);
