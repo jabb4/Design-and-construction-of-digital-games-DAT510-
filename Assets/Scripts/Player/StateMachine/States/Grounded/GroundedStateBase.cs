@@ -22,19 +22,19 @@ namespace Player.StateMachine.States
 
                 AttackState attackState = Owner.GetState<AttackState>();
                 attackState.SetComboIndex(0);
-                decision = TransitionDecision.To(attackState, TransitionReason.InputAttack, priority: 20);
+                decision = TransitionDecision.To(attackState, TransitionReason.InputAttack, priority: TransitionPriorities.InputPrimary);
                 return true;
             }
 
             if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
             {
-                decision = TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.InputBlock, priority: 15);
+                decision = TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.InputBlock, priority: TransitionPriorities.InputSecondary);
                 return true;
             }
 
             if (Input.IsJumpPressed && Motor.IsGrounded)
             {
-                decision = TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: 15);
+                decision = TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputSecondary);
                 return true;
             }
 

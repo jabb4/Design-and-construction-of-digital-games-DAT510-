@@ -24,7 +24,7 @@ namespace Player.StateMachine.States
         {
             if (Motor.IsGrounded)
             {
-                return TransitionDecision.To(Owner.GetState<JumpEndState>(), TransitionReason.Landed, priority: 25);
+                return TransitionDecision.To(Owner.GetState<JumpEndState>(), TransitionReason.Landed, priority: TransitionPriorities.AirStateSync);
             }
 
             return TransitionDecision.None;

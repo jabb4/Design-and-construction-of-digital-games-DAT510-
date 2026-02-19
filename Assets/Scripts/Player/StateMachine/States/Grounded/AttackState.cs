@@ -80,7 +80,7 @@ namespace Player.StateMachine.States
         {
             if (!TryGetCurrentAttackStep(out AttackStep step))
             {
-                return TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.MissingData, priority: 100);
+                return TransitionDecision.To(Owner.GetState<IdleState>(), TransitionReason.MissingData, priority: TransitionPriorities.CriticalFallback);
             }
 
             bool isInAttackState = EnsureAnimationAdapter().IsPlaying(step);
@@ -174,7 +174,7 @@ namespace Player.StateMachine.States
             if (Input.IsBlocking && Owner.IsEquipped)
             {
                 Owner.ClearCurrentAttack();
-                return TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.RecoveryInterrupt, priority: 30);
+                return TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.RecoveryInterrupt, priority: TransitionPriorities.RecoveryInterrupt);
             }
 
             if (recoveryElapsed < RecoveryMoveDelay)
@@ -185,7 +185,7 @@ namespace Player.StateMachine.States
             if (Input.IsJumpPressed)
             {
                 Owner.ClearCurrentAttack();
-                return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: 20);
+                return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputPrimary);
             }
 
             if (Input.HasMovementInput)
@@ -208,7 +208,7 @@ namespace Player.StateMachine.States
 
             var nextState = Owner.GetState<AttackState>();
             nextState.SetComboIndex(comboIndex + 1);
-            return TransitionDecision.To(nextState, TransitionReason.AttackCombo, priority: 40);
+            return TransitionDecision.To(nextState, TransitionReason.AttackCombo, priority: TransitionPriorities.ComboContinuation);
         }
 
         private TransitionDecision TryGetAttackExitTransition(bool isInAttackState)

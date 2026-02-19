@@ -96,7 +96,7 @@ namespace Player.StateMachine
 
                 States.AttackState attackState = Owner.GetState<States.AttackState>();
                 attackState.SetComboIndex(0);
-                return TransitionDecision.To(attackState, TransitionReason.RecoveryInterrupt, priority: 30);
+                return TransitionDecision.To(attackState, TransitionReason.RecoveryInterrupt, priority: TransitionPriorities.RecoveryInterrupt);
             }
 
             if (!Input.IsBlocking)

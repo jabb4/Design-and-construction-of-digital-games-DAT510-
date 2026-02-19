@@ -35,7 +35,7 @@ namespace Player.StateMachine.States
         {
             if (Input.IsJumpBuffered && GetAnimatorNormalizedTime() >= 0.9f)
             {
-                return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: 20);
+                return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputPrimary);
             }
 
             AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);

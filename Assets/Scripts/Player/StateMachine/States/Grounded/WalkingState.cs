@@ -117,7 +117,7 @@ namespace Player.StateMachine.States
 
             if (!Motor.IsGrounded)
             {
-                return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: 25);
+                return TransitionDecision.To(Owner.GetState<JumpLoopState>(), TransitionReason.Airborne, priority: TransitionPriorities.AirStateSync);
             }
 
             if (Input.IsSprinting && Input.HasMovementInput)
