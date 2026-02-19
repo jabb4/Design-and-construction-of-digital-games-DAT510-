@@ -7,12 +7,14 @@ namespace Enemies.StateMachine.States
     public sealed class EnemyAttackTurnState : EnemyStateBase
     {
         private const float InterAttackDelay = 0.08f;
+        private const float FinalAttackCompleteThreshold = 0.995f;
 
         private bool hasAttackToken;
         private int plannedChainLength;
         private int currentAttackIndex;
         private bool attackInProgress;
         private bool chainComplete;
+        private bool waitingForFinalAttackCompletion;
         private int observedRecoveryVersion;
         private float nextAttackStartAt;
 
@@ -26,6 +28,7 @@ namespace Enemies.StateMachine.States
             currentAttackIndex = 0;
             attackInProgress = false;
             chainComplete = plannedChainLength <= 0;
+            waitingForFinalAttackCompletion = false;
             observedRecoveryVersion = Owner != null ? Owner.AttackRecoveryVersion : 0;
             nextAttackStartAt = Time.time;
 
@@ -60,14 +63,29 @@ namespace Enemies.StateMachine.States
 
             if (attackInProgress)
             {
-                if (Owner.AttackRecoveryVersion != observedRecoveryVersion)
+                bool isFinalAttackInChain = IsFinalAttackIndex(currentAttackIndex);
+                if (!waitingForFinalAttackCompletion &&
+                    Owner.AttackRecoveryVersion != observedRecoveryVersion)
                 {
                     observedRecoveryVersion = Owner.AttackRecoveryVersion;
-                    AdvanceAttackStep();
+                    if (isFinalAttackInChain)
+                    {
+                        // For the last hit, let the recovery tail visibly finish before locomotion resumes.
+                        waitingForFinalAttackCompletion = true;
+                    }
+                    else
+                    {
+                        AdvanceAttackStep();
+                    }
+
                     return;
                 }
 
-                if (Owner.IsCurrentAttackAnimationComplete())
+                bool isAttackStepComplete = waitingForFinalAttackCompletion
+                    ? Owner.IsCurrentAttackAnimationComplete(FinalAttackCompleteThreshold) || HasExitedCurrentAttackAnimation()
+                    : Owner.IsCurrentAttackAnimationComplete(0.98f);
+
+                if (isAttackStepComplete)
                 {
                     AdvanceAttackStep();
                 }
@@ -128,6 +146,7 @@ namespace Enemies.StateMachine.States
 
         private void AdvanceAttackStep()
         {
+            waitingForFinalAttackCompletion = false;
             attackInProgress = false;
             currentAttackIndex++;
             nextAttackStartAt = Time.time + InterAttackDelay;
@@ -142,6 +161,13 @@ namespace Enemies.StateMachine.States
         {
             if (Owner == null || Owner.NavBridge == null)
             {
+                return;
+            }
+
+            if (chainComplete)
+            {
+                Owner.NavBridge.Stop();
+                Owner.TryCrossFadeStateIfNotActive("Idle", 0.08f);
                 return;
             }
 
@@ -172,6 +198,53 @@ namespace Enemies.StateMachine.States
                 Owner.NavBridge.Stop();
                 Owner.TryCrossFadeStateIfNotActive("Idle", 0.08f);
             }
+        }
+
+        private bool IsFinalAttackIndex(int attackIndex)
+        {
+            if (Owner == null || Owner.AttackStepCount <= 0)
+            {
+                return true;
+            }
+
+            int lastPlannedIndex = Mathf.Max(0, plannedChainLength - 1);
+            int lastComboIndex = Owner.AttackStepCount - 1;
+            int finalPlayableIndex = Mathf.Min(lastPlannedIndex, lastComboIndex);
+            return attackIndex >= finalPlayableIndex;
+        }
+
+        private bool HasExitedCurrentAttackAnimation()
+        {
+            if (Owner == null || Owner.Animator == null || !Owner.CurrentAttackStep.HasValue)
+            {
+                return true;
+            }
+
+            string stateName = Owner.CurrentAttackStep.Value.AnimationStateName;
+            if (string.IsNullOrWhiteSpace(stateName))
+            {
+                return true;
+            }
+
+            Animator animator = Owner.Animator;
+            int shortNameHash = Animator.StringToHash(stateName);
+
+            AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+            if (current.shortNameHash == shortNameHash || current.IsName(stateName))
+            {
+                return false;
+            }
+
+            if (animator.IsInTransition(0))
+            {
+                AnimatorStateInfo next = animator.GetNextAnimatorStateInfo(0);
+                if (next.shortNameHash == shortNameHash || next.IsName(stateName))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
