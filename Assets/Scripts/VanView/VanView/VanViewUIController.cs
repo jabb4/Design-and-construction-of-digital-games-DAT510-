@@ -5,7 +5,8 @@ public class VanViewUIController : MonoBehaviour
 {
     public static VanViewUIController Instance { get; private set; }
 
-    public BackMenuUI backMenuUI;
+    public GameObject backMenuUI;
+    public GameObject raidMap;
 
     private void Awake()
     {
@@ -32,8 +33,22 @@ public class VanViewUIController : MonoBehaviour
         // If we press esc we want to open backmenuUI
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            backMenuUI.gameObject.SetActive(true);
+            backMenuUI.SetActive(true);
         }
         
     }
+
+    public void OpenRaidMap()
+    {
+        raidMap?.SetActive(true);
+
+        // Disable Main Camera for performance
+        Camera mainCam = Camera.main;
+        if (mainCam != null) mainCam.enabled = false;
+
+        // Disable VanViewUI
+        gameObject.SetActive(false);
+    }
+
+
 }

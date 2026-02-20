@@ -7,6 +7,8 @@ public class MenuButton : MonoBehaviour, IPointerEnterHandler, IPointerClickHand
 {
     [SerializeField] private float hoverScale = 1.05f;
     [SerializeField] private float transitionSpeed = 20f;
+    [SerializeField] private AudioClip hoverSound;
+    private AudioSource audioSource;
 
     [Space]
     [SerializeField] private UnityEvent onClick;
@@ -14,11 +16,14 @@ public class MenuButton : MonoBehaviour, IPointerEnterHandler, IPointerClickHand
     private Vector3 originalScale;
     private Vector3 targetScale;
 
+    private bool isHovered = false;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         originalScale = transform.localScale;
         targetScale = originalScale;
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -37,6 +42,23 @@ public class MenuButton : MonoBehaviour, IPointerEnterHandler, IPointerClickHand
         }
     }
 
+    void OnDisable()
+    {
+        // Reset scale immediately when disabled so it's ready for next time
+        if (originalScale != Vector3.zero)
+        {
+            transform.localScale = originalScale;
+            targetScale = originalScale;
+        }
+
+        // Only reset the cursor if we were the one holding the hover state
+        if (isHovered && CustomCursor.Instance != null)
+        {
+            CustomCursor.Instance.SetDefaultCursor();
+            isHovered = false;
+        }
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         onClick?.Invoke();
@@ -44,11 +66,28 @@ public class MenuButton : MonoBehaviour, IPointerEnterHandler, IPointerClickHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        isHovered = true;
+        if (audioSource != null && hoverSound != null)
+        {
+            audioSource.PlayOneShot(hoverSound);
+        }
+
+        if (CustomCursor.Instance != null)
+        {
+            CustomCursor.Instance.SetHoverCursor();
+        }
+
         targetScale = originalScale * hoverScale;
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        isHovered = false;
+        if (CustomCursor.Instance != null)
+        {
+            CustomCursor.Instance.SetDefaultCursor();
+        }
+
         targetScale = originalScale;
     }
 }
