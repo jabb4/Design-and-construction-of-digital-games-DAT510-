@@ -8,6 +8,7 @@ public class MenuButton : MonoBehaviour, IPointerEnterHandler, IPointerClickHand
     [SerializeField] private float hoverScale = 1.05f;
     [SerializeField] private float transitionSpeed = 20f;
     [SerializeField] private AudioClip hoverSound;
+    [SerializeField] private AudioClip clickSound;
     private AudioSource audioSource;
 
     [Space]
@@ -23,7 +24,7 @@ public class MenuButton : MonoBehaviour, IPointerEnterHandler, IPointerClickHand
     {
         originalScale = transform.localScale;
         targetScale = originalScale;
-        audioSource = GetComponent<AudioSource>();
+        audioSource = GetComponentInParent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -61,6 +62,11 @@ public class MenuButton : MonoBehaviour, IPointerEnterHandler, IPointerClickHand
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (audioSource != null && clickSound != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
+
         onClick?.Invoke();
     }
 

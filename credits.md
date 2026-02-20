@@ -1,11 +1,17 @@
 # Credits
 
 ### Images
-- Logo - ChatGPT
-- Ba
+- Katana logo - ChatGPT
+- Main menu background - ChatGPT
+- Menu buttons - ChatGPT
+- Banners - ChatGPT
+- Maps button - ChatGPT
+- Currency bar - ChatGPT
+- Map - refined by ChatGPT
 
 ### Sound effects
-- Button hover sound - [SmallConfusion](https://freesound.org/people/SmallConfusion/sounds/751084/)
+- Button hover click - [SmallConfusion](https://freesound.org/people/SmallConfusion/sounds/751084/)
+- Map opening - [monosfera](https://freesound.org/people/monosfera/sounds/490681/)
 - Wind in trees - [nicotep](https://freesound.org/people/nicotep/sounds/843926/)
 - Car motor - [enric592](https://freesound.org/people/enric592/sounds/185743/)
 

@@ -9,6 +9,7 @@ public class VerticalSignButton : MonoBehaviour, IPointerEnterHandler, IPointerC
     [SerializeField] private float hoverScale = 1.05f;
     [SerializeField] private float transitionSpeed = 20f;
     [SerializeField] private AudioClip hoverSound;
+    [SerializeField] private AudioClip clickSound;
     private AudioSource audioSource;
 
     [Space]
@@ -27,7 +28,8 @@ public class VerticalSignButton : MonoBehaviour, IPointerEnterHandler, IPointerC
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        audioSource = GetComponent<AudioSource>();
+        // Find the AudioSource on the parent Canvas (or any parent) so sound continues if button is disabled
+        audioSource = GetComponentInParent<AudioSource>();
 
         // If not assigned manually, try to find it in children
         if (buttonText == null)
@@ -79,6 +81,13 @@ public class VerticalSignButton : MonoBehaviour, IPointerEnterHandler, IPointerC
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (audioSource != null && clickSound != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
+
+
+
         onClick?.Invoke();
     }
 
