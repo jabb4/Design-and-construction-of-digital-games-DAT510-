@@ -69,12 +69,22 @@ namespace Enemies.StateMachine.States
                 return TransitionDecision.To(Owner.GetState<EnemyIdleState>(), TransitionReason.StandardFlow);
             }
 
-            if (counterQueued && Time.time >= counterReadyAt)
+            if (counterQueued)
             {
-                return TransitionDecision.To(
-                    Owner.GetState<EnemyAttackTurnState>(),
-                    TransitionReason.AttackCombo,
-                    priority: TransitionPriorities.ComboContinuation);
+                if (IsCounterResponseReady())
+                {
+                    return TransitionDecision.To(
+                        Owner.GetState<EnemyAttackTurnState>(),
+                        TransitionReason.AttackCombo,
+                        priority: TransitionPriorities.ComboContinuation);
+                }
+
+                return TransitionDecision.None;
+            }
+
+            if (IsParrySequenceInProgress() || IsDefenseReactionActive())
+            {
+                return TransitionDecision.None;
             }
 
             if (Time.time >= defenseUntilAt)
@@ -90,6 +100,11 @@ namespace Enemies.StateMachine.States
 
         private void HandleParriedAttack(global::Combat.AttackHitInfo hit)
         {
+            if (counterQueued)
+            {
+                return;
+            }
+
             successfulParries++;
             if (successfulParries < requiredParries)
             {
@@ -143,11 +158,32 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
+            if (counterQueued)
+            {
+                Enemy.CloseParryWindow();
+                return;
+            }
+
             // Defensive turn is intentionally always parry-ready.
             float configuredWindow = Profile != null ? Profile.ParryWindowDuration : 0.2f;
             float minContinuousWindow = Mathf.Max(Time.deltaTime * 2f, 0.05f);
             float parryWindow = Mathf.Max(configuredWindow, minContinuousWindow);
             Enemy.OpenParryWindow(parryWindow);
+        }
+
+        private bool IsCounterResponseReady()
+        {
+            return Time.time >= counterReadyAt;
+        }
+
+        private bool IsParrySequenceInProgress()
+        {
+            return successfulParries > 0 && successfulParries < requiredParries;
+        }
+
+        private bool IsDefenseReactionActive()
+        {
+            return defenseReactionDriver != null && defenseReactionDriver.IsReactionActive;
         }
     }
 }

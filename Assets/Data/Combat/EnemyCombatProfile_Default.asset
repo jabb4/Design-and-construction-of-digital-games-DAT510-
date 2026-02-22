@@ -23,7 +23,7 @@ MonoBehaviour:
   parryAttemptCooldown: 0.01
   parryThreatMemoryDuration: 0.15
   parryTriggerRange: 3
-  counterPrepDelay: 0.15
+  counterPrepDelay: 0.35
   engageRange: 7
   orbitRadius: 5
   attackRange: 1.5

@@ -24,7 +24,9 @@ namespace Enemies.AI
         [SerializeField, Min(0.01f)] private float parryAttemptCooldown = 0.35f;
         [SerializeField, Min(0f)] private float parryThreatMemoryDuration = 0.15f;
         [SerializeField, Min(0.1f)] private float parryTriggerRange = 3f;
-        [SerializeField, Min(0f)] private float counterPrepDelay = 0.15f;
+        [SerializeField, Min(0f)]
+        [Tooltip("Delay after the final defensive parry before transitioning into attack turn.")]
+        private float counterPrepDelay = 0.35f;
 
         [Header("Spacing")]
         [SerializeField, Min(0.1f)] private float engageRange = 7f;
