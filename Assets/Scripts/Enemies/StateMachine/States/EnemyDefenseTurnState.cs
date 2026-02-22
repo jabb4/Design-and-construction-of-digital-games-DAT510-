@@ -134,6 +134,7 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
+            Enemy?.QueueEndParryOutcomeFeedback();
             counterQueued = true;
             float prepDelay = Profile != null ? Profile.CounterPrepDelay : 0f;
             counterReadyAt = Time.time + Mathf.Max(0f, prepDelay);

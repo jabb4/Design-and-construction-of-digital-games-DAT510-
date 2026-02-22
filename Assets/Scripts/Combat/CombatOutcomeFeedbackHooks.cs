@@ -22,17 +22,20 @@ namespace Combat
         [SerializeField] private ParticleSystem fullHitVfx;
         [SerializeField] private ParticleSystem blockedVfx;
         [SerializeField] private ParticleSystem parriedVfx;
+        [SerializeField] private ParticleSystem endParryVfx;
 
         [Header("Optional SFX")]
         [SerializeField] private AudioClip ignoredSfx;
         [SerializeField] private AudioClip fullHitSfx;
         [SerializeField] private AudioClip blockedSfx;
         [SerializeField] private AudioClip parriedSfx;
+        [SerializeField] private AudioClip endParrySfx;
 
         public event Action<CombatOutcomeFeedbackContext> OnIgnored;
         public event Action<CombatOutcomeFeedbackContext> OnFullHit;
         public event Action<CombatOutcomeFeedbackContext> OnBlocked;
         public event Action<CombatOutcomeFeedbackContext> OnParried;
+        public event Action<CombatOutcomeFeedbackContext> OnEndParried;
 
         private void Awake()
         {
@@ -74,8 +77,14 @@ namespace Combat
                     StartRecoil(context.DefenderPushDirection, blockedPushDistance, blockedPushDuration);
                     break;
                 case DamageOutcome.Parried:
-                    TriggerVisualAndAudio(parriedVfx, parriedSfx);
+                    ParticleSystem parryVfx = context.IsEndParry && endParryVfx != null ? endParryVfx : parriedVfx;
+                    AudioClip parrySfx = context.IsEndParry && endParrySfx != null ? endParrySfx : parriedSfx;
+                    TriggerVisualAndAudio(parryVfx, parrySfx);
                     OnParried?.Invoke(context);
+                    if (context.IsEndParry)
+                    {
+                        OnEndParried?.Invoke(context);
+                    }
                     StartRecoil(context.DefenderPushDirection, parriedPushDistance, parriedPushDuration);
                     break;
             }

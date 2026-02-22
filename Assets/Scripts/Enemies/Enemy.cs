@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour, ICombatant
     private global::Combat.CombatHorizontalImpulseDriver impulseDriver;
     private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
+    private bool endParryOutcomeQueued;
 
     public event Action<AttackHitInfo, DamageResolution> OnDamageResolved;
     public event Action<AttackHitInfo> OnParriedAttack;
@@ -85,12 +86,18 @@ public class Enemy : MonoBehaviour, ICombatant
 
         DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
         OnDamageResolved?.Invoke(hit, resolution);
+        bool isEndParry = false;
         if (resolution.Outcome == DamageOutcome.Parried)
         {
             OnParriedAttack?.Invoke(hit);
+            isEndParry = ConsumeQueuedEndParryOutcome();
+        }
+        else
+        {
+            endParryOutcomeQueued = false;
         }
 
-        DispatchOutcomeFeedback(hit, resolution);
+        DispatchOutcomeFeedback(hit, resolution, isEndParry);
 
         if (resolution.Outcome == DamageOutcome.Ignored)
         {
@@ -117,6 +124,11 @@ public class Enemy : MonoBehaviour, ICombatant
         flags?.CloseParryWindow();
     }
 
+    public void QueueEndParryOutcomeFeedback()
+    {
+        endParryOutcomeQueued = true;
+    }
+
     private void OnDestroy()
     {
         if (health != null)
@@ -128,6 +140,7 @@ public class Enemy : MonoBehaviour, ICombatant
     private void HandleDied()
     {
         CloseParryWindow();
+        endParryOutcomeQueued = false;
         SyncCombatFlags();
 
         if (disableGameObjectOnDeath)
@@ -151,6 +164,7 @@ public class Enemy : MonoBehaviour, ICombatant
         {
             flags.IsAttacking = false;
             flags.CloseParryWindow();
+            endParryOutcomeQueued = false;
         }
     }
 
@@ -258,7 +272,7 @@ public class Enemy : MonoBehaviour, ICombatant
         GetComponents(outcomeFeedbackHooks);
     }
 
-    private void DispatchOutcomeFeedback(AttackHitInfo hit, DamageResolution resolution)
+    private void DispatchOutcomeFeedback(AttackHitInfo hit, DamageResolution resolution, bool isEndParry)
     {
         if (outcomeFeedbackHooks.Count == 0)
         {
@@ -272,7 +286,8 @@ public class Enemy : MonoBehaviour, ICombatant
             Resolution = resolution,
             Defender = this,
             DefenderPushDirection = pushDirection,
-            HitPoint = hit.HitPoint
+            HitPoint = hit.HitPoint,
+            IsEndParry = isEndParry
         };
 
         for (int i = 0; i < outcomeFeedbackHooks.Count; i++)
@@ -308,5 +323,12 @@ public class Enemy : MonoBehaviour, ICombatant
         }
 
         return Vector3.forward;
+    }
+
+    private bool ConsumeQueuedEndParryOutcome()
+    {
+        bool queued = endParryOutcomeQueued;
+        endParryOutcomeQueued = false;
+        return queued;
     }
 }
