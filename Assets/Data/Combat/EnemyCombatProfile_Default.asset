@@ -20,7 +20,6 @@ MonoBehaviour:
   minDefenseDuration: 3
   maxDefenseDuration: 10
   parryWindowDuration: 0.2
-  parryAttemptCooldown: 0.1
   parryThreatMemoryDuration: 0.5
   parryTriggerRange: 3
   counterPrepDelay: 0.35

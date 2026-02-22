@@ -14,7 +14,6 @@ namespace Enemies.StateMachine.States
         private float counterReadyAt;
         private float defenseUntilAt;
         private float lastParryThreatAt;
-        private float nextParryAttemptAt;
         private EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private bool counterQueued;
         private bool hasPriorityToken;
@@ -25,14 +24,7 @@ namespace Enemies.StateMachine.States
         public float? CounterPrepTimeRemainingSeconds => counterQueued
             ? Mathf.Max(0f, counterReadyAt - Time.time)
             : null;
-        public float? ParryAttemptCooldownRemainingSeconds
-        {
-            get
-            {
-                float remaining = nextParryAttemptAt - Time.time;
-                return remaining > 0f ? remaining : null;
-            }
-        }
+        public float? ParryAttemptCooldownRemainingSeconds => null;
 
         public override void OnEnter()
         {
@@ -45,7 +37,6 @@ namespace Enemies.StateMachine.States
             float sampledDefenseDuration = Owner != null ? Owner.SampleDefenseDurationSeconds() : 1.2f;
             defenseUntilAt = Time.time + sampledDefenseDuration;
             lastParryThreatAt = float.NegativeInfinity;
-            nextParryAttemptAt = Time.time;
             hasPriorityToken = false;
             handoffTokenToAttackTurn = false;
 
@@ -263,18 +254,10 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
-            if (Time.time < nextParryAttemptAt)
-            {
-                return;
-            }
-
             float configuredWindow = Profile != null ? Profile.ParryWindowDuration : 0.2f;
             float minContinuousWindow = Mathf.Max(Time.deltaTime * 2f, 0.05f);
             float parryWindow = Mathf.Max(configuredWindow, minContinuousWindow);
             Enemy.OpenParryWindow(parryWindow);
-
-            float cooldown = Profile != null ? Profile.ParryAttemptCooldown : 0.35f;
-            nextParryAttemptAt = Time.time + Mathf.Max(0.01f, cooldown);
         }
 
         private bool IsCounterResponseReady()
