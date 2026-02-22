@@ -279,10 +279,31 @@ public sealed class LockOnTargetService
                 continue;
             }
 
-            return hitTransform == target || hitTransform.IsChildOf(target);
+            if (hitTransform == target || hitTransform.IsChildOf(target))
+            {
+                return true;
+            }
+
+            if (IsEnemyOccluder(hitTransform))
+            {
+                continue;
+            }
+
+            return false;
         }
 
         return true;
+    }
+
+    private bool IsEnemyOccluder(Transform hitTransform)
+    {
+        int hitLayerBit = 1 << hitTransform.gameObject.layer;
+        if ((enemyLayer.value & hitLayerBit) != 0)
+        {
+            return true;
+        }
+
+        return hitTransform.GetComponentInParent<Enemy>() != null;
     }
 
     private static bool IsInViewport(Vector3 viewportPos)
