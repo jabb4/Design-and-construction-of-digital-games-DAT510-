@@ -2415,8 +2415,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableSlashLunge: 1
-  lungeDistance: 0.55
-  lungeDuration: 0.14
+  lungeDistance: 0.75
+  lungeDuration: 0.12
   lungeEndSpeedFraction: 0.2
   impulseDriver: {fileID: 5732198460847952312}
 --- !u!114 &5732198460847952312

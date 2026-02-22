@@ -28,6 +28,8 @@ namespace Enemies.AI
         private float stoppingDistance = 1.8f;
         private float orbitRadius = 2.75f;
         private float orbitAngleDegrees;
+        private bool impulsePauseActive;
+        private bool restoreUpdatePositionAfterImpulse = true;
 
         public Vector3 CurrentVelocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
         public Vector3 DesiredVelocity => navMeshAgent != null ? navMeshAgent.desiredVelocity : Vector3.zero;
@@ -49,6 +51,12 @@ namespace Enemies.AI
         private void OnDisable()
         {
             Stop();
+            if (navMeshAgent != null && restoreUpdatePositionAfterImpulse)
+            {
+                navMeshAgent.updatePosition = true;
+            }
+
+            impulsePauseActive = false;
         }
 
         private void Update()
@@ -65,7 +73,7 @@ namespace Enemies.AI
 
             if (impulseDriver != null && impulseDriver.IsImpulseActive)
             {
-                PauseAgent();
+                PauseAgentForImpulse();
                 return;
             }
 
@@ -149,6 +157,40 @@ namespace Enemies.AI
                 return;
             }
 
+            if (impulseDriver != null && impulseDriver.IsImpulseActive)
+            {
+                PauseAgentForImpulse();
+                return;
+            }
+
+            RestoreAgentPositionSyncIfNeeded();
+            PauseAgentCore();
+        }
+
+        private void PauseAgentForImpulse()
+        {
+            if (!IsAgentReadyForCommands())
+            {
+                return;
+            }
+
+            if (!impulsePauseActive)
+            {
+                restoreUpdatePositionAfterImpulse = navMeshAgent.updatePosition;
+                if (restoreUpdatePositionAfterImpulse)
+                {
+                    // Let rigidbody-driven impulse own transform position during lunge/pushback.
+                    navMeshAgent.updatePosition = false;
+                }
+
+                impulsePauseActive = true;
+            }
+
+            PauseAgentCore();
+        }
+
+        private void PauseAgentCore()
+        {
             navMeshAgent.isStopped = true;
             if (navMeshAgent.hasPath)
             {
@@ -163,6 +205,7 @@ namespace Enemies.AI
                 return;
             }
 
+            RestoreAgentPositionSyncIfNeeded();
             navMeshAgent.isStopped = false;
         }
 
@@ -195,6 +238,22 @@ namespace Enemies.AI
                    navMeshAgent.isActiveAndEnabled &&
                    navMeshAgent.enabled &&
                    navMeshAgent.isOnNavMesh;
+        }
+
+        private void RestoreAgentPositionSyncIfNeeded()
+        {
+            if (!impulsePauseActive || navMeshAgent == null || !navMeshAgent.enabled)
+            {
+                return;
+            }
+
+            if (restoreUpdatePositionAfterImpulse)
+            {
+                navMeshAgent.nextPosition = transform.position;
+                navMeshAgent.updatePosition = true;
+            }
+
+            impulsePauseActive = false;
         }
     }
 }
