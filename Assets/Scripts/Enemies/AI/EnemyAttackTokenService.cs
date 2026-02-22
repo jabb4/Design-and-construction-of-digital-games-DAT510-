@@ -163,6 +163,22 @@ namespace Enemies.AI
                 return false;
             }
 
+            // Scope coordination to the active local encounter.
+            // Enemies far from their target should not contend for this token.
+            if (owner.HasTarget)
+            {
+                float maxCoordinationDistance = owner.EngageRange;
+                if (owner.CombatProfile != null)
+                {
+                    maxCoordinationDistance = Mathf.Max(maxCoordinationDistance, owner.CombatProfile.GroupAwarenessRadius);
+                }
+
+                if (owner.DistanceToTarget > maxCoordinationDistance)
+                {
+                    return false;
+                }
+            }
+
             // Focus priority is an advisory preference, not a hard global lock.
             // Other enemies may still acquire when they are otherwise eligible.
             if (priorityOwnerId == instanceId)
