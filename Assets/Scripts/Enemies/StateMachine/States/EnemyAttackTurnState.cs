@@ -6,7 +6,9 @@ namespace Enemies.StateMachine.States
 
     public sealed class EnemyAttackTurnState : EnemyStateBase
     {
-        private const float InterAttackDelay = 0.08f;
+        private const float InterAttackDelay = 0f;
+        private const float FirstAttackCrossFade = 0.08f;
+        private const float ComboAttackCrossFade = 0.04f;
         private const float FinalAttackCompleteThreshold = 0.995f;
 
         private bool hasAttackToken;
@@ -108,7 +110,8 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
-            if (!Owner.TryPlayAttackStepByIndex(currentAttackIndex))
+            float attackCrossFade = currentAttackIndex == 0 ? FirstAttackCrossFade : ComboAttackCrossFade;
+            if (!Owner.TryPlayAttackStepByIndex(currentAttackIndex, attackCrossFade))
             {
                 chainComplete = true;
                 return;
@@ -193,6 +196,13 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
+            if (IsHoldingComboRecoveryPose())
+            {
+                // Preserve the tail pose between combo steps so the next attack blends from recovery, not idle.
+                Owner.NavBridge.Stop();
+                return;
+            }
+
             if (Owner.DistanceToTarget > Owner.AttackRange)
             {
                 Owner.NavBridge.SetPursue(Owner.CurrentTarget, Owner.AttackRange * 0.85f);
@@ -250,6 +260,22 @@ namespace Enemies.StateMachine.States
             }
 
             return true;
+        }
+
+        private bool IsHoldingComboRecoveryPose()
+        {
+            if (Owner == null || chainComplete || attackInProgress)
+            {
+                return false;
+            }
+
+            bool hasAnotherAttack = currentAttackIndex < plannedChainLength && currentAttackIndex < Owner.AttackStepCount;
+            if (!hasAnotherAttack)
+            {
+                return false;
+            }
+
+            return Owner.HasTarget && Owner.DistanceToTarget <= Owner.AttackRange;
         }
     }
 }
