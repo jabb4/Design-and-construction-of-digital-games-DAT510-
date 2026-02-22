@@ -8,10 +8,8 @@ namespace Enemies.StateMachine.States
     {
         private int requiredParries;
         private int successfulParries;
-        private float nextParryAttemptAt;
         private float counterReadyAt;
         private float defenseUntilAt;
-        private float lastTargetAttackSeenAt;
         private EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private bool counterQueued;
 
@@ -25,10 +23,8 @@ namespace Enemies.StateMachine.States
             successfulParries = 0;
             counterQueued = false;
             counterReadyAt = float.PositiveInfinity;
-            nextParryAttemptAt = Time.time;
             float sampledDefenseDuration = Owner != null ? Owner.SampleDefenseDurationSeconds() : 1.2f;
             defenseUntilAt = Time.time + sampledDefenseDuration;
-            lastTargetAttackSeenAt = float.NegativeInfinity;
 
             if (Enemy != null)
             {
@@ -47,43 +43,7 @@ namespace Enemies.StateMachine.States
         {
             FaceTarget();
             UpdateMovementMode();
-
-            if (Enemy == null || Owner == null || !Owner.HasTarget || counterQueued)
-            {
-                return;
-            }
-
-            if (Owner.IsTargetAttacking)
-            {
-                lastTargetAttackSeenAt = Time.time;
-            }
-
-            if (Time.time < nextParryAttemptAt)
-            {
-                return;
-            }
-
-            float cooldown = Profile != null ? Profile.ParryAttemptCooldown : 0.35f;
-            float configuredParryThreatMemory = Profile != null ? Profile.ParryThreatMemoryDuration : 0.15f;
-            float parryThreatMemory = Mathf.Max(configuredParryThreatMemory, cooldown + 0.05f);
-            bool isAttackThreatActive = Owner.IsTargetAttacking || Time.time - lastTargetAttackSeenAt <= parryThreatMemory;
-            if (!isAttackThreatActive)
-            {
-                return;
-            }
-
-            float orbitRadius = Profile != null ? Profile.OrbitRadius : 2.75f;
-            float configuredParryTriggerRange = Profile != null ? Profile.ParryTriggerRange : Mathf.Max(Owner.AttackRange, 3f);
-            float parryTriggerRange = Mathf.Max(configuredParryTriggerRange, orbitRadius + 0.1f);
-            if (Owner.DistanceToTarget > parryTriggerRange)
-            {
-                return;
-            }
-
-            float parryWindow = Profile != null ? Profile.ParryWindowDuration : 0.2f;
-
-            Enemy.OpenParryWindow(parryWindow);
-            nextParryAttemptAt = Time.time + cooldown;
+            MaintainAlwaysReadyParryWindow();
         }
 
         public override void OnExit()
@@ -156,15 +116,9 @@ namespace Enemies.StateMachine.States
             }
 
             bool reactionActive = defenseReactionDriver != null && defenseReactionDriver.IsReactionActive;
-            bool parryWindowActive = Enemy != null && Enemy.IsParryWindowActive;
-            if (reactionActive || parryWindowActive)
+            if (reactionActive)
             {
                 Owner.NavBridge.Stop();
-                if (!reactionActive)
-                {
-                    Owner.TryCrossFadeStateIfNotActive("DefenseIdle", 0.08f);
-                }
-
                 return;
             }
 
@@ -179,6 +133,21 @@ namespace Enemies.StateMachine.States
                 Owner.NavBridge.SetOrbit(Owner.CurrentTarget, orbitRadius);
                 Owner.TryCrossFadeStateIfNotActive("Walk Locomotion", 0.1f);
             }
+        }
+
+        private void MaintainAlwaysReadyParryWindow()
+        {
+            if (Enemy == null || Owner == null || !Owner.HasTarget)
+            {
+                Enemy?.CloseParryWindow();
+                return;
+            }
+
+            // Defensive turn is intentionally always parry-ready.
+            float configuredWindow = Profile != null ? Profile.ParryWindowDuration : 0.2f;
+            float minContinuousWindow = Mathf.Max(Time.deltaTime * 2f, 0.05f);
+            float parryWindow = Mathf.Max(configuredWindow, minContinuousWindow);
+            Enemy.OpenParryWindow(parryWindow);
         }
     }
 }

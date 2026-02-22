@@ -44,6 +44,9 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
+            // Aggressive turn should never expose a parry window.
+            Enemy?.CloseParryWindow();
+
             FaceTarget();
             UpdateMovementMode();
 

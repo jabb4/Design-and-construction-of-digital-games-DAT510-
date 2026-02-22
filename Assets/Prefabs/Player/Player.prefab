@@ -821,8 +821,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
-  showDebugInfo: 1
-  slowMotionEnabled: 1
+  showDebugInfo: 0
+  slowMotionEnabled: 0
   slowMotionScale: 1
   startEquipped: 0
   unequipDelay: 5
@@ -895,10 +895,12 @@ MonoBehaviour:
   fullHitVfx: {fileID: 0}
   blockedVfx: {fileID: 0}
   parriedVfx: {fileID: 0}
+  endParryVfx: {fileID: 0}
   ignoredSfx: {fileID: 0}
   fullHitSfx: {fileID: 0}
   blockedSfx: {fileID: 0}
   parriedSfx: {fileID: 0}
+  endParrySfx: {fileID: 0}
 --- !u!114 &844221109955667788
 MonoBehaviour:
   m_ObjectHideFlags: 0
