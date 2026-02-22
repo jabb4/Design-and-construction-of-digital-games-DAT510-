@@ -22,6 +22,11 @@ namespace Enemies.StateMachine
         private static readonly int IsSprintingHash = Animator.StringToHash("IsSprinting");
         private static readonly int IsInAirHash = Animator.StringToHash("IsInAir");
         private static readonly int IsBlockingHash = Animator.StringToHash("IsBlocking");
+        private static readonly List<EnemyStateMachine> RegisteredEnemies = new List<EnemyStateMachine>(32);
+        private const float PlayerTargetResolveRetrySeconds = 0.5f;
+        private static Transform cachedPlayerTarget;
+        private static ICombatant cachedPlayerCombatant;
+        private static float nextPlayerTargetResolveAt = float.NegativeInfinity;
 
         [Header("Combat")]
         [SerializeField] private EnemyCombatProfile combatProfile;
@@ -72,6 +77,8 @@ namespace Enemies.StateMachine
         private ICombatant currentTargetCombatant;
         private Enemies.Combat.EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private float nextTargetRefreshAt = float.NegativeInfinity;
+        private int cachedNearbyEnemyCount = 1;
+        private float cachedNearbyEnemyRadius = -1f;
         private Vector2 smoothedLocalVelocity;
         private Vector2 smoothedLocalVelocityRef;
 
@@ -88,6 +95,11 @@ namespace Enemies.StateMachine
             runtime.StateChanged += HandleStateChanged;
         }
 
+        private void OnEnable()
+        {
+            RegisterEnemy(this);
+        }
+
         private void OnValidate()
         {
             ValidateConfiguration();
@@ -101,11 +113,13 @@ namespace Enemies.StateMachine
 
         private void OnDisable()
         {
+            UnregisterEnemy(this);
             CleanupRuntimeState();
         }
 
         private void OnDestroy()
         {
+            UnregisterEnemy(this);
             CleanupRuntimeState();
 
             if (runtime != null)
@@ -216,6 +230,105 @@ namespace Enemies.StateMachine
             return sampled;
         }
 
+        public int SampleAttackChainLengthForCurrentGroup()
+        {
+            return SampleAttackChainLength();
+        }
+
+        public float ComputeSupportOrbitRadiusForCurrentGroup()
+        {
+            float baseRadius = combatProfile != null ? combatProfile.OrbitRadius : 2.75f;
+            if (combatProfile == null)
+            {
+                return baseRadius;
+            }
+
+            int extraEnemies = Mathf.Max(0, GetNearbyEnemyCount(combatProfile.GroupAwarenessRadius) - 1);
+            float dynamicExtra = combatProfile.SupportOrbitExtraRadiusPerEnemy * extraEnemies;
+            return baseRadius + combatProfile.SupportOrbitExtraRadius + dynamicExtra;
+        }
+
+        public float ComputeAttackTokenReleaseCooldownForCurrentGroup()
+        {
+            if (combatProfile == null)
+            {
+                return 0f;
+            }
+
+            int extraEnemies = Mathf.Max(0, GetNearbyEnemyCount(combatProfile.GroupAwarenessRadius) - 1);
+            return combatProfile.AttackTokenCooldownBase +
+                   (combatProfile.AttackTokenCooldownPerExtraEnemy * extraEnemies);
+        }
+
+        public bool IsClosestEnemyToCurrentTarget(float distanceBias = 0.15f, bool requireTokenEligibility = false)
+        {
+            if (!HasTarget || currentTarget == null)
+            {
+                return false;
+            }
+
+            Vector3 targetPosition = currentTarget.position;
+            float biasSq = Mathf.Max(0f, distanceBias) * Mathf.Max(0f, distanceBias);
+            int ownId = GetInstanceID();
+            float bestDistanceSq = float.PositiveInfinity;
+            int bestId = int.MaxValue;
+
+            PruneRegisteredEnemies();
+            for (int i = 0; i < RegisteredEnemies.Count; i++)
+            {
+                EnemyStateMachine enemy = RegisteredEnemies[i];
+                if (enemy == null || !enemy.IsAlive || enemy.currentTarget != currentTarget)
+                {
+                    continue;
+                }
+
+                if (requireTokenEligibility && !EnemyAttackTokenService.CanAcquire(enemy))
+                {
+                    continue;
+                }
+
+                Vector3 delta = enemy.transform.position - targetPosition;
+                delta.y = 0f;
+                float distanceSq = delta.sqrMagnitude;
+                int enemyId = enemy.GetInstanceID();
+
+                bool isClearlyCloser = distanceSq + biasSq < bestDistanceSq;
+                bool isTieButLowerId = Mathf.Abs(distanceSq - bestDistanceSq) <= biasSq && enemyId < bestId;
+                if (!isClearlyCloser && !isTieButLowerId)
+                {
+                    continue;
+                }
+
+                bestDistanceSq = distanceSq;
+                bestId = enemyId;
+            }
+
+            if (bestId == int.MaxValue)
+            {
+                return false;
+            }
+
+            return bestId == ownId;
+        }
+
+        public int GetNearbyEnemyCount(float radius)
+        {
+            if (!HasTarget)
+            {
+                cachedNearbyEnemyCount = 1;
+                cachedNearbyEnemyRadius = Mathf.Max(0.1f, radius);
+                return cachedNearbyEnemyCount;
+            }
+
+            float clampedRadius = Mathf.Max(0.1f, radius);
+            if (Mathf.Abs(cachedNearbyEnemyRadius - clampedRadius) > 0.01f)
+            {
+                RefreshNearbyEnemyCount(clampedRadius);
+            }
+
+            return Mathf.Max(1, cachedNearbyEnemyCount);
+        }
+
         public bool TryPlayAttackStepByIndex(int index, float crossFadeDuration = 0.08f)
         {
             if (!TryGetAttackStep(index, out AttackStep step))
@@ -271,41 +384,15 @@ namespace Enemies.StateMachine
             }
 
             nextTargetRefreshAt = Time.time + targetRefreshIntervalSeconds;
-
-            MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-            Transform bestTarget = null;
-            ICombatant bestCombatant = null;
-            float bestDistanceSq = float.MaxValue;
-
-            for (int i = 0; i < behaviours.Length; i++)
+            if (!TryResolvePlayerTarget(out currentTarget, out currentTargetCombatant) ||
+                !currentTargetCombatant.IsVulnerable)
             {
-                MonoBehaviour behaviour = behaviours[i];
-                if (behaviour == null)
-                {
-                    continue;
-                }
-
-                var combatant = behaviour as ICombatant;
-                if (combatant == null || combatant.Team != CombatTeam.Player || !combatant.IsVulnerable)
-                {
-                    continue;
-                }
-
-                Transform target = behaviour.transform;
-                Vector3 delta = target.position - transform.position;
-                float distanceSq = delta.sqrMagnitude;
-                if (distanceSq >= bestDistanceSq)
-                {
-                    continue;
-                }
-
-                bestDistanceSq = distanceSq;
-                bestTarget = target;
-                bestCombatant = combatant;
+                currentTarget = null;
+                currentTargetCombatant = null;
+                return false;
             }
 
-            currentTarget = bestTarget;
-            currentTargetCombatant = bestCombatant;
+            RefreshNearbyEnemyCount(combatProfile != null ? combatProfile.GroupAwarenessRadius : 8f);
             return currentTarget != null;
         }
 
@@ -536,8 +623,152 @@ namespace Enemies.StateMachine
             currentTarget = null;
             currentTargetCombatant = null;
             nextTargetRefreshAt = float.NegativeInfinity;
+            cachedNearbyEnemyCount = 1;
+            cachedNearbyEnemyRadius = -1f;
             smoothedLocalVelocity = Vector2.zero;
             smoothedLocalVelocityRef = Vector2.zero;
+        }
+
+        private void RefreshNearbyEnemyCount(float radius)
+        {
+            cachedNearbyEnemyRadius = Mathf.Max(0.1f, radius);
+            if (!HasTarget)
+            {
+                cachedNearbyEnemyCount = 1;
+                return;
+            }
+
+            Vector3 center = currentTarget.position;
+            float radiusSq = cachedNearbyEnemyRadius * cachedNearbyEnemyRadius;
+            int count = 0;
+
+            PruneRegisteredEnemies();
+            for (int i = 0; i < RegisteredEnemies.Count; i++)
+            {
+                EnemyStateMachine enemy = RegisteredEnemies[i];
+                if (enemy == null || !enemy.IsAlive)
+                {
+                    continue;
+                }
+
+                Vector3 delta = enemy.transform.position - center;
+                delta.y = 0f;
+                if (delta.sqrMagnitude > radiusSq)
+                {
+                    continue;
+                }
+
+                count++;
+            }
+
+            cachedNearbyEnemyCount = Mathf.Max(1, count);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticRuntimeState()
+        {
+            RegisteredEnemies.Clear();
+            cachedPlayerTarget = null;
+            cachedPlayerCombatant = null;
+            nextPlayerTargetResolveAt = float.NegativeInfinity;
+        }
+
+        private static void RegisterEnemy(EnemyStateMachine enemy)
+        {
+            if (enemy == null || RegisteredEnemies.Contains(enemy))
+            {
+                return;
+            }
+
+            RegisteredEnemies.Add(enemy);
+        }
+
+        private static void UnregisterEnemy(EnemyStateMachine enemy)
+        {
+            if (enemy == null)
+            {
+                return;
+            }
+
+            RegisteredEnemies.Remove(enemy);
+        }
+
+        private static void PruneRegisteredEnemies()
+        {
+            for (int i = RegisteredEnemies.Count - 1; i >= 0; i--)
+            {
+                EnemyStateMachine enemy = RegisteredEnemies[i];
+                if (enemy != null)
+                {
+                    continue;
+                }
+
+                RegisteredEnemies.RemoveAt(i);
+            }
+        }
+
+        private static bool TryResolvePlayerTarget(out Transform target, out ICombatant combatant)
+        {
+            if (IsPlayerTargetValid(cachedPlayerTarget, cachedPlayerCombatant))
+            {
+                target = cachedPlayerTarget;
+                combatant = cachedPlayerCombatant;
+                return true;
+            }
+
+            if (Time.time < nextPlayerTargetResolveAt)
+            {
+                target = null;
+                combatant = null;
+                return false;
+            }
+
+            nextPlayerTargetResolveAt = Time.time + PlayerTargetResolveRetrySeconds;
+            var player = FindFirstObjectByType<global::Player.Combat.Player>(FindObjectsInactive.Exclude);
+            if (player == null)
+            {
+                cachedPlayerTarget = null;
+                cachedPlayerCombatant = null;
+                target = null;
+                combatant = null;
+                return false;
+            }
+
+            cachedPlayerTarget = player.transform;
+            cachedPlayerCombatant = player;
+            target = cachedPlayerTarget;
+            combatant = cachedPlayerCombatant;
+            return true;
+        }
+
+        private static bool IsPlayerTargetValid(Transform target, ICombatant combatant)
+        {
+            if (target == null || combatant == null)
+            {
+                return false;
+            }
+
+            if (combatant.Team != CombatTeam.Player)
+            {
+                return false;
+            }
+
+            if (combatant is Component component)
+            {
+                if (component == null || !component.gameObject.activeInHierarchy || component.transform != target)
+                {
+                    return false;
+                }
+
+                if (component is Behaviour behaviour)
+                {
+                    return behaviour.enabled;
+                }
+
+                return true;
+            }
+
+            return true;
         }
 
         private static global::Combat.CombatAttackPhase MapAttackPhase(AttackPhase phase)
