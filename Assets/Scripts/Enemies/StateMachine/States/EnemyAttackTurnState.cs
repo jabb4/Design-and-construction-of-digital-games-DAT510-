@@ -16,6 +16,7 @@ namespace Enemies.StateMachine.States
         private int currentAttackIndex;
         private bool attackInProgress;
         private bool chainComplete;
+        private bool comboCommitted;
         private bool waitingForFinalAttackCompletion;
         private int observedRecoveryVersion;
         private float nextAttackStartAt;
@@ -32,6 +33,7 @@ namespace Enemies.StateMachine.States
             currentAttackIndex = 0;
             attackInProgress = false;
             chainComplete = plannedChainLength <= 0;
+            comboCommitted = false;
             waitingForFinalAttackCompletion = false;
             observedRecoveryVersion = Owner != null ? Owner.AttackRecoveryVersion : 0;
             nextAttackStartAt = Time.time;
@@ -105,7 +107,8 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
-            if (Owner.DistanceToTarget > Owner.AttackRange)
+            // Require range only to begin the combo. Once committed, finish the planned chain.
+            if (!comboCommitted && Owner.DistanceToTarget > Owner.AttackRange)
             {
                 return;
             }
@@ -118,6 +121,7 @@ namespace Enemies.StateMachine.States
             }
 
             attackInProgress = true;
+            comboCommitted = true;
         }
 
         public override void OnExit()
@@ -269,13 +273,18 @@ namespace Enemies.StateMachine.States
                 return false;
             }
 
+            if (!comboCommitted)
+            {
+                return false;
+            }
+
             bool hasAnotherAttack = currentAttackIndex < plannedChainLength && currentAttackIndex < Owner.AttackStepCount;
             if (!hasAnotherAttack)
             {
                 return false;
             }
 
-            return Owner.HasTarget && Owner.DistanceToTarget <= Owner.AttackRange;
+            return Owner.HasTarget;
         }
     }
 }
