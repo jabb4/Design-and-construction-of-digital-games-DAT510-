@@ -9,7 +9,7 @@ namespace Enemies.Combat
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(Enemy))]
     [RequireComponent(typeof(EnemyStateMachine))]
-    public sealed class EnemyDefenseReactionAnimationDriver : MonoBehaviour
+    public sealed class EnemyDefenseReactionAnimationDriver : MonoBehaviour, ICombatOutcomeFeedbackHook
     {
         [Header("Reaction Timing")]
         [SerializeField, Min(0.01f)] private float reactionCrossFadeDuration = 0.06f;
@@ -28,6 +28,8 @@ namespace Enemies.Combat
         private string activeReactionStateName;
         private int activeReactionStateHash;
         private float reactionTimeoutAt;
+        private bool hasEnteredActiveReactionState;
+        private float expectedReactionEndAt;
         public bool IsReactionActive => reactionActive;
 
         private void Awake()
@@ -35,21 +37,8 @@ namespace Enemies.Combat
             ResolveReferences();
         }
 
-        private void OnEnable()
-        {
-            if (enemy != null)
-            {
-                enemy.OnDamageResolved += HandleDamageResolved;
-            }
-        }
-
         private void OnDisable()
         {
-            if (enemy != null)
-            {
-                enemy.OnDamageResolved -= HandleDamageResolved;
-            }
-
             ClearReactionState();
         }
 
@@ -73,28 +62,52 @@ namespace Enemies.Combat
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
             bool inActiveReactionState = stateInfo.shortNameHash == activeReactionStateHash || stateInfo.IsName(activeReactionStateName);
             bool inTransition = animator.IsInTransition(0);
-            bool completeInReactionState = inActiveReactionState && !inTransition && stateInfo.normalizedTime >= reactionCompleteThreshold;
-            bool transitionedOutOfReaction = !inActiveReactionState && !inTransition;
+            if (inActiveReactionState)
+            {
+                if (!hasEnteredActiveReactionState)
+                {
+                    hasEnteredActiveReactionState = true;
+                    float expectedDuration = Mathf.Max(0.01f, stateInfo.length * reactionCompleteThreshold);
+                    expectedReactionEndAt = Time.time + expectedDuration;
+                }
+                else
+                {
+                    float expectedDuration = Mathf.Max(0.01f, stateInfo.length * reactionCompleteThreshold);
+                    float candidateEndAt = Time.time + expectedDuration;
+                    if (candidateEndAt < expectedReactionEndAt)
+                    {
+                        expectedReactionEndAt = candidateEndAt;
+                    }
+                }
+            }
 
-            if (completeInReactionState || transitionedOutOfReaction || timedOut)
+            bool completeInReactionState = inActiveReactionState && !inTransition && stateInfo.normalizedTime >= reactionCompleteThreshold;
+            bool reachedExpectedReactionEnd = hasEnteredActiveReactionState && Time.time >= expectedReactionEndAt;
+
+            if (completeInReactionState || reachedExpectedReactionEnd || timedOut)
             {
                 EndReaction();
             }
         }
 
-        private void HandleDamageResolved(AttackHitInfo hit, DamageResolution resolution)
+        public void OnCombatOutcome(CombatOutcomeFeedbackContext context)
         {
             if (!isActiveAndEnabled || animator == null)
             {
                 return;
             }
 
-            if (resolution.Outcome != DamageOutcome.Parried)
+            if (context.Defender is Component defenderComponent && defenderComponent.gameObject != gameObject)
             {
                 return;
             }
 
-            PlayParryReaction(hit);
+            if (context.Resolution.Outcome != DamageOutcome.Parried)
+            {
+                return;
+            }
+
+            PlayParryReaction(context.Hit);
         }
 
         private void PlayParryReaction(AttackHitInfo hit)
@@ -195,10 +208,10 @@ namespace Enemies.Combat
 
         private void BeginReaction(string reactionStateName)
         {
-            // Force restart on every parry so consecutive deflects are always visible.
-            // Fallback to crossfade only if direct restart cannot resolve the state path.
-            if (!PlayFromStart(reactionStateName) &&
-                !CrossFade(reactionStateName, reactionCrossFadeDuration))
+            // Blend into each incoming parry reaction so chained deflects feel smooth.
+            // Start each reaction clip at time 0 while preserving a short transition.
+            if (!CrossFadeFromStart(reactionStateName, reactionCrossFadeDuration) &&
+                !PlayFromStart(reactionStateName))
             {
                 return;
             }
@@ -207,11 +220,15 @@ namespace Enemies.Combat
             activeReactionStateName = reactionStateName;
             activeReactionStateHash = Animator.StringToHash(reactionStateName);
             reactionTimeoutAt = Time.time + reactionTimeoutSeconds;
+            hasEnteredActiveReactionState = false;
+            expectedReactionEndAt = float.PositiveInfinity;
         }
 
         private void EndReaction()
         {
             reactionActive = false;
+            hasEnteredActiveReactionState = false;
+            expectedReactionEndAt = float.PositiveInfinity;
 
             if (stateMachine != null && stateMachine.CurrentState is Enemies.StateMachine.States.EnemyDefenseTurnState)
             {
@@ -224,6 +241,8 @@ namespace Enemies.Combat
             reactionActive = false;
             activeReactionStateName = null;
             activeReactionStateHash = 0;
+            hasEnteredActiveReactionState = false;
+            expectedReactionEndAt = float.PositiveInfinity;
         }
 
         private void ResolveReferences()
@@ -291,6 +310,27 @@ namespace Enemies.Combat
             }
 
             return false;
+        }
+
+        private bool CrossFadeFromStart(string stateName, float duration, int layer = 0)
+        {
+            if (animator == null || animator.runtimeAnimatorController == null || string.IsNullOrWhiteSpace(stateName))
+            {
+                return false;
+            }
+
+            if (layer < 0 || layer >= animator.layerCount)
+            {
+                layer = 0;
+            }
+
+            if (!TryResolveStateHash(stateName, layer, out int stateHash))
+            {
+                return CrossFade(stateName, duration, layer);
+            }
+
+            animator.CrossFadeInFixedTime(stateHash, duration, layer, 0f);
+            return true;
         }
 
         private bool TryCrossFadeWithSubStatePaths(string stateName, float duration, int layer)
