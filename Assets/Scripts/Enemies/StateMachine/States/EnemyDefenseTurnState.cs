@@ -148,6 +148,11 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
+            if (hit.Attacker != null && hit.Attacker.Team == global::Combat.CombatTeam.Player)
+            {
+                EnemyAttackTokenService.SetPriorityOwner(Owner, FocusPriorityDurationSeconds);
+            }
+
             successfulParries++;
             EnsurePriorityToken();
             if (successfulParries < requiredParries)
@@ -168,7 +173,7 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
-            if (resolution.Outcome == global::Combat.DamageOutcome.Ignored)
+            if (resolution.Outcome != global::Combat.DamageOutcome.Parried)
             {
                 return;
             }

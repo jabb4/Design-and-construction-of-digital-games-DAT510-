@@ -179,8 +179,13 @@ namespace Enemies.AI
                 }
             }
 
-            // Focus priority is an advisory preference, not a hard global lock.
-            // Other enemies may still acquire when they are otherwise eligible.
+            // Focus priority is a temporary duel lock:
+            // while active, only the priority owner may start an attack turn.
+            if (priorityOwnerId != -1 && priorityOwnerId != instanceId)
+            {
+                return false;
+            }
+
             if (priorityOwnerId == instanceId)
             {
                 return true;
