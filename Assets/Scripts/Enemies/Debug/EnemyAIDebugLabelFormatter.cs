@@ -1,22 +1,34 @@
 namespace Enemies.Debug
 {
     using System.Text;
-    using Player.StateMachine;
 
     public readonly struct EnemyAIDebugSnapshot
     {
-        public EnemyAIDebugSnapshot(string stateName, AttackPhase attackPhase, int? requiredParries, int? plannedChainLength)
+        public EnemyAIDebugSnapshot(
+            string stateName,
+            int? requiredParries,
+            int? plannedChainLength,
+            float? defenseTimeRemainingSeconds = null,
+            float? counterPrepTimeRemainingSeconds = null,
+            float? parryAttemptCooldownRemainingSeconds = null,
+            float? nextAttackStartInSeconds = null)
         {
             StateName = stateName;
-            AttackPhase = attackPhase;
             RequiredParries = requiredParries;
             PlannedChainLength = plannedChainLength;
+            DefenseTimeRemainingSeconds = defenseTimeRemainingSeconds;
+            CounterPrepTimeRemainingSeconds = counterPrepTimeRemainingSeconds;
+            ParryAttemptCooldownRemainingSeconds = parryAttemptCooldownRemainingSeconds;
+            NextAttackStartInSeconds = nextAttackStartInSeconds;
         }
 
         public string StateName { get; }
-        public AttackPhase AttackPhase { get; }
         public int? RequiredParries { get; }
         public int? PlannedChainLength { get; }
+        public float? DefenseTimeRemainingSeconds { get; }
+        public float? CounterPrepTimeRemainingSeconds { get; }
+        public float? ParryAttemptCooldownRemainingSeconds { get; }
+        public float? NextAttackStartInSeconds { get; }
     }
 
     public static class EnemyAIDebugLabelFormatter
@@ -26,9 +38,6 @@ namespace Enemies.Debug
             var builder = new StringBuilder(96);
             builder.Append("State: ");
             builder.Append(string.IsNullOrWhiteSpace(snapshot.StateName) ? "None" : snapshot.StateName);
-            builder.Append('\n');
-            builder.Append("Attack Phase: ");
-            builder.Append(snapshot.AttackPhase);
 
             if (snapshot.RequiredParries.HasValue)
             {
@@ -44,7 +53,27 @@ namespace Enemies.Debug
                 builder.Append(snapshot.PlannedChainLength.Value);
             }
 
+            AppendTimerLine(builder, "Defense Time Left", snapshot.DefenseTimeRemainingSeconds);
+            AppendTimerLine(builder, "Counter Prep Left", snapshot.CounterPrepTimeRemainingSeconds);
+            AppendTimerLine(builder, "Parry Retry In", snapshot.ParryAttemptCooldownRemainingSeconds);
+            AppendTimerLine(builder, "Next Attack In", snapshot.NextAttackStartInSeconds);
+
             return builder.ToString();
+        }
+
+        private static void AppendTimerLine(StringBuilder builder, string label, float? seconds)
+        {
+            if (!seconds.HasValue)
+            {
+                return;
+            }
+
+            float clampedSeconds = seconds.Value < 0f ? 0f : seconds.Value;
+            builder.Append('\n');
+            builder.Append(label);
+            builder.Append(": ");
+            builder.Append(clampedSeconds.ToString("0.00"));
+            builder.Append('s');
         }
     }
 }

@@ -22,6 +22,18 @@ namespace Enemies.StateMachine.States
         private float nextAttackStartAt;
 
         public int PlannedChainLength => plannedChainLength;
+        public float? NextAttackStartInSeconds
+        {
+            get
+            {
+                if (!hasAttackToken || chainComplete || attackInProgress)
+                {
+                    return null;
+                }
+
+                return Mathf.Max(0f, nextAttackStartAt - Time.time);
+            }
+        }
 
         public override void OnEnter()
         {
@@ -29,10 +41,10 @@ namespace Enemies.StateMachine.States
             Enemy?.CloseParryWindow();
 
             hasAttackToken = Owner != null && EnemyAttackTokenService.TryAcquire(Owner);
-            plannedChainLength = Owner != null ? Owner.SampleAttackChainLength() : 1;
+            plannedChainLength = hasAttackToken && Owner != null ? Owner.SampleAttackChainLengthForCurrentGroup() : 0;
             currentAttackIndex = 0;
             attackInProgress = false;
-            chainComplete = plannedChainLength <= 0;
+            chainComplete = !hasAttackToken || plannedChainLength <= 0;
             comboCommitted = false;
             waitingForFinalAttackCompletion = false;
             observedRecoveryVersion = Owner != null ? Owner.AttackRecoveryVersion : 0;
@@ -56,7 +68,6 @@ namespace Enemies.StateMachine.States
 
             if (!hasAttackToken)
             {
-                hasAttackToken = EnemyAttackTokenService.TryAcquire(Owner);
                 return;
             }
 
@@ -130,7 +141,16 @@ namespace Enemies.StateMachine.States
             {
                 Owner.NavBridge?.Stop();
                 Owner.ClearCurrentAttack();
-                EnemyAttackTokenService.Release(Owner);
+                if (hasAttackToken)
+                {
+                    float cooldown = Owner.ComputeAttackTokenReleaseCooldownForCurrentGroup();
+                    float reentryDelay = Owner.CombatProfile != null ? Owner.CombatProfile.SameAttackerReentryDelay : 0f;
+                    EnemyAttackTokenService.Release(Owner, cooldown, reentryDelay);
+                }
+                else
+                {
+                    EnemyAttackTokenService.Release(Owner);
+                }
             }
 
             hasAttackToken = false;

@@ -1,19 +1,38 @@
 namespace Enemies.StateMachine.States
 {
+    using Enemies.AI;
     using Enemies.Combat;
     using global::StateMachine.Core;
     using UnityEngine;
 
     public sealed class EnemyDefenseTurnState : EnemyStateBase
     {
+        private const float FocusPriorityDurationSeconds = 1.25f;
+
         private int requiredParries;
         private int successfulParries;
         private float counterReadyAt;
         private float defenseUntilAt;
+        private float lastParryThreatAt;
+        private float nextParryAttemptAt;
         private EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private bool counterQueued;
+        private bool hasPriorityToken;
+        private bool handoffTokenToAttackTurn;
 
         public int RequiredParries => requiredParries;
+        public float DefenseTimeRemainingSeconds => Mathf.Max(0f, defenseUntilAt - Time.time);
+        public float? CounterPrepTimeRemainingSeconds => counterQueued
+            ? Mathf.Max(0f, counterReadyAt - Time.time)
+            : null;
+        public float? ParryAttemptCooldownRemainingSeconds
+        {
+            get
+            {
+                float remaining = nextParryAttemptAt - Time.time;
+                return remaining > 0f ? remaining : null;
+            }
+        }
 
         public override void OnEnter()
         {
@@ -25,10 +44,15 @@ namespace Enemies.StateMachine.States
             counterReadyAt = float.PositiveInfinity;
             float sampledDefenseDuration = Owner != null ? Owner.SampleDefenseDurationSeconds() : 1.2f;
             defenseUntilAt = Time.time + sampledDefenseDuration;
+            lastParryThreatAt = float.NegativeInfinity;
+            nextParryAttemptAt = Time.time;
+            hasPriorityToken = false;
+            handoffTokenToAttackTurn = false;
 
             if (Enemy != null)
             {
                 Enemy.OnParriedAttack += HandleParriedAttack;
+                Enemy.OnDamageResolved += HandleDamageResolved;
                 Enemy.CloseParryWindow();
             }
 
@@ -42,17 +66,27 @@ namespace Enemies.StateMachine.States
         public override void OnUpdate()
         {
             FaceTarget();
+            MaintainPriorityToken();
             UpdateMovementMode();
-            MaintainAlwaysReadyParryWindow();
+            MaintainThreatDrivenParryWindow();
         }
 
         public override void OnExit()
         {
             Owner?.NavBridge?.Stop();
 
+            if (hasPriorityToken && !handoffTokenToAttackTurn)
+            {
+                EnemyAttackTokenService.Release(Owner);
+            }
+
+            hasPriorityToken = false;
+            handoffTokenToAttackTurn = false;
+
             if (Enemy != null)
             {
                 Enemy.OnParriedAttack -= HandleParriedAttack;
+                Enemy.OnDamageResolved -= HandleDamageResolved;
                 Enemy.CloseParryWindow();
             }
         }
@@ -73,6 +107,12 @@ namespace Enemies.StateMachine.States
             {
                 if (IsCounterResponseReady())
                 {
+                    if (!EnsurePriorityToken())
+                    {
+                        return TransitionDecision.None;
+                    }
+
+                    handoffTokenToAttackTurn = true;
                     return TransitionDecision.To(
                         Owner.GetState<EnemyAttackTurnState>(),
                         TransitionReason.AttackCombo,
@@ -89,6 +129,18 @@ namespace Enemies.StateMachine.States
 
             if (Time.time >= defenseUntilAt)
             {
+                bool isFocusPriorityOwner = EnemyAttackTokenService.IsPriorityOwner(Owner);
+                if (!isFocusPriorityOwner && !Owner.IsClosestEnemyToCurrentTarget(requireTokenEligibility: true))
+                {
+                    return TransitionDecision.None;
+                }
+
+                if (!EnemyAttackTokenService.CanAcquire(Owner))
+                {
+                    return TransitionDecision.None;
+                }
+
+                handoffTokenToAttackTurn = true;
                 return TransitionDecision.To(
                     Owner.GetState<EnemyAttackTurnState>(),
                     TransitionReason.StandardFlow,
@@ -106,6 +158,7 @@ namespace Enemies.StateMachine.States
             }
 
             successfulParries++;
+            EnsurePriorityToken();
             if (successfulParries < requiredParries)
             {
                 return;
@@ -115,6 +168,21 @@ namespace Enemies.StateMachine.States
             counterQueued = true;
             float prepDelay = Profile != null ? Profile.CounterPrepDelay : 0f;
             counterReadyAt = Time.time + Mathf.Max(0f, prepDelay);
+        }
+
+        private void HandleDamageResolved(global::Combat.AttackHitInfo hit, global::Combat.DamageResolution resolution)
+        {
+            if (Owner == null || hit.Attacker == null || hit.Attacker.Team != global::Combat.CombatTeam.Player)
+            {
+                return;
+            }
+
+            if (resolution.Outcome == global::Combat.DamageOutcome.Ignored)
+            {
+                return;
+            }
+
+            EnemyAttackTokenService.SetPriorityOwner(Owner, FocusPriorityDurationSeconds);
         }
 
         private void UpdateMovementMode()
@@ -137,10 +205,26 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
-            float orbitRadius = Profile != null ? Profile.OrbitRadius : 2.75f;
-            if (Owner.DistanceToTarget > Owner.EngageRange)
+            int nearbyEnemyCount = Owner.GetNearbyEnemyCount(Profile != null ? Profile.GroupAwarenessRadius : 8f);
+            bool isFrontliner = EnemyAttackTokenService.IsHolder(Owner) || EnemyAttackTokenService.IsPriorityOwner(Owner);
+            bool useSupportRing = nearbyEnemyCount > 1 && !isFrontliner;
+            float orbitRadius = useSupportRing
+                ? Owner.ComputeSupportOrbitRadiusForCurrentGroup()
+                : (Profile != null ? Profile.OrbitRadius : 2.75f);
+
+            if (useSupportRing && TryGetCurrentFrontliner(out EnemyStateMachine frontliner) && frontliner != null && frontliner != Owner)
             {
-                Owner.NavBridge.SetPursue(Owner.CurrentTarget, Owner.AttackRange);
+                float frontlinerDistanceToTarget = frontliner.DistanceToTarget;
+                float minSeparationFromFrontliner = Profile != null ? Profile.SupportDistanceFromPriorityEnemy : 2.25f;
+                orbitRadius = Mathf.Max(orbitRadius, frontlinerDistanceToTarget + Mathf.Max(0f, minSeparationFromFrontliner));
+            }
+
+            float engageRange = Mathf.Max(Owner.EngageRange, orbitRadius + 0.5f);
+            float pursueStopDistance = useSupportRing ? Mathf.Max(Owner.AttackRange, orbitRadius) : Owner.AttackRange;
+
+            if (Owner.DistanceToTarget > engageRange)
+            {
+                Owner.NavBridge.SetPursue(Owner.CurrentTarget, pursueStopDistance);
                 Owner.TryCrossFadeStateIfNotActive("Walk Locomotion", 0.1f);
             }
             else
@@ -150,7 +234,7 @@ namespace Enemies.StateMachine.States
             }
         }
 
-        private void MaintainAlwaysReadyParryWindow()
+        private void MaintainThreatDrivenParryWindow()
         {
             if (Enemy == null || Owner == null || !Owner.HasTarget)
             {
@@ -164,11 +248,33 @@ namespace Enemies.StateMachine.States
                 return;
             }
 
-            // Defensive turn is intentionally always parry-ready.
+            bool underThreat = Owner.IsTargetAttacking &&
+                               Owner.DistanceToTarget <= (Profile != null ? Profile.ParryTriggerRange : 3f);
+            if (underThreat)
+            {
+                lastParryThreatAt = Time.time;
+            }
+
+            float threatMemory = Profile != null ? Profile.ParryThreatMemoryDuration : 0.15f;
+            bool hasRecentThreat = Time.time <= lastParryThreatAt + Mathf.Max(0f, threatMemory);
+            if (!hasRecentThreat)
+            {
+                Enemy.CloseParryWindow();
+                return;
+            }
+
+            if (Time.time < nextParryAttemptAt)
+            {
+                return;
+            }
+
             float configuredWindow = Profile != null ? Profile.ParryWindowDuration : 0.2f;
             float minContinuousWindow = Mathf.Max(Time.deltaTime * 2f, 0.05f);
             float parryWindow = Mathf.Max(configuredWindow, minContinuousWindow);
             Enemy.OpenParryWindow(parryWindow);
+
+            float cooldown = Profile != null ? Profile.ParryAttemptCooldown : 0.35f;
+            nextParryAttemptAt = Time.time + Mathf.Max(0.01f, cooldown);
         }
 
         private bool IsCounterResponseReady()
@@ -184,6 +290,77 @@ namespace Enemies.StateMachine.States
         private bool IsDefenseReactionActive()
         {
             return defenseReactionDriver != null && defenseReactionDriver.IsReactionActive;
+        }
+
+        private void MaintainPriorityToken()
+        {
+            if (Owner == null)
+            {
+                return;
+            }
+
+            if (hasPriorityToken && !EnemyAttackTokenService.IsHolder(Owner))
+            {
+                hasPriorityToken = false;
+            }
+
+            bool shouldHoldPriority = IsParrySequenceInProgress() || counterQueued;
+            if (!shouldHoldPriority)
+            {
+                if (hasPriorityToken && EnemyAttackTokenService.IsHolder(Owner) && !handoffTokenToAttackTurn)
+                {
+                    EnemyAttackTokenService.Release(Owner);
+                }
+
+                hasPriorityToken = false;
+                return;
+            }
+
+            EnsurePriorityToken();
+        }
+
+        private bool EnsurePriorityToken()
+        {
+            if (Owner == null)
+            {
+                return false;
+            }
+
+            if (EnemyAttackTokenService.IsHolder(Owner))
+            {
+                hasPriorityToken = true;
+                return true;
+            }
+
+            if (!EnemyAttackTokenService.TryAcquire(Owner))
+            {
+                return false;
+            }
+
+            hasPriorityToken = true;
+            return true;
+        }
+
+        private bool TryGetCurrentFrontliner(out EnemyStateMachine frontliner)
+        {
+            if (EnemyAttackTokenService.TryGetPriorityOwner(out frontliner))
+            {
+                if (frontliner != null && frontliner.HasTarget && Owner != null && frontliner.CurrentTarget == Owner.CurrentTarget)
+                {
+                    return true;
+                }
+            }
+
+            if (EnemyAttackTokenService.TryGetTokenHolder(out frontliner))
+            {
+                if (frontliner != null && frontliner.HasTarget && Owner != null && frontliner.CurrentTarget == Owner.CurrentTarget)
+                {
+                    return true;
+                }
+            }
+
+            frontliner = null;
+            return false;
         }
     }
 }

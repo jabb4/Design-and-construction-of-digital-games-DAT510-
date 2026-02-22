@@ -159,26 +159,37 @@ namespace Enemies.Debug
         private EnemyAIDebugSnapshot BuildSnapshot()
         {
             string stateName = stateMachine != null ? stateMachine.CurrentStateName : "None";
-            Player.StateMachine.AttackPhase attackPhase = stateMachine != null
-                ? stateMachine.CurrentAttackPhase
-                : Player.StateMachine.AttackPhase.Recovery;
-
             int? requiredParries = null;
             int? plannedChainLength = null;
+            float? defenseTimeRemainingSeconds = null;
+            float? counterPrepTimeRemainingSeconds = null;
+            float? parryAttemptCooldownRemainingSeconds = null;
+            float? nextAttackStartInSeconds = null;
 
             if (stateMachine != null)
             {
                 if (stateMachine.CurrentState is EnemyDefenseTurnState defenseTurnState)
                 {
                     requiredParries = defenseTurnState.RequiredParries;
+                    defenseTimeRemainingSeconds = defenseTurnState.DefenseTimeRemainingSeconds;
+                    counterPrepTimeRemainingSeconds = defenseTurnState.CounterPrepTimeRemainingSeconds;
+                    parryAttemptCooldownRemainingSeconds = defenseTurnState.ParryAttemptCooldownRemainingSeconds;
                 }
                 else if (stateMachine.CurrentState is EnemyAttackTurnState attackTurnState)
                 {
                     plannedChainLength = attackTurnState.PlannedChainLength;
+                    nextAttackStartInSeconds = attackTurnState.NextAttackStartInSeconds;
                 }
             }
 
-            return new EnemyAIDebugSnapshot(stateName, attackPhase, requiredParries, plannedChainLength);
+            return new EnemyAIDebugSnapshot(
+                stateName,
+                requiredParries,
+                plannedChainLength,
+                defenseTimeRemainingSeconds,
+                counterPrepTimeRemainingSeconds,
+                parryAttemptCooldownRemainingSeconds,
+                nextAttackStartInSeconds);
         }
 
         private Transform ResolveActiveAnchor()
