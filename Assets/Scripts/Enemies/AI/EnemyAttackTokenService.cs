@@ -53,7 +53,7 @@ namespace Enemies.AI
                 currentHolder = null;
             }
 
-            float now = Time.realtimeSinceStartup;
+            float now = Time.time;
             float cooldown = Mathf.Max(0f, globalCooldownSeconds);
             float reentryDelay = Mathf.Max(0f, reentryDelaySeconds);
 
@@ -75,13 +75,13 @@ namespace Enemies.AI
                 return false;
             }
 
-            CleanupStaleOwners(Time.realtimeSinceStartup);
+            CleanupStaleOwners(Time.time);
             return owner.GetInstanceID() == currentHolderId;
         }
 
         public static bool IsHeldByOther(EnemyStateMachine owner)
         {
-            CleanupStaleOwners(Time.realtimeSinceStartup);
+            CleanupStaleOwners(Time.time);
             if (owner == null)
             {
                 return currentHolderId != -1;
@@ -97,20 +97,20 @@ namespace Enemies.AI
                 return false;
             }
 
-            CleanupStaleOwners(Time.realtimeSinceStartup);
+            CleanupStaleOwners(Time.time);
             return priorityOwnerId != -1 && priorityOwnerId == owner.GetInstanceID();
         }
 
         public static bool TryGetPriorityOwner(out EnemyStateMachine owner)
         {
-            CleanupStaleOwners(Time.realtimeSinceStartup);
+            CleanupStaleOwners(Time.time);
             owner = priorityOwnerId == -1 ? null : priorityOwner;
             return owner != null;
         }
 
         public static bool TryGetTokenHolder(out EnemyStateMachine owner)
         {
-            CleanupStaleOwners(Time.realtimeSinceStartup);
+            CleanupStaleOwners(Time.time);
             owner = currentHolderId == -1 ? null : currentHolder;
             return owner != null;
         }
@@ -128,7 +128,7 @@ namespace Enemies.AI
                 return;
             }
 
-            float now = Time.realtimeSinceStartup;
+            float now = Time.time;
             priorityOwnerId = owner.GetInstanceID();
             priorityOwner = owner;
             priorityOwnerUntilTime = now + duration;
@@ -155,7 +155,7 @@ namespace Enemies.AI
             }
 
             instanceId = owner.GetInstanceID();
-            float now = Time.realtimeSinceStartup;
+            float now = Time.time;
             CleanupStaleOwners(now);
 
             if (currentHolderId != -1 && currentHolderId != instanceId)
