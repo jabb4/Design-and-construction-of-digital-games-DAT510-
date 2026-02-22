@@ -99,6 +99,22 @@ namespace Enemies.StateMachine
             ChangeState<States.EnemyIdleState>();
         }
 
+        private void OnDisable()
+        {
+            CleanupRuntimeState();
+        }
+
+        private void OnDestroy()
+        {
+            CleanupRuntimeState();
+
+            if (runtime != null)
+            {
+                runtime.StateChanging -= HandleStateChanging;
+                runtime.StateChanged -= HandleStateChanged;
+            }
+        }
+
         private void Update()
         {
             ApplyEnemyAnimatorDefaults();
@@ -507,6 +523,21 @@ namespace Enemies.StateMachine
                     $"[EnemyStateMachine] Defense duration range is invalid. Current: [{combatProfile.MinDefenseDuration}..{combatProfile.MaxDefenseDuration}]",
                     combatProfile);
             }
+        }
+
+        private void CleanupRuntimeState()
+        {
+            IntentSource?.ClearAllIntents();
+            NavBridge?.Stop();
+            Enemy?.CloseParryWindow();
+            EnemyAttackTokenService.Release(this);
+            ClearCurrentAttack();
+
+            currentTarget = null;
+            currentTargetCombatant = null;
+            nextTargetRefreshAt = float.NegativeInfinity;
+            smoothedLocalVelocity = Vector2.zero;
+            smoothedLocalVelocityRef = Vector2.zero;
         }
 
         private static global::Combat.CombatAttackPhase MapAttackPhase(AttackPhase phase)
