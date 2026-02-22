@@ -2211,6 +2211,7 @@ GameObject:
   - component: {fileID: 4001000000000000014}
   - component: {fileID: 4001000000000000015}
   - component: {fileID: 4001000000000000016}
+  - component: {fileID: 4001000000000000018}
   m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
@@ -2524,6 +2525,28 @@ MonoBehaviour:
   enemy: {fileID: 5832811830406196893}
   stateMachine: {fileID: 4001000000000000012}
   comboDirectionResolver: {fileID: 0}
+--- !u!114 &4001000000000000018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d916b6e34bb440389bd422552c659fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibleOnStart: 1
+  toggleKey: 25
+  worldOffset: 0.35
+  textRefreshInterval: 0.1
+  fontSize: 16
+  maxLabelWidth: 260
+  screenPixelOffset: {x: 0, y: -8}
+  labelScale: 0.1
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  backgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
 --- !u!1 &6883821836884234579
 GameObject:
   m_ObjectHideFlags: 0

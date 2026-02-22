@@ -15,6 +15,8 @@ namespace Enemies.StateMachine.States
         private EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private bool counterQueued;
 
+        public int RequiredParries => requiredParries;
+
         public override void OnEnter()
         {
             Intent?.ClearAllIntents();

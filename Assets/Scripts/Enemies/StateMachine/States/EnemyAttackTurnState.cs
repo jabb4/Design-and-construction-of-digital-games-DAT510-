@@ -18,6 +18,8 @@ namespace Enemies.StateMachine.States
         private int observedRecoveryVersion;
         private float nextAttackStartAt;
 
+        public int PlannedChainLength => plannedChainLength;
+
         public override void OnEnter()
         {
             Intent?.ClearAllIntents();
