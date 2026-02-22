@@ -41,12 +41,12 @@ This should give the combat more of a "back and forth" exchange, instead of it f
 
 ### Enemy Mechanics
 
-| Feature     | Description                                                      |
-| ----------- | ---------------------------------------------------------------- |
-| Attacks     | Shared 5-step melee combo (same combo data source as the player) |
-| Telegraphs  | Clear wind-up before each attack                                 |
-| Block/parry | Timed parry responses with end-parry momentum shift              |
-| Health      | Enemy can die if health reaches zero                             |
+| Feature    | Description                                                      |
+| ---------- | ---------------------------------------------------------------- |
+| Attacks    | Shared 5-step melee combo (same combo data source as the player) |
+| Telegraphs | Clear wind-up before each attack                                 |
+| Parry      | Parry-focused defense with end-parry momentum shift, no blocking |
+| Health     | Enemy can die if health reaches zero                             |
 
 ---
 
