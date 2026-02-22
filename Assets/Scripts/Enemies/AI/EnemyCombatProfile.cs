@@ -27,10 +27,17 @@ namespace Enemies.AI
         [SerializeField, Min(0f)]
         [Tooltip("Delay after the final defensive parry before transitioning into attack turn.")]
         private float counterPrepDelay = 0.35f;
+        [SerializeField, Min(0f)] private float attackTokenCooldownBase = 0.25f;
+        [SerializeField, Min(0f)] private float attackTokenCooldownPerExtraEnemy = 0.2f;
+        [SerializeField, Min(0f)] private float sameAttackerReentryDelay = 1.1f;
+        [SerializeField, Min(0.1f)] private float groupAwarenessRadius = 8f;
 
         [Header("Spacing")]
         [SerializeField, Min(0.1f)] private float engageRange = 7f;
         [SerializeField, Min(0.1f)] private float orbitRadius = 2.75f;
+        [SerializeField, Min(0f)] private float supportOrbitExtraRadius = 1f;
+        [SerializeField, Min(0f)] private float supportOrbitExtraRadiusPerEnemy = 0.25f;
+        [SerializeField, Min(0f)] private float supportDistanceFromPriorityEnemy = 2.25f;
         [SerializeField, Min(0.1f)] private float attackRange = 2.5f;
 
         public AttackComboAsset SharedCombo => sharedCombo;
@@ -45,8 +52,15 @@ namespace Enemies.AI
         public float ParryThreatMemoryDuration => parryThreatMemoryDuration;
         public float ParryTriggerRange => parryTriggerRange;
         public float CounterPrepDelay => counterPrepDelay;
+        public float AttackTokenCooldownBase => attackTokenCooldownBase;
+        public float AttackTokenCooldownPerExtraEnemy => attackTokenCooldownPerExtraEnemy;
+        public float SameAttackerReentryDelay => sameAttackerReentryDelay;
+        public float GroupAwarenessRadius => groupAwarenessRadius;
         public float EngageRange => engageRange;
         public float OrbitRadius => orbitRadius;
+        public float SupportOrbitExtraRadius => supportOrbitExtraRadius;
+        public float SupportOrbitExtraRadiusPerEnemy => supportOrbitExtraRadiusPerEnemy;
+        public float SupportDistanceFromPriorityEnemy => supportDistanceFromPriorityEnemy;
         public float AttackRange => attackRange;
 
         private void OnValidate()
@@ -62,8 +76,16 @@ namespace Enemies.AI
             parryThreatMemoryDuration = Mathf.Max(0f, parryThreatMemoryDuration);
             parryTriggerRange = Mathf.Max(0.1f, parryTriggerRange);
             counterPrepDelay = Mathf.Max(0f, counterPrepDelay);
+            attackTokenCooldownBase = Mathf.Max(0f, attackTokenCooldownBase);
+            attackTokenCooldownPerExtraEnemy = Mathf.Max(0f, attackTokenCooldownPerExtraEnemy);
+            sameAttackerReentryDelay = Mathf.Max(0f, sameAttackerReentryDelay);
+            groupAwarenessRadius = Mathf.Max(0.1f, groupAwarenessRadius);
             engageRange = Mathf.Max(0.1f, engageRange);
             orbitRadius = Mathf.Max(0.1f, orbitRadius);
+            supportOrbitExtraRadius = Mathf.Max(0f, supportOrbitExtraRadius);
+            supportOrbitExtraRadiusPerEnemy = Mathf.Max(0f, supportOrbitExtraRadiusPerEnemy);
+            supportDistanceFromPriorityEnemy = Mathf.Max(0f, supportDistanceFromPriorityEnemy);
+            engageRange = Mathf.Max(engageRange, orbitRadius + 0.5f);
             attackRange = Mathf.Max(0.1f, attackRange);
         }
     }

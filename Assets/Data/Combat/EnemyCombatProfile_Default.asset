@@ -17,13 +17,20 @@ MonoBehaviour:
   maxAttackChain: 5
   minParriesBeforeCounter: 1
   maxParriesBeforeCounter: 5
-  minDefenseDuration: 2.5
-  maxDefenseDuration: 4.5
+  minDefenseDuration: 3
+  maxDefenseDuration: 10
   parryWindowDuration: 0.2
-  parryAttemptCooldown: 0.01
-  parryThreatMemoryDuration: 0.15
+  parryAttemptCooldown: 0.1
+  parryThreatMemoryDuration: 0.5
   parryTriggerRange: 3
   counterPrepDelay: 0.35
+  attackTokenCooldownBase: 0.25
+  attackTokenCooldownPerExtraEnemy: 0.2
+  sameAttackerReentryDelay: 1.1
+  groupAwarenessRadius: 8
   engageRange: 7
-  orbitRadius: 5
-  attackRange: 1.5
+  orbitRadius: 6
+  supportOrbitExtraRadius: 2
+  supportOrbitExtraRadiusPerEnemy: 0.5
+  supportDistanceFromPriorityEnemy: 3
+  attackRange: 1.6
