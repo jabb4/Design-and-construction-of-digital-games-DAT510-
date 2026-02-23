@@ -167,14 +167,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5908862388057485691, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
-      propertyPath: maxHealth
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 5908862388057485691, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
-      propertyPath: currentHealth
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6880349450255457242, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: m_Name
       value: Enemy (1)
@@ -575,14 +567,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5908862388057485691, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
-      propertyPath: maxHealth
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 5908862388057485691, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
-      propertyPath: currentHealth
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6880349450255457242, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: m_Name
       value: Enemy (2)
@@ -860,14 +844,6 @@ PrefabInstance:
     - target: {fileID: 1186442657538826121, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5908862388057485691, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
-      propertyPath: maxHealth
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 5908862388057485691, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
-      propertyPath: currentHealth
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6880349450255457242, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: m_Name
