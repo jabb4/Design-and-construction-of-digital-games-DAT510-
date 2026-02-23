@@ -178,5 +178,7 @@ MonoBehaviour:
   lockBreakDistance: 35
   lineOfSightGraceSeconds: 0.5
   targetPointHeightOffset: 1.2
+  targetPointTransformName: clavicle_l
   retargetOnInvalid: 1
   enableLockOnDebugLogs: 0
+  indicatorPositionSmoothing: 18
