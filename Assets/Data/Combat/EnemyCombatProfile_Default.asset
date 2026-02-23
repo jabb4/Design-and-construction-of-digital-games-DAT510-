@@ -26,11 +26,11 @@ MonoBehaviour:
   counterPrepDelay: 0.35
   attackTokenCooldownBase: 3
   attackTokenCooldownPerExtraEnemy: 0.2
-  sameAttackerReentryDelay: 1.1
-  groupAwarenessRadius: 30
-  engageRange: 8
-  orbitRadius: 7
+  sameAttackerReentryDelay: 1
+  groupAwarenessRadius: 20
+  engageRange: 15
+  orbitRadius: 7.5
   supportOrbitExtraRadius: 10
   supportOrbitExtraRadiusPerEnemy: 0.5
   supportDistanceFromPriorityEnemy: 10
-  attackRange: 1.6
+  attackRange: 1.5
