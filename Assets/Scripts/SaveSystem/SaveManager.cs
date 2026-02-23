@@ -1,22 +1,27 @@
-using Player.StateMachine.States;
 using System.IO;
-using TMPro.Examples;
 using UnityEngine;
 
 public class SaveManager : MonoBehaviour
 {
+    public static SaveManager Instance { get; private set; }
+
     private Data gameData;
+    private const string SAVE_FILE_NAME = "GameData.json";
+    private string SavePath => Path.Combine(Application.persistentDataPath, SAVE_FILE_NAME);
 
     private void Awake()
     {
-        gameData = new Data();
-        
-        if (File.Exists(Path.Combine(Application.persistentDataPath, "GameData.json")))
+        if (Instance != null && Instance != this)
         {
-            LoadGameData();
+            Destroy(gameObject);
+            return;
         }
-    }
 
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        LoadGameData();
+    }
 
     public void SetCurrency(int currency)
     {
@@ -32,7 +37,6 @@ public class SaveManager : MonoBehaviour
     {
         gameData.maxFuelAmount = maxFuel;
     }
-
 
     public Data GetGameDataObject()
     {
@@ -54,14 +58,25 @@ public class SaveManager : MonoBehaviour
         return gameData.maxFuelAmount;
     }
 
-
     public void LoadGameData()
     {
-        using (StreamReader reader = new StreamReader(Path.Combine(Application.persistentDataPath, "GameData.json")))
+        if (!File.Exists(SavePath))
         {
-            string dataToLoad = reader.ReadToEnd();
+            gameData = new Data();
+            return;
+        }
 
+        try
+        {
+            string dataToLoad = File.ReadAllText(SavePath);
             gameData = JsonUtility.FromJson<Data>(dataToLoad);
+
+            if (gameData == null) gameData = new Data();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to load data: {e.Message}");
+            gameData = new Data();
         }
     }
 
@@ -71,24 +86,24 @@ public class SaveManager : MonoBehaviour
         return gameData;
     }
 
-
     public void SaveGameData()
     {
-        using (StreamWriter writer = new StreamWriter(Path.Combine(Application.persistentDataPath, "GameData.json")))
+        try
         {
-            string dataToWrite = JsonUtility.ToJson(gameData);
-
-            writer.Write(dataToWrite);
+            string dataToWrite = JsonUtility.ToJson(gameData, true);
+            File.WriteAllText(SavePath, dataToWrite);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to save data: {e.Message}");
         }
     }
 
-
-    //Data class used to decide what data to store. This will be converted to and from JSON
     [System.Serializable]
     public class Data
     {
-        public int currency;
-        public int fuelAmount;
-        public int maxFuelAmount;
+        public int currency = 0;
+        public int fuelAmount = 100;
+        public int maxFuelAmount = 100;
     }
 }
