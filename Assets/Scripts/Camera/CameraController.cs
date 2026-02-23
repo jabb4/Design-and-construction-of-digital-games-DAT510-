@@ -60,12 +60,16 @@ public class CameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float lockBreakDistance = 35f;
     [SerializeField, Min(0f)] private float lineOfSightGraceSeconds = 0.5f;
     [SerializeField, Min(0f)] private float targetPointHeightOffset = 1.2f;
-    [SerializeField] private string targetPointTransformName = "spine_03";
+    [SerializeField] private string targetPointTransformName = "clavicle_l";
     [SerializeField] private bool retargetOnInvalid = true;
     [SerializeField] private bool enableLockOnDebugLogs;
 
     [Header("Lock-On Indicator")]
     [SerializeField, Min(0f)] private float indicatorPositionSmoothing = 18f;
+    [SerializeField, Min(0f)] private float indicatorBloomIntensity = 3f;
+    [SerializeField, Min(1f)] private float indicatorBloomScale = 2.25f;
+    [SerializeField, Min(0f)] private float indicatorBloomPulseAmplitude = 0.1f;
+    [SerializeField, Min(0f)] private float indicatorBloomPulseSpeed = 8f;
 
     private Camera cam;
     private CameraOrbitRig cameraOrbitRig;
@@ -108,7 +112,14 @@ public class CameraController : MonoBehaviour
         lockOnInputRouter = new LockOnInputRouter(targetSwitchCooldown);
         lockOnInputRouter.ToggleLockRequested += HandleToggleLockRequested;
 
-        lockOnIndicatorPresenter = new LockOnIndicatorPresenter(cam, indicatorPositionSmoothing, enableLockOnDebugLogs);
+        lockOnIndicatorPresenter = new LockOnIndicatorPresenter(
+            cam,
+            indicatorPositionSmoothing,
+            indicatorBloomIntensity,
+            indicatorBloomScale,
+            indicatorBloomPulseAmplitude,
+            indicatorBloomPulseSpeed,
+            enableLockOnDebugLogs);
 
         InitializeLockOnGraph();
     }
