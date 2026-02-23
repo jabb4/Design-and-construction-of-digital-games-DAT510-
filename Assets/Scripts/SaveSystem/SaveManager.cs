@@ -7,10 +7,14 @@ public class SaveManager : MonoBehaviour
 {
     private Data gameData;
 
-    public SaveManager ()
+    private void Awake()
     {
         gameData = new Data();
-        LoadGameData();
+        
+        if (File.Exists(Path.Combine(Application.persistentDataPath, "GameData.json")))
+        {
+            LoadGameData();
+        }
     }
 
 
