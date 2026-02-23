@@ -1,171 +1,48 @@
 namespace Player.StateMachine
 {
+    using System.Collections.Generic;
+    using global::StateMachine.Core;
     using UnityEngine;
     using System;
     using Player.StateMachine.States;
 
-    public enum AttackPoseDirection
-    {
-        None,
-        LeftUp,
-        RightUp,
-        LeftDown,
-        RightDown
-    }
-
-    public enum AttackPhase
-    {
-        Windup,
-        Slash,
-        Recovery
-    }
-
-    [Serializable]
-    public struct AttackStep
-    {
-        public string AnimationStateName;
-        public AttackPoseDirection StartPose;
-        public AttackPoseDirection EndPose;
-        public float Damage;
-        public float SlashStartTime;
-        public float RecoveryStartTime;
-        public float ComboWindowStart;
-        public float ExitTime;
-    }
-
-    public interface IAttackPhaseListener
-    {
-        void OnAttackPhase(AttackPhase phase);
-    }
-
-    /// <summary>
-    /// Main state machine controller for the player character.
-    /// Manages state transitions, weapon state, and coordinates all player behavior.
-    /// </summary>
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(PlayerInputHandler))]
     [RequireComponent(typeof(CharacterMotor))]
-    public class PlayerStateMachine : MonoBehaviour
+    public partial class PlayerStateMachine : MonoBehaviour
     {
-        [Header("Initial State")]
-        [SerializeField] private bool startEquipped = false;
+        [Header("Combat")]
+        [SerializeField] private AttackComboAsset attackCombo;
 
-        [Header("Weapon Settings")]
-        [SerializeField] private float unequipDelay = 10f;
+        public IState CurrentState => runtime?.CurrentState;
+        public string CurrentStateName => runtime?.CurrentStateName ?? "None";
 
-        [Header("Attack Movement")]
-        [SerializeField] private float attackForwardDistance = 0.50f;
-        [SerializeField, Min(0.01f)] private float attackPushDuration = 0.12f;
-        [SerializeField, Range(0.05f, 0.95f)] private float attackPushEndSpeedFraction = 0.2f;
-
-        [Header("Debug")]
-        [SerializeField] private bool showDebugInfo = true;
-        [SerializeField] private bool slowMotionEnabled = false;
-        [SerializeField, Range(0.05f, 1f)] private float slowMotionScale = 0.2f;
-
-        // Weapon state
-        /// <summary>
-        /// Is the weapon currently equipped?
-        /// </summary>
-        public bool IsEquipped { get; private set; }
-
-        /// <summary>
-        /// Is the weapon currently transitioning between equipped/unequipped states?
-        /// </summary>
-        public bool IsTransitioningWeapon { get; private set; }
-
-        // Current state
-        /// <summary>
-        /// The currently active state.
-        /// </summary>
-        public IState CurrentState { get; private set; }
-
-        /// <summary>
-        /// The name of the current state for debugging.
-        /// </summary>
-        public string CurrentStateName => CurrentState?.StateName ?? "None";
-
-
-        // Events
-        /// <summary>
-        /// Fired when the state changes. Parameters: (oldState, newState)
-        /// </summary>
         public event Action<IState, IState> OnStateChanged;
-
-        /// <summary>
-        /// Fired when the weapon state changes. Parameter: isEquipped
-        /// </summary>
         public event Action<bool> OnWeaponStateChanged;
+        public event Action<AttackStep> OnAttackStepChanged;
 
-        /// <summary>
-        /// Fired when the current attack step changes.
-        /// </summary>
-        public event Action<global::Player.StateMachine.AttackStep> OnAttackStepChanged;
-
-        // Components
-        /// <summary>
-        /// Reference to the Animator component.
-        /// </summary>
         public Animator Animator { get; private set; }
-
-        /// <summary>
-        /// Reference to the PlayerInputHandler component.
-        /// </summary>
         public PlayerInputHandler Input { get; private set; }
-
-        /// <summary>
-        /// Reference to the CharacterMotor component.
-        /// </summary>
         public CharacterMotor Motor { get; private set; }
-
-        /// <summary>
-        /// Reference to the CameraController (found at runtime).
-        /// </summary>
         public CameraController CameraController { get; private set; }
+        public PlayerCombatStateContext CombatContext { get; private set; }
+        public IIntentSource IntentSource => CombatContext?.IntentSource;
+        public AttackStep? CurrentAttackStep { get; private set; }
+        public AttackComboAsset AttackCombo => attackCombo;
+        public int AttackStepCount => attackCombo != null ? attackCombo.Count : 0;
 
-        /// <summary>
-        /// Current attack step metadata for parry reactions.
-        /// </summary>
-        public global::Player.StateMachine.AttackStep? CurrentAttackStep { get; private set; }
-
-        public float AttackForwardDistance => attackForwardDistance;
-        public float AttackPushDuration => attackPushDuration;
-        public float AttackPushEndSpeedFraction => attackPushEndSpeedFraction;
-
-        // Internal state management
-        private float unequipTimer = -1f;
-        private bool hasPendingUnequipRequest = false;
-        private bool requestedEquipWhilePending = false;
-        private bool pendingEquipRequest = false;
-        private bool pendingUnequipRequest = false;
-        private WeaponTransitionType currentWeaponTransition = WeaponTransitionType.None;
-        private float weaponTransitionStartTime = -1f;
-
-        [SerializeField]
-        [Tooltip("Optional fallback timeout (seconds) if transition animation never completes. Set to 0 to disable.")]
-        private float weaponTransitionTimeout = 0f;
-
-
-        private static readonly int EquipToUnequip01Hash = Animator.StringToHash("Equip To Unequip 01");
-        private static readonly int EquipToUnequip02Hash = Animator.StringToHash("Equip To Unequip 02");
-        private static readonly int EquipToUnequip03Hash = Animator.StringToHash("Equip To Unequip 03");
-        private static readonly int EquipToUnequip04Hash = Animator.StringToHash("Equip To Unequip 04");
-        private static readonly int EquipToUnequip05Hash = Animator.StringToHash("Equip To Unequip 05");
-        private static readonly int UnequipToEquipQuickHash = Animator.StringToHash("Unequip To Equip Quick");
-        private static readonly int VelocityXHash = Animator.StringToHash("VelocityX");
-        private static readonly int VelocityZHash = Animator.StringToHash("VelocityZ");
-        private static readonly int SpeedHash = Animator.StringToHash("Speed");
-        private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
-        private static readonly int IsSprintingHash = Animator.StringToHash("IsSprinting");
-        private static readonly int IsBlockingHash = Animator.StringToHash("IsBlocking");
-        private static readonly int IsTransitioningWeaponHash = Animator.StringToHash("IsTransitioningWeapon");
-        private static readonly int UnequipVariantHash = Animator.StringToHash("UnequipVariant");
-
-        #region Unity Lifecycle
+        private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
+        private readonly Dictionary<Type, PlayerStateBase> stateCache = new Dictionary<Type, PlayerStateBase>(16);
+        private StateMachineRuntime runtime;
+        private bool HasMoveIntent => IntentSource != null && IntentSource.HasMoveIntent;
+        private bool SprintHeld => IntentSource != null && IntentSource.SprintHeld;
+        private bool BlockHeld => IntentSource != null && IntentSource.BlockHeld;
 
         private void Awake()
         {
             InitializeComponents();
+            InitializeRuntime();
+            ValidateAttackComboConfiguration();
         }
 
         private void Start()
@@ -188,23 +65,9 @@ namespace Player.StateMachine
                 return;
             }
 
-            // Check for state transitions
-            IState nextState = CurrentState?.CheckTransitions();
-            if (nextState != null && nextState != CurrentState)
-            {
-                ChangeState(nextState);
-            }
+            runtime?.Tick();
 
-            // Update current state
-            CurrentState?.OnUpdate();
-
-            // Update animator parameters every frame
             UpdateAnimatorParameters();
-        }
-
-        private void OnValidate()
-        {
-            UpdateTimeScale();
         }
 
         private void FixedUpdate()
@@ -215,47 +78,15 @@ namespace Player.StateMachine
                 return;
             }
 
-            // Fixed update for physics-based state logic
-            CurrentState?.OnFixedUpdate();
+            runtime?.FixedTick();
         }
 
-        private void OnDestroy()
-        {
-            if (slowMotionEnabled)
-            {
-                Time.timeScale = 1f;
-                Time.fixedDeltaTime = 0.02f;
-            }
-        }
-
-        private void UpdateTimeScale()
-        {
-            if (!slowMotionEnabled)
-            {
-                return;
-            }
-
-            float clampedScale = Mathf.Clamp(slowMotionScale, 0.01f, 1f);
-            Time.timeScale = clampedScale;
-            Time.fixedDeltaTime = 0.02f * clampedScale;
-        }
-
-        #endregion
-
-        #region State Management
-
-        /// <summary>
-        /// Change to a new state. Call from state's CheckTransitions or externally.
-        /// </summary>
         public void ChangeState<T>() where T : PlayerStateBase, new()
         {
             T newState = GetState<T>();
             ChangeState(newState);
         }
 
-        /// <summary>
-        /// Change to a specific state instance.
-        /// </summary>
         public void ChangeState(IState newState)
         {
             if (newState == null)
@@ -264,177 +95,24 @@ namespace Player.StateMachine
                 return;
             }
 
-            // Don't change if already in this state
-            if (CurrentState == newState)
-            {
-                return;
-            }
-
-            ClearCurrentAttack();
-
-            IState oldState = CurrentState;
-
-            // Exit current state
-            CurrentState?.OnExit();
-
-            // Change state
-            CurrentState = newState;
-
-            // Enter new state
-            CurrentState?.OnEnter();
-
-            // Fire event
-            OnStateChanged?.Invoke(oldState, newState);
-
-            if (showDebugInfo)
-            {
-                Debug.Log($"[PlayerStateMachine] State changed: {oldState?.StateName ?? "None"} -> {CurrentState.StateName}");
-            }
+            runtime?.ChangeState(newState);
         }
 
-        /// <summary>
-        /// Create a new state instance of the specified type.
-        /// </summary>
         public T GetState<T>() where T : PlayerStateBase, new()
         {
+            Type stateType = typeof(T);
+            if (stateCache.TryGetValue(stateType, out PlayerStateBase cachedState))
+            {
+                return (T)cachedState;
+            }
+
             T newState = new T();
-            newState.Initialize(this, Animator, Input, Motor);
+            newState.Initialize(this, CombatContext);
+            stateCache[stateType] = newState;
             return newState;
         }
 
-        #endregion
-
-        #region Weapon State Management
-
-        /// <summary>
-        /// Request weapon equip. Plays equip animation.
-        /// </summary>
-        public void RequestEquip()
-        {
-            CancelUnequipRequest();
-
-            if (IsEquipped || IsTransitioningWeapon)
-            {
-                if (IsTransitioningWeapon)
-                {
-                    pendingEquipRequest = true;
-                }
-                return;
-            }
-
-            BeginEquipTransition();
-        }
-
-        /// <summary>
-        /// Request weapon unequip. Plays unequip animation after delay.
-        /// </summary>
-        public void RequestUnequip()
-        {
-            if (!IsEquipped || IsTransitioningWeapon)
-            {
-                if (IsTransitioningWeapon)
-                {
-                    pendingUnequipRequest = true;
-                }
-                return;
-            }
-
-            // Start the unequip timer
-            hasPendingUnequipRequest = true;
-            unequipTimer = unequipDelay;
-            requestedEquipWhilePending = false;
-
-            if (showDebugInfo)
-            {
-                Debug.Log($"[PlayerStateMachine] Unequip requested. Will unequip in {unequipDelay}s");
-            }
-        }
-
-        /// <summary>
-        /// Cancel pending unequip request.
-        /// </summary>
-        public void CancelUnequipRequest()
-        {
-            if (hasPendingUnequipRequest)
-            {
-                hasPendingUnequipRequest = false;
-                unequipTimer = -1f;
-                requestedEquipWhilePending = false;
-
-                if (showDebugInfo)
-                {
-                    Debug.Log("[PlayerStateMachine] Unequip request cancelled");
-                }
-            }
-        }
-
-        public void NotifyEquipAnimationComplete()
-        {
-            if (!IsTransitioningWeapon)
-            {
-                return;
-            }
-
-            IsEquipped = true;
-            Animator?.SetBool("IsEquipped", true);
-            OnWeaponStateChanged?.Invoke(true);
-
-            IsTransitioningWeapon = false;
-            currentWeaponTransition = WeaponTransitionType.None;
-            Animator?.SetBool(IsTransitioningWeaponHash, false);
-
-            if (Input != null && Input.IsBlocking && Motor != null && Motor.IsGrounded)
-            {
-                ChangeState(GetState<BlockingState>());
-            }
-            else if (Input != null && Input.HasMovementInput)
-            {
-                ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
-            }
-            else
-            {
-                ChangeState(GetState<IdleState>());
-            }
-
-            if (pendingUnequipRequest)
-            {
-                pendingUnequipRequest = false;
-                RequestUnequip();
-            }
-        }
-
-        public void NotifyUnequipAnimationComplete()
-        {
-            if (!IsTransitioningWeapon)
-            {
-                return;
-            }
-
-            IsEquipped = false;
-            Animator?.SetBool("IsEquipped", false);
-            OnWeaponStateChanged?.Invoke(false);
-
-            IsTransitioningWeapon = false;
-            currentWeaponTransition = WeaponTransitionType.None;
-            Animator?.SetBool(IsTransitioningWeaponHash, false);
-
-            if (Input != null && Input.HasMovementInput)
-            {
-                ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
-            }
-            else
-            {
-                ChangeState(GetState<IdleState>());
-            }
-
-            if (pendingEquipRequest)
-            {
-                pendingEquipRequest = false;
-                RequestEquip();
-            }
-        }
-
-        public void SetCurrentAttack(global::Player.StateMachine.AttackStep step)
+        public void SetCurrentAttack(AttackStep step)
         {
             CurrentAttackStep = step;
             OnAttackStepChanged?.Invoke(step);
@@ -447,173 +125,30 @@ namespace Player.StateMachine
 
         public void NotifyAttackPhase(AttackPhase phase)
         {
-            if (CurrentState is IAttackPhaseListener listener)
-            {
-                listener.OnAttackPhase(phase);
-            }
-        }
-
-        private void UpdateWeaponState()
-        {
-            bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
-            bool isGrounded = Motor != null && Motor.IsGrounded;
-            bool canBlock = isGrounded;
-            bool isAttacking = CurrentState is global::Player.StateMachine.States.AttackState;
-            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock) || isAttacking;
-            bool isSprinting = Input != null && Input.IsSprinting;
-            bool isLanding = CurrentState is JumpEndState;
-            bool canUnequipNow = Motor != null && Motor.IsGrounded && !isSprinting && !isLanding;
-
-            if (wantsEquip && !IsEquipped && !IsTransitioningWeapon)
-            {
-                if (isGrounded)
-                {
-                    RequestEquip();
-                }
-            }
-            else if (!wantsEquip && IsEquipped && !hasPendingUnequipRequest)
-            {
-                RequestUnequip();
-            }
-
-            if (hasPendingUnequipRequest)
-            {
-                if (wantsEquip)
-                {
-                    requestedEquipWhilePending = true;
-                    unequipTimer = unequipDelay;
-                }
-                else
-                {
-                    requestedEquipWhilePending = false;
-                }
-            }
-
-            if (hasPendingUnequipRequest && !wantsEquip)
-            {
-                if (!canUnequipNow)
-                {
-                    unequipTimer = unequipDelay;
-                }
-                else
-                {
-                    if (unequipTimer > 0f)
-                    {
-                        unequipTimer -= Time.deltaTime;
-                    }
-
-                    if (unequipTimer <= 0f)
-                    {
-                        if (!requestedEquipWhilePending)
-                        {
-                            BeginUnequipTransition();
-                        }
-                        hasPendingUnequipRequest = false;
-                        requestedEquipWhilePending = false;
-                    }
-                }
-            }
-
-            CheckWeaponTransitionCompletion();
-        }
-
-        private void BeginEquipTransition()
-        {
-            if (showDebugInfo)
-            {
-                Debug.Log("[PlayerStateMachine] Equipping weapon (transition)");
-            }
-
-            IsTransitioningWeapon = true;
-            currentWeaponTransition = WeaponTransitionType.Equipping;
-            weaponTransitionStartTime = Time.time;
-            Animator?.SetTrigger("Equip");
-            Animator?.SetBool(IsTransitioningWeaponHash, true);
-        }
-
-        private void BeginUnequipTransition()
-        {
-            if (showDebugInfo)
-            {
-                Debug.Log("[PlayerStateMachine] Unequipping weapon (transition)");
-            }
-
-            IsTransitioningWeapon = true;
-            currentWeaponTransition = WeaponTransitionType.Unequipping;
-            weaponTransitionStartTime = Time.time;
-            SetUnequipVariant();
-            Animator?.SetTrigger("Unequip");
-            Animator?.SetBool(IsTransitioningWeaponHash, true);
-        }
-
-        private void SetUnequipVariant()
-        {
-            if (Animator == null)
+            if (CurrentState is not IAttackPhaseListener listener)
             {
                 return;
             }
 
-            int variant = UnityEngine.Random.Range(0, 5);
-            Animator.SetInteger(UnequipVariantHash, variant);
+            if (listener.OnAttackPhase(phase))
+            {
+                DispatchAttackFeedback(phase);
+            }
         }
 
-        private void CheckWeaponTransitionCompletion()
+        public bool TryGetAttackStep(int index, out AttackStep step)
         {
-            if (!IsTransitioningWeapon || Animator == null)
+            if (attackCombo == null)
             {
-                return;
+                step = default;
+                return false;
             }
 
-            AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
-            int shortHash = stateInfo.shortNameHash;
-
-            bool isEquipTransitionState = shortHash == UnequipToEquipQuickHash;
-            bool isUnequipTransitionState = shortHash == EquipToUnequip01Hash || shortHash == EquipToUnequip02Hash ||
-                                            shortHash == EquipToUnequip03Hash || shortHash == EquipToUnequip04Hash ||
-                                            shortHash == EquipToUnequip05Hash;
-
-            if (currentWeaponTransition == WeaponTransitionType.Equipping && isEquipTransitionState &&
-                stateInfo.normalizedTime >= 0.95f)
-            {
-                NotifyEquipAnimationComplete();
-                return;
-            }
-
-            if (currentWeaponTransition == WeaponTransitionType.Unequipping && isUnequipTransitionState &&
-                stateInfo.normalizedTime >= 0.95f)
-            {
-                NotifyUnequipAnimationComplete();
-                return;
-            }
-
-            if (weaponTransitionTimeout > 0f && weaponTransitionStartTime > 0f &&
-                Time.time - weaponTransitionStartTime >= weaponTransitionTimeout)
-            {
-                if (currentWeaponTransition == WeaponTransitionType.Equipping)
-                {
-                    NotifyEquipAnimationComplete();
-                }
-                else if (currentWeaponTransition == WeaponTransitionType.Unequipping)
-                {
-                    NotifyUnequipAnimationComplete();
-                }
-            }
+            return attackCombo.TryGetStep(index, out step);
         }
-
-        private enum WeaponTransitionType
-        {
-            None,
-            Equipping,
-            Unequipping
-        }
-
-        #endregion
-
-        #region Component Initialization
 
         private void InitializeComponents()
         {
-            // Get required components
             Animator = GetComponent<Animator>();
             if (Animator == null)
             {
@@ -632,91 +167,147 @@ namespace Player.StateMachine
                 Debug.LogError("[PlayerStateMachine] CharacterMotor component not found!");
             }
 
-            // Find CameraController in scene
             CameraController = FindAnyObjectByType<CameraController>();
             if (CameraController == null)
             {
                 Debug.LogWarning("[PlayerStateMachine] CameraController not found in scene. Lock-on weapon behavior will not work.");
             }
+
+            CombatContext = new PlayerCombatStateContext(this, Animator, Input, Motor, intentSource: Input);
         }
 
-        #endregion
-
-        #region Animator Updates
-
-        private void UpdateAnimatorParameters()
+        private void InitializeRuntime()
         {
-            if (Animator == null)
+            runtime = new StateMachineRuntime();
+            runtime.StateChanging += HandleStateChanging;
+            runtime.StateChanged += HandleStateChanged;
+        }
+
+        private void HandleStateChanging(IState previous, IState next)
+        {
+            ClearCurrentAttack();
+        }
+
+        private void HandleStateChanged(IState previous, IState current)
+        {
+            OnStateChanged?.Invoke(previous, current);
+
+            if (showDebugInfo)
+            {
+                Debug.Log($"[PlayerStateMachine] State changed: {previous?.StateName ?? "None"} -> {current?.StateName ?? "None"}");
+            }
+        }
+
+        private void ValidateAttackComboConfiguration()
+        {
+            if (attackCombo != null)
             {
                 return;
             }
 
-            Animator.SetBool("IsEquipped", IsEquipped);
-
-            Animator.SetBool(IsTransitioningWeaponHash, IsTransitioningWeapon);
-
-            bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
-            Animator.SetBool("IsLockedOn", isLockedOn);
-            Animator.SetBool(IsBlockingHash, Input != null && Input.IsBlocking && IsEquipped && Motor != null && Motor.IsGrounded);
-
-            if (IsTransitioningWeapon)
-            {
-                Animator.SetBool(IsMovingHash, false);
-                Animator.SetBool(IsSprintingHash, false);
-                Animator.SetFloat(VelocityXHash, 0f);
-                Animator.SetFloat(VelocityZHash, 0f);
-                Animator.SetFloat(SpeedHash, 0f);
-            }
+            Debug.LogWarning("[PlayerStateMachine] No AttackComboAsset assigned. Attack state will return to Idle.", this);
         }
 
-        #endregion
-
-        #region Debug
-
-        private void OnGUI()
+        private void DispatchAttackFeedback(AttackPhase phase)
         {
-            if (!showDebugInfo)
+            attackFeedbackHooks.Clear();
+            GetComponents(attackFeedbackHooks);
+            if (attackFeedbackHooks.Count == 0)
             {
                 return;
             }
 
-            // Create debug display in top-left corner
-            GUILayout.BeginArea(new Rect(10, 10, 300, 200));
-            GUILayout.BeginVertical("box");
-
-            GUILayout.Label("<b>Player State Machine</b>");
-            GUILayout.Space(5);
-
-            GUILayout.Label($"State: <b>{CurrentStateName}</b>");
-            GUILayout.Label($"Equipped: <b>{IsEquipped}</b>");
-            GUILayout.Label($"Transitioning: <b>{IsTransitioningWeapon}</b>");
-
-            if (CurrentState is AttackState attackState)
+            global::Combat.AttackData? attack = null;
+            if (CurrentAttackStep.HasValue)
             {
-                GUILayout.Label($"Attack Phase: <b>{attackState.CurrentPhase}</b>");
+                AttackStep current = CurrentAttackStep.Value;
+                attack = global::Player.Combat.AttackDataMapper.ToAttackData(current);
             }
 
-            GUILayout.Label($"Slow Motion: <b>{(slowMotionEnabled ? $"On ({slowMotionScale:0.00}x)" : "Off")}</b>");
-
-            bool isLockedOn = CameraController != null && CameraController.IsLockedOn;
-
-            if (hasPendingUnequipRequest)
+            var context = new global::Combat.CombatAttackFeedbackContext
             {
-                if (isLockedOn || requestedEquipWhilePending)
-                {
-                    GUILayout.Label("Unequip: <b>paused</b>");
-                }
-                else
-                {
-                    GUILayout.Label($"Unequip in: <b>{unequipTimer:F1}s</b>");
-                }
-            }
-            GUILayout.Label($"Locked On: <b>{isLockedOn}</b>");
+                Phase = MapAttackPhase(phase),
+                Attack = attack,
+                Attacker = GetComponent<global::Combat.ICombatant>(),
+                AttackDirection = ResolveAttackDirection()
+            };
 
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
+            for (int i = 0; i < attackFeedbackHooks.Count; i++)
+            {
+                attackFeedbackHooks[i]?.OnCombatAttackPhase(context);
+            }
         }
 
-        #endregion
+        private static global::Combat.CombatAttackPhase MapAttackPhase(AttackPhase phase)
+        {
+            switch (phase)
+            {
+                case AttackPhase.Windup:
+                    return global::Combat.CombatAttackPhase.Windup;
+                case AttackPhase.Slash:
+                    return global::Combat.CombatAttackPhase.Slash;
+                case AttackPhase.Recovery:
+                    return global::Combat.CombatAttackPhase.Recovery;
+                default:
+                    return global::Combat.CombatAttackPhase.Recovery;
+            }
+        }
+
+        private Vector3 ResolveAttackDirection()
+        {
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude <= 0.0001f)
+            {
+                return Vector3.forward;
+            }
+
+            return forward.normalized;
+        }
+    }
+
+    public sealed class PlayerCombatStateContext : IActorStateContext
+    {
+        private readonly Dictionary<int, float> timersByKey = new Dictionary<int, float>();
+
+        public PlayerCombatStateContext(
+            PlayerStateMachine owner,
+            Animator animator,
+            PlayerInputHandler input,
+            CharacterMotor motor,
+            IIntentSource intentSource = null)
+        {
+            Owner = owner;
+            Animator = animator;
+            Input = input;
+            Motor = motor;
+            IntentSource = intentSource ?? input;
+        }
+
+        public PlayerStateMachine Owner { get; }
+        public Animator Animator { get; }
+        public PlayerInputHandler Input { get; }
+        public CharacterMotor Motor { get; }
+        public IIntentSource IntentSource { get; }
+
+        public Transform ActorTransform => Owner != null ? Owner.transform : null;
+        public bool IsGrounded => Motor != null && Motor.IsGrounded;
+        public bool IsLockedOn => Motor != null && Motor.IsLockedOn;
+        public Transform LockOnTarget => Motor != null ? Motor.GetLockOnTarget() : null;
+
+        public void SetTimer(int key, float remainingSeconds)
+        {
+            timersByKey[key] = Mathf.Max(0f, remainingSeconds);
+        }
+
+        public bool TryGetTimer(int key, out float remainingSeconds)
+        {
+            return timersByKey.TryGetValue(key, out remainingSeconds);
+        }
+
+        public void ClearTimer(int key)
+        {
+            timersByKey.Remove(key);
+        }
     }
 }

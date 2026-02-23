@@ -1,5 +1,6 @@
 namespace Player.StateMachine
 {
+    using global::StateMachine.Core;
     using UnityEngine;
 
     public sealed class BlockingState : PlayerStateBase
@@ -7,21 +8,20 @@ namespace Player.StateMachine
         private Vector2 smoothVelocity;
         private Vector2 velocityRef;
         private const float SMOOTH_TIME = 0.1f;
-        private const string DefenseIdleStateName = "DefenseIdle";
-        private const string StandToDefenseLeft = "Idle2DefenseL";
-        private const string DefenseToStandLeft = "Defense2IdleL";
         private bool isExiting;
+        private GuardSide activeGuardSide;
 
         public override void OnEnter()
         {
             isExiting = false;
+            activeGuardSide = Owner.CurrentGuardSide;
 
-            if (!CrossFade(StandToDefenseLeft, 0.1f))
+            if (!CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f))
             {
-                CrossFade(DefenseIdleStateName, 0.1f);
+                CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.1f);
             }
 
-            Animator.SetBool(IsMovingHash, Input.HasMovementInput);
+            Animator.SetBool(IsMovingHash, HasMoveIntent);
             Animator.SetBool(IsSprintingHash, false);
 
             smoothVelocity = Vector2.zero;
@@ -34,7 +34,7 @@ namespace Player.StateMachine
             {
                 if (IsAnimationComplete(0.95f))
                 {
-                    if (Input.HasMovementInput)
+                    if (HasMoveIntent)
                     {
                         Owner.ChangeState(Owner.GetState<States.WalkingState>());
                     }
@@ -45,6 +45,15 @@ namespace Player.StateMachine
                 }
 
                 return;
+            }
+
+            if (Owner.CurrentGuardSide != activeGuardSide && !Owner.IsDefenseReactionActive)
+            {
+                activeGuardSide = Owner.CurrentGuardSide;
+                if (!isExiting)
+                {
+                    CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.08f);
+                }
             }
 
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
@@ -58,45 +67,73 @@ namespace Player.StateMachine
                 return;
             }
 
-            Motor.Move(Input.MoveInput, useSprint: false);
+            if (Owner.IsDefenseReactionActive)
+            {
+                // Freeze both movement and facing while defense reaction one-shots are active.
+                Motor.Move(Vector2.zero, useSprint: false);
+                return;
+            }
+
+            Motor.Move(MoveIntent, useSprint: false);
             RotateWithContext(requireMovementInput: true);
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             if (!Owner.IsEquipped)
             {
-                return Owner.GetState<States.IdleState>();
+                return TransitionDecision.To(Owner.GetState<States.IdleState>(), TransitionReason.StandardFlow);
             }
 
-            if (!Input.IsBlocking)
+            if (Owner.IsDefenseReactionActive &&
+                Owner.IsDefenseAttackUnlocked &&
+                AttackPressed &&
+                Motor.IsGrounded)
             {
+                // Allow earlier attack cancel after successful defense,
+                // while movement remains constrained until reaction end.
+                Owner.EndDefenseReaction();
+
+                States.AttackState attackState = Owner.GetState<States.AttackState>();
+                attackState.SetComboIndex(0);
+                return TransitionDecision.To(attackState, TransitionReason.RecoveryInterrupt, priority: TransitionPriorities.RecoveryInterrupt);
+            }
+
+            if (!BlockHeld)
+            {
+                if (Owner.IsDefenseReactionActive)
+                {
+                    return TransitionDecision.None;
+                }
+
                 if (!isExiting)
                 {
                     isExiting = true;
-                    CrossFade(DefenseToStandLeft, 0.1f);
+                    activeGuardSide = Owner.CurrentGuardSide;
+                    CrossFade(Owner.GetDefenseExitStateName(activeGuardSide), 0.1f);
                 }
 
-                return null;
+                return TransitionDecision.None;
             }
 
-            if (isExiting)
+            if (isExiting && !Owner.IsDefenseReactionActive)
             {
                 isExiting = false;
-                CrossFade(StandToDefenseLeft, 0.1f);
+                activeGuardSide = Owner.CurrentGuardSide;
+                CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f);
             }
 
-            if (Input.IsJumpPressed && Motor.IsGrounded)
+            if (JumpPressed && Motor.IsGrounded)
             {
-                return null;
+                return TransitionDecision.None;
             }
 
-            if (Input.IsSprinting && Input.HasMovementInput)
+            if (SprintHeld && HasMoveIntent)
             {
-                return null;
+                return TransitionDecision.None;
             }
 
-            return null;
+            return TransitionDecision.None;
         }
     }
 }

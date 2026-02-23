@@ -1,5 +1,6 @@
 namespace Player.StateMachine
 {
+    using global::StateMachine.Core;
     using UnityEngine;
     using UnityEngine.InputSystem;
     using System;
@@ -10,7 +11,7 @@ namespace Player.StateMachine
     /// This class wraps Unity's Input System and provides a consistent interface
     /// for the PlayerStateMachine to query input state.
     /// </summary>
-    public class PlayerInputHandler : MonoBehaviour
+    public class PlayerInputHandler : MonoBehaviour, IIntentSource
     {
         #region Input Properties
 
@@ -33,29 +34,39 @@ namespace Player.StateMachine
         /// <summary>
         /// True only on the frame when block was pressed.
         /// </summary>
-        public bool IsBlockPressed { get; private set; }
+        public bool IsBlockPressed => blockIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True only on the frame when jump was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
-        public bool IsJumpPressed { get; private set; }
+        public bool IsJumpPressed => jumpIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True only on the frame when attack was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
-        public bool IsAttackPressed { get; private set; }
+        public bool IsAttackPressed => attackIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True while jump input is buffered.
         /// </summary>
-        public bool IsJumpBuffered => jumpBufferTimer > 0f;
+        public bool IsJumpBuffered => jumpIntent.IsBuffered;
 
         /// <summary>
         /// Returns true if the player has significant movement input (above threshold).
         /// </summary>
         public bool HasMovementInput => MoveInput.magnitude > MovementThreshold;
+
+        // Shared intent contract aliases (player + AI compatibility surface).
+        public Vector2 MoveIntent => MoveInput;
+        public bool HasMoveIntent => HasMovementInput;
+        public bool SprintHeld => IsSprinting;
+        public bool BlockHeld => IsBlocking;
+        public bool BlockPressed => IsBlockPressed;
+        public bool JumpPressed => IsJumpPressed;
+        public bool JumpBuffered => IsJumpBuffered;
+        public bool AttackPressed => IsAttackPressed;
 
         #endregion
 
@@ -72,6 +83,10 @@ namespace Player.StateMachine
         [SerializeField]
         [Tooltip("Time window to buffer jump input (seconds)")]
         private float jumpBufferDuration = 0.2f;
+
+        [SerializeField]
+        [Tooltip("Time window to buffer attack input (seconds)")]
+        private float attackBufferDuration = 0f;
 
         /// <summary>
         /// Public accessor for the movement threshold.
@@ -146,8 +161,7 @@ namespace Player.StateMachine
         {
             if (value.isPressed)
             {
-                IsJumpPressed = true;
-                jumpBufferTimer = jumpBufferDuration;
+                jumpIntent.RecordPress(jumpBufferDuration);
                 OnJumpPressed?.Invoke();
             }
         }
@@ -162,7 +176,7 @@ namespace Player.StateMachine
             IsBlocking = value.isPressed;
             if (IsBlocking && !wasBlocking)
             {
-                IsBlockPressed = true;
+                blockIntent.RecordPress();
             }
         }
 
@@ -175,7 +189,7 @@ namespace Player.StateMachine
         {
             if (value.isPressed)
             {
-                IsAttackPressed = true;
+                attackIntent.RecordPress(attackBufferDuration);
                 OnAttackPressed?.Invoke();
             }
         }
@@ -191,25 +205,21 @@ namespace Player.StateMachine
         private void LateUpdate()
         {
             // Reset one-frame flags
-            IsJumpPressed = false;
-            IsBlockPressed = false;
-            IsAttackPressed = false;
+            jumpIntent.ResetFrameState();
+            blockIntent.ResetFrameState();
+            attackIntent.ResetFrameState();
 
-            if (jumpBufferTimer > 0f)
-            {
-                jumpBufferTimer -= Time.deltaTime;
-                if (jumpBufferTimer < 0f)
-                {
-                    jumpBufferTimer = 0f;
-                }
-            }
+            jumpIntent.Tick(Time.deltaTime);
+            attackIntent.Tick(Time.deltaTime);
         }
 
         #endregion
 
         #region Private Fields
 
-        private float jumpBufferTimer;
+        private readonly IntentBuffer jumpIntent = new IntentBuffer();
+        private readonly IntentBuffer blockIntent = new IntentBuffer();
+        private readonly IntentBuffer attackIntent = new IntentBuffer();
 
         #endregion
 
@@ -243,6 +253,16 @@ namespace Player.StateMachine
             }
 
             return MoveInput.magnitude;
+        }
+
+        public bool ConsumeJumpBuffer()
+        {
+            return jumpIntent.ConsumeBuffered();
+        }
+
+        public bool ConsumeAttackBuffer()
+        {
+            return attackIntent.ConsumeBuffered();
         }
 
         #endregion

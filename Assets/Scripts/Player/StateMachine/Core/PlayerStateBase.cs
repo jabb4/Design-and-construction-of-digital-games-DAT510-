@@ -1,5 +1,6 @@
 namespace Player.StateMachine
 {
+    using global::StateMachine.Core;
     using UnityEngine;
 
     /// <summary>
@@ -17,14 +18,24 @@ namespace Player.StateMachine
         protected PlayerStateMachine Owner { get; private set; }
 
         /// <summary>
+        /// Shared combat runtime context for this state instance.
+        /// </summary>
+        protected PlayerCombatStateContext Context { get; private set; }
+
+        /// <summary>
+        /// Shared actor context view used by reusable state-machine logic.
+        /// </summary>
+        protected IActorStateContext ActorContext => Context;
+
+        /// <summary>
+        /// Intent surface (player input or AI planner) for state logic.
+        /// </summary>
+        protected IIntentSource Intent => Context?.IntentSource;
+
+        /// <summary>
         /// Reference to the Animator component for animation control.
         /// </summary>
         protected Animator Animator { get; private set; }
-
-        /// <summary>
-        /// Reference to the PlayerInputHandler for reading player input.
-        /// </summary>
-        protected PlayerInputHandler Input { get; private set; }
 
         /// <summary>
         /// Reference to the CharacterMotor for physics and movement control.
@@ -95,6 +106,14 @@ namespace Player.StateMachine
         /// </summary>
         public virtual string StateName => GetType().Name;
 
+        protected Vector2 MoveIntent => Intent != null ? Intent.MoveIntent : Vector2.zero;
+        protected bool HasMoveIntent => Intent != null && Intent.HasMoveIntent;
+        protected bool SprintHeld => Intent != null && Intent.SprintHeld;
+        protected bool BlockHeld => Intent != null && Intent.BlockHeld;
+        protected bool JumpPressed => Intent != null && Intent.JumpPressed;
+        protected bool JumpBuffered => Intent != null && Intent.JumpBuffered;
+        protected bool AttackPressed => Intent != null && Intent.AttackPressed;
+
         #endregion
 
         #region Initialization
@@ -104,16 +123,13 @@ namespace Player.StateMachine
         /// Called by the state machine when the state is created.
         /// </summary>
         /// <param name="stateMachine">The state machine that owns this state.</param>
-        /// <param name="animator">The animator component for animation control.</param>
-        /// <param name="inputHandler">The input handler for reading player input.</param>
-        /// <param name="motor">The character motor for physics and movement.</param>
-        public void Initialize(PlayerStateMachine stateMachine, Animator animator,
-                               PlayerInputHandler inputHandler, CharacterMotor motor)
+        /// <param name="context">Shared combat runtime context.</param>
+        public void Initialize(PlayerStateMachine stateMachine, PlayerCombatStateContext context)
         {
             Owner = stateMachine;
-            Animator = animator;
-            Input = inputHandler;
-            Motor = motor;
+            Context = context;
+            Animator = context?.Animator;
+            Motor = context?.Motor;
         }
 
         #endregion
@@ -148,8 +164,8 @@ namespace Player.StateMachine
         /// Checks for state transitions and returns the next state if a transition should occur.
         /// Must be implemented by concrete state classes.
         /// </summary>
-        /// <returns>The next state to transition to, or null to remain in this state.</returns>
-        public abstract IState CheckTransitions();
+        /// <returns>The transition decision for this frame.</returns>
+        public abstract TransitionDecision EvaluateTransition();
 
         #endregion
 
@@ -360,8 +376,8 @@ namespace Player.StateMachine
         protected Vector2 UpdateBlendTreeParameters(Vector2 currentVelocity, ref Vector2 velocityRef, float smoothTime, bool lockOn)
         {
             Vector2 targetVelocity = lockOn
-                ? Input.MoveInput
-                : new Vector2(0f, Input.MoveInput.magnitude);
+                ? MoveIntent
+                : new Vector2(0f, MoveIntent.magnitude);
 
             Vector2 smoothed = Vector2.SmoothDamp(currentVelocity, targetVelocity, ref velocityRef, smoothTime);
 
@@ -384,12 +400,12 @@ namespace Player.StateMachine
                 return;
             }
 
-            if (requireMovementInput && !Input.HasMovementInput)
+            if (requireMovementInput && !HasMoveIntent)
             {
                 return;
             }
 
-            Motor.RotateTowardsMovement(Input.MoveInput);
+            Motor.RotateTowardsMovement(MoveIntent);
         }
 
         #endregion

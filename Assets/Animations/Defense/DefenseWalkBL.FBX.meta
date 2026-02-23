@@ -1,11 +1,11 @@
 fileFormatVersion: 2
 guid: 377199899d32d444c91957521ce107f6
 ModelImporter:
-  serializedVersion: 22103
+  serializedVersion: 22200
   internalIDToNameTable:
   - first:
       74: 8993902097722301239
-    second: DefenseWalkBL
+    second: DefenseLWalkBL
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -19,8 +19,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -36,7 +34,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: DefenseWalkBL
+      name: DefenseLWalkBL
       takeName: DefenseWalkBL
       internalID: 0
       firstFrame: 0
@@ -72,6 +70,7 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
+    importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1

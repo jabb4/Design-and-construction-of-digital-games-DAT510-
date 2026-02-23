@@ -1,8 +1,10 @@
 namespace Player.StateMachine.States
 {
+    using Player.StateMachine.Transitions;
+    using global::StateMachine.Core;
     using UnityEngine;
 
-    public class IdleState : PlayerStateBase
+    public class IdleState : GroundedStateBase
     {
         public override void OnEnter()
         {
@@ -48,47 +50,20 @@ namespace Player.StateMachine.States
             }
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
-            if (!Motor.IsGrounded)
+            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
+            if (airborneTransition.HasTransition)
             {
-                return Owner.GetState<JumpLoopState>();
+                return airborneTransition;
             }
 
-            if (Input.IsAttackPressed && Motor.IsGrounded)
+            if (TryGetCommonGroundedTransition(out TransitionDecision decision))
             {
-                if (!Owner.IsEquipped)
-                {
-                    Owner.RequestEquip();
-                    return null;
-                }
-
-                var attackState = Owner.GetState<AttackState>();
-                attackState.SetComboIndex(0);
-                return attackState;
+                return decision;
             }
 
-            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
-            {
-                return Owner.GetState<BlockingState>();
-            }
-
-            if (Input.IsJumpPressed && Motor.IsGrounded)
-            {
-                return Owner.GetState<JumpStartState>();
-            }
-
-            if (Input.MoveInput.sqrMagnitude > 0.01f)
-            {
-                if (Input.IsSprinting)
-                {
-                    return Owner.GetState<SprintState>();
-                }
-
-                return Owner.GetState<WalkingState>();
-            }
-
-            return null;
+            return GroundedTransitionEvaluator.ToLocomotion(Owner, HasMoveIntent, SprintHeld);
         }
 
     }

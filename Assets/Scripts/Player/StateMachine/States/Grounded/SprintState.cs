@@ -1,8 +1,10 @@
 namespace Player.StateMachine.States
 {
+    using Player.StateMachine.Transitions;
+    using global::StateMachine.Core;
     using UnityEngine;
 
-    public class SprintState : PlayerStateBase
+    public class SprintState : GroundedStateBase
     {
         private WeightedLocomotion locomotion;
         private Vector2 smoothVelocity;
@@ -40,7 +42,7 @@ namespace Player.StateMachine.States
 
         public override void OnUpdate()
         {
-            locomotion.Update(Input.HasMovementInput && Input.IsSprinting);
+            locomotion.Update(HasMoveIntent && SprintHeld);
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
         }
 
@@ -58,61 +60,38 @@ namespace Player.StateMachine.States
             }
             else
             {
-                Motor.Move(Input.MoveInput, useSprint: true);
+                Motor.Move(MoveIntent, useSprint: true);
             }
 
             RotateWithContext(requireMovementInput: true);
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
-            if (Input.IsAttackPressed && Motor.IsGrounded)
+            if (TryGetCommonGroundedTransition(out TransitionDecision decision))
             {
-                if (!Owner.IsEquipped)
-                {
-                    Owner.RequestEquip();
-                    return null;
-                }
-
-                var attackState = Owner.GetState<AttackState>();
-                attackState.SetComboIndex(0);
-                return attackState;
+                return decision;
             }
 
-            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
+            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
+            if (airborneTransition.HasTransition)
             {
-                return Owner.GetState<BlockingState>();
+                return airborneTransition;
             }
 
-            if (Input.IsJumpPressed && Motor.IsGrounded)
+            TransitionDecision walkTransition = GroundedTransitionEvaluator.ToWalkFromSprint(Owner, HasMoveIntent, SprintHeld);
+            if (walkTransition.HasTransition)
             {
-                return Owner.GetState<JumpStartState>();
-            }
-
-            if (!Motor.IsGrounded)
-            {
-                return Owner.GetState<JumpLoopState>();
-            }
-
-            if (!Input.IsSprinting && Input.HasMovementInput)
-            {
-                return Owner.GetState<WalkingState>();
+                return walkTransition;
             }
 
             if (locomotion.CurrentPhase == WeightedLocomotion.Phase.Stop &&
                 locomotion.IsStopComplete())
             {
-                if (Input.HasMovementInput)
-                {
-                    return Input.IsSprinting
-                        ? Owner.GetState<SprintState>()
-                        : Owner.GetState<WalkingState>();
-                }
-
-                return Owner.GetState<IdleState>();
+                return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
             }
 
-            return null;
+            return TransitionDecision.None;
         }
 
         public override void OnExit()

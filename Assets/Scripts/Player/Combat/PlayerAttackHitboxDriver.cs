@@ -1,6 +1,7 @@
 using UnityEngine;
 using Combat;
 using Player.StateMachine;
+using global::StateMachine.Core;
 
 namespace Player.Combat
 {
@@ -85,7 +86,8 @@ namespace Player.Combat
 
             if (stateMachine.CurrentAttackStep.HasValue)
             {
-                hitbox.BeginAttack(stateMachine.CurrentAttackStep.Value);
+                AttackData attack = AttackDataMapper.ToAttackData(stateMachine.CurrentAttackStep.Value);
+                hitbox.BeginAttack(attack);
             }
             else
             {

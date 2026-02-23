@@ -1,8 +1,10 @@
 namespace Player.StateMachine.States
 {
+    using Player.StateMachine.Transitions;
+    using global::StateMachine.Core;
     using UnityEngine;
 
-    public class WalkingState : PlayerStateBase
+    public class WalkingState : GroundedStateBase
     {
         private WeightedLocomotion locomotion;
         private Vector2 smoothVelocity;
@@ -27,7 +29,7 @@ namespace Player.StateMachine.States
             if (isLockedOn || !isEquipped)
             {
                 locomotion.ForceLoop();
-                smoothVelocity = isLockedOn ? Input.MoveInput : Vector2.zero;
+                smoothVelocity = isLockedOn ? MoveIntent : Vector2.zero;
             }
             else
             {
@@ -45,7 +47,8 @@ namespace Player.StateMachine.States
         {
             if (!isEquipped)
             {
-                return "Walk Start";
+                // Unequipped walking starts directly in loop (ForceLoop in OnEnter).
+                return "Walk Locomotion";
             }
 
             if (!isLockedOn)
@@ -53,7 +56,7 @@ namespace Player.StateMachine.States
                 return "Walk Start F";
             }
 
-            Vector2 input = Input.MoveInput;
+            Vector2 input = MoveIntent;
             if (Mathf.Abs(input.x) > Mathf.Abs(input.y))
             {
                 return input.x > 0 ? "Walk Start R" : "Walk Start L";
@@ -89,7 +92,7 @@ namespace Player.StateMachine.States
 
         public override void OnUpdate()
         {
-            locomotion.Update(Input.HasMovementInput);
+            locomotion.Update(HasMoveIntent);
             smoothVelocity = UpdateBlendTreeParameters(smoothVelocity, ref velocityRef, SMOOTH_TIME, Motor.IsLockedOn);
         }
 
@@ -101,65 +104,42 @@ namespace Player.StateMachine.States
                 return;
             }
 
-            Motor.Move(Input.MoveInput, useSprint: false);
+            Motor.Move(MoveIntent, useSprint: false);
 
             RotateWithContext();
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
-            if (Input.IsAttackPressed && Motor.IsGrounded)
+            if (TryGetCommonGroundedTransition(out TransitionDecision decision))
             {
-                if (!Owner.IsEquipped)
-                {
-                    Owner.RequestEquip();
-                    return null;
-                }
-
-                var attackState = Owner.GetState<AttackState>();
-                attackState.SetComboIndex(0);
-                return attackState;
+                return decision;
             }
 
-            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
+            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
+            if (airborneTransition.HasTransition)
             {
-                return Owner.GetState<BlockingState>();
+                return airborneTransition;
             }
 
-            if (Input.IsJumpPressed && Motor.IsGrounded)
+            TransitionDecision sprintTransition = GroundedTransitionEvaluator.ToSprintFromGrounded(Owner, HasMoveIntent, SprintHeld);
+            if (sprintTransition.HasTransition)
             {
-                return Owner.GetState<JumpStartState>();
-            }
-
-            if (!Motor.IsGrounded)
-            {
-                return Owner.GetState<JumpLoopState>();
-            }
-
-            if (Input.IsSprinting && Input.HasMovementInput)
-            {
-                return Owner.GetState<SprintState>();
+                return sprintTransition;
             }
 
             if (locomotion.CurrentPhase == WeightedLocomotion.Phase.Stop &&
                 locomotion.IsStopComplete())
             {
-                if (Input.HasMovementInput)
-                {
-                    return Input.IsSprinting
-                        ? Owner.GetState<SprintState>()
-                        : Owner.GetState<WalkingState>();
-                }
-
-                return Owner.GetState<IdleState>();
+                return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
             }
 
-            if (!Input.HasMovementInput && locomotion.IsLooping)
+            if (!HasMoveIntent && locomotion.IsLooping)
             {
                 locomotion.RequestStop();
             }
 
-            return null;
+            return TransitionDecision.None;
         }
 
         public override void OnExit()
