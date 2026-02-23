@@ -24,12 +24,16 @@ public class EnemyWaveSystem : MonoBehaviour
     [SerializeField] private int enemyIncreaseAmount = 1;
     [Tooltip("Time in seconds to wait between waves.")]
     [SerializeField] private float timeBetweenWaves = 30f;
+    [Tooltip("Sound to play when new wave spawns")]
+    [SerializeField] private AudioClip waveSpawnSound;
 
     private List<GameObject> activeEnemies = new List<GameObject>();
     private int currentWave = 0;
+    private AudioSource audioSource;
 
     private void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         StartCoroutine(WaveRoutine());
     }
 
@@ -94,6 +98,11 @@ public class EnemyWaveSystem : MonoBehaviour
                 activeEnemies.Add(enemy);
             }
         }
+        
+        if (audioSource != null && waveSpawnSound != null)
+        {
+            audioSource.PlayOneShot(waveSpawnSound);
+        } else Debug.LogWarning("No spawn sound is being played. Make sure you have added an audio clip and source.");
 
         Debug.Log("Enemy wave spawned!");
     }
