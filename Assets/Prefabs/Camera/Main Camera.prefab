@@ -181,7 +181,7 @@ MonoBehaviour:
   targetPointTransformName: spine_03
   retargetOnInvalid: 1
   enableLockOnDebugLogs: 0
-  indicatorPositionSmoothing: 50
+  indicatorPositionSmoothing: 0
   indicatorBloomIntensity: 1.5
   indicatorBloomScale: 3
   indicatorBloomPulseAmplitude: 0.25
