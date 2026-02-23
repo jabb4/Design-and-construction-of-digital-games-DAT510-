@@ -22,14 +22,15 @@ MonoBehaviour:
   parryWindowDuration: 0.2
   parryThreatMemoryDuration: 0.5
   parryTriggerRange: 3
+  parryExchangeRefreshSeconds: 2
   counterPrepDelay: 0.35
-  attackTokenCooldownBase: 0.25
+  attackTokenCooldownBase: 3
   attackTokenCooldownPerExtraEnemy: 0.2
   sameAttackerReentryDelay: 1.1
-  groupAwarenessRadius: 8
-  engageRange: 7
-  orbitRadius: 6
-  supportOrbitExtraRadius: 2
+  groupAwarenessRadius: 30
+  engageRange: 8
+  orbitRadius: 7
+  supportOrbitExtraRadius: 10
   supportOrbitExtraRadiusPerEnemy: 0.5
-  supportDistanceFromPriorityEnemy: 3
+  supportDistanceFromPriorityEnemy: 10
   attackRange: 1.6
