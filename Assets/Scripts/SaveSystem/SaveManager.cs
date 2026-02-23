@@ -10,6 +10,7 @@ public class SaveManager : MonoBehaviour
     public SaveManager ()
     {
         gameData = new Data();
+        LoadGameData();
     }
 
 
@@ -21,6 +22,26 @@ public class SaveManager : MonoBehaviour
         }
 
         gameData.currency = currency;
+    }
+
+    public void SetFuelAmount(int fuel)
+    {
+        if (gameData == null)
+        {
+            gameData = new Data();
+        }
+
+        gameData.fuelAmount = fuel;
+    }
+
+    public void SetMaxFuelAmount(int maxFuel)
+    {
+        if (gameData == null)
+        {
+            gameData = new Data();
+        }
+
+        gameData.maxFuelAmount = maxFuel;
     }
 
 
@@ -65,14 +86,16 @@ public class SaveManager : MonoBehaviour
     public class Data
     {
         public int currency;
+        public int fuelAmount;
+        public int maxFuelAmount;
+
         //TODO A list of player upgrades. Unsure of exactly how the upgrades work at this time
         //     Maybe just the sword upgrade if no others are implemented.
 
-        
-        
-        
+
+
+
         //TODO Van storage (if implemented)
-        //TODO Van fuel amount (if implemented)
         //TODO List of Van upgrades
     }
 }
