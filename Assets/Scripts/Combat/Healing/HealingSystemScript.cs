@@ -5,10 +5,11 @@ namespace Combat
     public class HealingSystemScript : MonoBehaviour
     {
         public HealthComponent playerHealth;
-        public ItemUiController uiController;
 
         [SerializeField]
         private int amountBandages;
+        public static event System.Action<int> OnBandagesChanged;
+
         [SerializeField]
         private int healAmount;
 
@@ -23,8 +24,6 @@ namespace Combat
         {
             if (healTime <= healDelay) healTime += Time.deltaTime;
 
-            uiController.SetItemAmount(amountBandages);
-
             if (InputSystem.actions.FindAction("Player/Heal").IsPressed()){
                 UseBandage();
             }
@@ -36,7 +35,9 @@ namespace Combat
             if (amountBandages < 1) return;
 
             healTime = 0;
-            amountBandages--;
+
+            DecreaseBandages(1);
+            OnBandagesChanged?.Invoke(amountBandages);
 
             playerHealth.Heal(healAmount);
 
@@ -45,9 +46,25 @@ namespace Combat
         {
             if (other.tag == "Bandage")
             {
-                amountBandages++;
+                IncreaseBandages(1);
+
                 Destroy(other.gameObject);
             }
+        }
+        void IncreaseBandages(int amuont)
+        {
+            amountBandages += amountBandages;
+            OnBandagesChanged?.Invoke(amountBandages);
+        }
+        void DecreaseBandages(int amount)
+        {
+            amountBandages -= amountBandages;
+            OnBandagesChanged?.Invoke(amountBandages);
+        }
+        void SetBandages(int amount)
+        {
+            amountBandages = amount;
+            OnBandagesChanged?.Invoke(amountBandages);
         }
         
     }
