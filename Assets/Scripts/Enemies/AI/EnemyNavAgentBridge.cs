@@ -29,6 +29,9 @@ namespace Enemies.AI
         private float orbitRadius = 2.75f;
         private float targetOrbitRadius = 2.75f;
         private float orbitAngleDegrees;
+        private float orbitAngleOffset;
+        private float angularSpeedJitter;
+        private float orbitDirectionSign;
         private float orbitPathRequestTimer;
         private bool impulsePauseActive;
         private bool restoreUpdatePositionAfterImpulse = true;
@@ -51,6 +54,13 @@ namespace Enemies.AI
             orbitAngularSpeedDegrees = Mathf.Max(5f, orbitAngularSpeedDegrees);
             orbitDestinationTolerance = Mathf.Max(0.1f, orbitDestinationTolerance);
             ResolveReferences();
+        }
+
+        private void OnEnable()
+        {
+            orbitAngleOffset = Random.Range(0f, 360f);
+            angularSpeedJitter = Random.Range(0.8f, 1.2f);
+            orbitDirectionSign = Random.value > 0.5f ? 1f : -1f;
         }
 
         private void OnDisable()
@@ -143,8 +153,9 @@ namespace Enemies.AI
             orbitRadius = Mathf.MoveTowards(orbitRadius, targetOrbitRadius, OrbitRadiusSmoothSpeed * Time.deltaTime);
 
             Vector3 center = target.position;
-            orbitAngleDegrees += orbitAngularSpeedDegrees * Time.deltaTime;
-            float radians = orbitAngleDegrees * Mathf.Deg2Rad;
+            orbitAngleDegrees += orbitDirectionSign * orbitAngularSpeedDegrees * angularSpeedJitter * Time.deltaTime;
+            float effectiveAngle = orbitAngleDegrees + orbitAngleOffset;
+            float radians = effectiveAngle * Mathf.Deg2Rad;
             Vector3 candidate = center + new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians)) * orbitRadius;
 
             float distanceToCandidate = Vector3.Distance(transform.position, candidate);

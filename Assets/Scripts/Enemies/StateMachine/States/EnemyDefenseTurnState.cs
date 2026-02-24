@@ -22,6 +22,7 @@ namespace Enemies.StateMachine.States
         private bool handoffTokenToAttackTurn;
         private bool latchedSupportRing;
         private float supportRingLatchUntil;
+        private float orbitRadiusJitter;
 
         public int RequiredParries => requiredParries;
         public float DefenseTimeRemainingSeconds => Mathf.Max(0f, defenseUntilAt - Time.time);
@@ -46,6 +47,7 @@ namespace Enemies.StateMachine.States
             handoffTokenToAttackTurn = false;
             latchedSupportRing = false;
             supportRingLatchUntil = float.NegativeInfinity;
+            orbitRadiusJitter = Random.Range(-0.35f, 0.35f);
 
             if (Enemy != null)
             {
@@ -239,6 +241,8 @@ namespace Enemies.StateMachine.States
                 float minSeparationFromFrontliner = Profile != null ? Profile.SupportDistanceFromPriorityEnemy : 2.25f;
                 orbitRadius = Mathf.Max(orbitRadius, frontlinerDistanceToTarget + Mathf.Max(0f, minSeparationFromFrontliner));
             }
+
+            orbitRadius += orbitRadiusJitter;
 
             float engageRange = Mathf.Max(Owner.EngageRange, orbitRadius + 0.5f);
             float pursueStopDistance = useSupportRing ? Mathf.Max(Owner.AttackRange, orbitRadius) : Owner.AttackRange;
