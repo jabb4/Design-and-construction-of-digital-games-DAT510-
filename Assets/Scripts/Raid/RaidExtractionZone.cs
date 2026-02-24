@@ -86,7 +86,7 @@ public class RaidExtractionZone : MonoBehaviour
             yield return extractionUI.FadeToBlack();
         }
 
-        SaveManager.Instance.SaveGameData();
+        // Save data before exiting raid?? With GameStateManager?
         SceneManager.LoadScene(targetSceneIndex);
     }
 }
