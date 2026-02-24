@@ -317,6 +317,7 @@ public class CameraController : MonoBehaviour
         ExcludeLayerByName(ref resolvedMask, "Hurtbox");
         ExcludeLayerByName(ref resolvedMask, "UI");
         ExcludeLayerByName(ref resolvedMask, "Ignore Raycast");
+        ExcludeLayerByName(ref resolvedMask, "Ragdoll");
         return resolvedMask;
     }
 
