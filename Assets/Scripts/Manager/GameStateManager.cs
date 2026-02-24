@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class GameStateManager : MonoBehaviour
 {
@@ -7,6 +8,8 @@ public class GameStateManager : MonoBehaviour
     public int currency;
     public int fuelAmount;
     public int maxFuelAmount;
+
+    public static event Action<int> OnCurrencyChanged;
 
     private void Awake()
     {
@@ -19,6 +22,8 @@ public class GameStateManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        LoadGameState();
     }
 
     public int GetCurrency()
@@ -29,16 +34,19 @@ public class GameStateManager : MonoBehaviour
     public void SetCurrency(int value)
     {
         currency = value;
+        OnCurrencyChanged?.Invoke(currency);
     }
 
     public void AddCurrency(int amount)
     {
         currency += amount;
+        OnCurrencyChanged?.Invoke(currency);
     }
 
     public void RemoveCurrency(int amount)
     {
         currency -= amount;
+        OnCurrencyChanged?.Invoke(currency);
     }
 
     public int GetFuelAmount()
@@ -97,6 +105,8 @@ public class GameStateManager : MonoBehaviour
             currency = SaveManager.Instance.GetCurrency();
             fuelAmount = SaveManager.Instance.GetFuelAmount();
             maxFuelAmount = SaveManager.Instance.GetMaxFuelAmount();
+
+            OnCurrencyChanged?.Invoke(currency);
         }
     }
 }

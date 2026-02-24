@@ -10,13 +10,25 @@ public class MoneyUiController : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI moneyText;
 
-    public float moneyAmount;
+    public int moneyAmount;
 
-    public void SetMoneyAmount(float MoneyAmount)
+    private void OnEnable()
     {
-        moneyAmount = MoneyAmount;
+        GameStateManager.OnCurrencyChanged += UpdateCurrencyDisplay;
 
-        moneyText.text = (moneyAmount.ToString() + " $");
+        if (GameStateManager.Instance != null) {
+            UpdateCurrencyDisplay(GameStateManager.Instance.GetCurrency());
+        }
+    }
+
+    private void OnDisable()
+    {
+        GameStateManager.OnCurrencyChanged -= UpdateCurrencyDisplay;
+    }
+
+    public void UpdateCurrencyDisplay(int newAmount)
+    {
+        moneyText.text = (newAmount.ToString() + " $");
     }
     
 
