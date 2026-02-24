@@ -2343,8 +2343,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2db7d142b9cbf679083f80364e5fde9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  currentHealth: 100
+  maxHealth: 30
+  currentHealth: 30
   initializeCurrentToMaxOnAwake: 1
 --- !u!114 &5832811830406196893
 MonoBehaviour:
@@ -2398,10 +2398,12 @@ MonoBehaviour:
   fullHitVfx: {fileID: 0}
   blockedVfx: {fileID: 0}
   parriedVfx: {fileID: 0}
+  endParryVfx: {fileID: 0}
   ignoredSfx: {fileID: 0}
   fullHitSfx: {fileID: 0}
   blockedSfx: {fileID: 0}
   parriedSfx: {fileID: 0}
+  endParrySfx: {fileID: 0}
 --- !u!114 &844221109955667789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2460,6 +2462,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   combatProfile: {fileID: 11400000, guid: 57cf64c5cada4398900d238f05d68c32, type: 2}
   targetRefreshIntervalSeconds: 0.2
+  locomotionSmoothingSeconds: 0.08
+  movingSpeedThreshold: 0.05
 --- !u!114 &4001000000000000013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2524,7 +2528,6 @@ MonoBehaviour:
   animator: {fileID: 2038420169931308288}
   enemy: {fileID: 5832811830406196893}
   stateMachine: {fileID: 4001000000000000012}
-  comboDirectionResolver: {fileID: 0}
 --- !u!114 &4001000000000000018
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2537,16 +2540,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d916b6e34bb440389bd422552c659fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visibleOnStart: 1
+  visibleOnStart: 0
   toggleKey: 25
   worldOffset: 0.35
   textRefreshInterval: 0.1
   fontSize: 16
   maxLabelWidth: 260
   screenPixelOffset: {x: 0, y: -8}
-  labelScale: 0.1
   textColor: {r: 1, g: 1, b: 1, a: 1}
   backgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
+  labelScale: 0.1
 --- !u!1 &6883821836884234579
 GameObject:
   m_ObjectHideFlags: 0

@@ -23,6 +23,7 @@ namespace Enemies.AI
         [SerializeField, Min(0.01f)] private float parryWindowDuration = 0.2f;
         [SerializeField, Min(0f)] private float parryThreatMemoryDuration = 0.15f;
         [SerializeField, Min(0.1f)] private float parryTriggerRange = 3f;
+        [SerializeField, Min(0.1f)] private float parryExchangeRefreshSeconds = 2f;
         [SerializeField, Min(0f)]
         [Tooltip("Delay after the final defensive parry before transitioning into attack turn.")]
         private float counterPrepDelay = 0.35f;
@@ -49,6 +50,7 @@ namespace Enemies.AI
         public float ParryWindowDuration => parryWindowDuration;
         public float ParryThreatMemoryDuration => parryThreatMemoryDuration;
         public float ParryTriggerRange => parryTriggerRange;
+        public float ParryExchangeRefreshSeconds => parryExchangeRefreshSeconds;
         public float CounterPrepDelay => counterPrepDelay;
         public float AttackTokenCooldownBase => attackTokenCooldownBase;
         public float AttackTokenCooldownPerExtraEnemy => attackTokenCooldownPerExtraEnemy;
@@ -72,6 +74,7 @@ namespace Enemies.AI
             parryWindowDuration = Mathf.Max(0.01f, parryWindowDuration);
             parryThreatMemoryDuration = Mathf.Max(0f, parryThreatMemoryDuration);
             parryTriggerRange = Mathf.Max(0.1f, parryTriggerRange);
+            parryExchangeRefreshSeconds = Mathf.Max(0.1f, parryExchangeRefreshSeconds);
             counterPrepDelay = Mathf.Max(0f, counterPrepDelay);
             attackTokenCooldownBase = Mathf.Max(0f, attackTokenCooldownBase);
             attackTokenCooldownPerExtraEnemy = Mathf.Max(0f, attackTokenCooldownPerExtraEnemy);
