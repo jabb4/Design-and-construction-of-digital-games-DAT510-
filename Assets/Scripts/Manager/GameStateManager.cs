@@ -24,7 +24,10 @@ public class GameStateManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
 
+    private void Start()
+    {
         LoadGameState();
     }
 
@@ -47,7 +50,7 @@ public class GameStateManager : MonoBehaviour
 
     public void RemoveCurrency(int amount)
     {
-        currency -= amount;
+        currency = Mathf.Max(0, currency - amount);
         OnCurrencyChanged?.Invoke(currency);
     }
 
@@ -82,22 +85,40 @@ public class GameStateManager : MonoBehaviour
     public void SetMaxFuelAmount(int value)
     {
         maxFuelAmount = value;
+        int oldFuel = fuelAmount;
         fuelAmount = Mathf.Min(fuelAmount, maxFuelAmount);
         OnMaxFuelChanged?.Invoke(maxFuelAmount);
+
+        if (oldFuel != fuelAmount)
+        {
+            OnFuelChanged?.Invoke(fuelAmount);
+        }
     }
 
     public void AddMaxFuelAmount(int value)
     {
         maxFuelAmount += value;
+        int oldFuel = fuelAmount;
         fuelAmount = Mathf.Min(fuelAmount, maxFuelAmount);
         OnMaxFuelChanged?.Invoke(maxFuelAmount);
+
+        if (oldFuel != fuelAmount)
+        {
+            OnFuelChanged?.Invoke(fuelAmount);
+        }
     }
 
     public void RemoveMaxFuelAmount(int value)
     {
         maxFuelAmount -= value;
+        int oldFuel = fuelAmount;
         fuelAmount = Mathf.Min(fuelAmount, maxFuelAmount);
         OnMaxFuelChanged?.Invoke(maxFuelAmount);
+
+        if (oldFuel != fuelAmount)
+        {
+            OnFuelChanged?.Invoke(fuelAmount);
+        }
     }
 
     public void SaveGameState()
