@@ -6,11 +6,7 @@ using TMPro;
 
 public class MoneyUiController : MonoBehaviour
 {
-
-    [SerializeField]
-    private TextMeshProUGUI moneyText;
-
-    public int moneyAmount;
+    [SerializeField] private TextMeshProUGUI moneyText;
 
     private void OnEnable()
     {
