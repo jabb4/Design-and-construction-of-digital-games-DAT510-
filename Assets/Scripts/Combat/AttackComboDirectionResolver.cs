@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Combat
 {
     /// <summary>
-    /// Resolves attack direction hints from one or more combo assets by attack animation id.
+    /// Resolves attack direction hints from one or more combo assets by stable attack id.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class AttackComboDirectionResolver : MonoBehaviour
@@ -77,7 +77,8 @@ namespace Combat
             for (int i = 0; i < steps.Length; i++)
             {
                 AttackStep step = steps[i];
-                if (!string.Equals(step.AnimationStateName, attackId, StringComparison.Ordinal))
+                string stepAttackId = step.ResolveAttackId();
+                if (!string.Equals(stepAttackId, attackId, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -131,7 +132,8 @@ namespace Combat
                 for (int stepIndex = 0; stepIndex < steps.Length; stepIndex++)
                 {
                     AttackStep step = steps[stepIndex];
-                    if (string.IsNullOrWhiteSpace(step.AnimationStateName))
+                    string attackId = step.ResolveAttackId();
+                    if (string.IsNullOrWhiteSpace(attackId))
                     {
                         continue;
                     }
@@ -142,7 +144,7 @@ namespace Combat
                         continue;
                     }
 
-                    directionByAttackId[step.AnimationStateName] = hint;
+                    directionByAttackId[attackId] = hint;
                 }
             }
         }

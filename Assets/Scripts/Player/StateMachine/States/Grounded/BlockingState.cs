@@ -1,5 +1,6 @@
 namespace Player.StateMachine
 {
+    using global::StateMachine.Core;
     using UnityEngine;
 
     public sealed class BlockingState : PlayerStateBase
@@ -20,7 +21,7 @@ namespace Player.StateMachine
                 CrossFade(Owner.GetDefenseIdleStateName(activeGuardSide), 0.1f);
             }
 
-            Animator.SetBool(IsMovingHash, Input.HasMovementInput);
+            Animator.SetBool(IsMovingHash, HasMoveIntent);
             Animator.SetBool(IsSprintingHash, false);
 
             smoothVelocity = Vector2.zero;
@@ -33,7 +34,7 @@ namespace Player.StateMachine
             {
                 if (IsAnimationComplete(0.95f))
                 {
-                    if (Input.HasMovementInput)
+                    if (HasMoveIntent)
                     {
                         Owner.ChangeState(Owner.GetState<States.WalkingState>());
                     }
@@ -73,20 +74,20 @@ namespace Player.StateMachine
                 return;
             }
 
-            Motor.Move(Input.MoveInput, useSprint: false);
+            Motor.Move(MoveIntent, useSprint: false);
             RotateWithContext(requireMovementInput: true);
         }
 
-        public override IState CheckTransitions()
+        public override TransitionDecision EvaluateTransition()
         {
             if (!Owner.IsEquipped)
             {
-                return Owner.GetState<States.IdleState>();
+                return TransitionDecision.To(Owner.GetState<States.IdleState>(), TransitionReason.StandardFlow);
             }
 
             if (Owner.IsDefenseReactionActive &&
                 Owner.IsDefenseAttackUnlocked &&
-                Input.IsAttackPressed &&
+                AttackPressed &&
                 Motor.IsGrounded)
             {
                 // Allow earlier attack cancel after successful defense,
@@ -95,14 +96,14 @@ namespace Player.StateMachine
 
                 States.AttackState attackState = Owner.GetState<States.AttackState>();
                 attackState.SetComboIndex(0);
-                return attackState;
+                return TransitionDecision.To(attackState, TransitionReason.RecoveryInterrupt, priority: TransitionPriorities.RecoveryInterrupt);
             }
 
-            if (!Input.IsBlocking)
+            if (!BlockHeld)
             {
                 if (Owner.IsDefenseReactionActive)
                 {
-                    return null;
+                    return TransitionDecision.None;
                 }
 
                 if (!isExiting)
@@ -112,7 +113,7 @@ namespace Player.StateMachine
                     CrossFade(Owner.GetDefenseExitStateName(activeGuardSide), 0.1f);
                 }
 
-                return null;
+                return TransitionDecision.None;
             }
 
             if (isExiting && !Owner.IsDefenseReactionActive)
@@ -122,17 +123,17 @@ namespace Player.StateMachine
                 CrossFade(Owner.GetDefenseEnterStateName(activeGuardSide), 0.1f);
             }
 
-            if (Input.IsJumpPressed && Motor.IsGrounded)
+            if (JumpPressed && Motor.IsGrounded)
             {
-                return null;
+                return TransitionDecision.None;
             }
 
-            if (Input.IsSprinting && Input.HasMovementInput)
+            if (SprintHeld && HasMoveIntent)
             {
-                return null;
+                return TransitionDecision.None;
             }
 
-            return null;
+            return TransitionDecision.None;
         }
     }
 }

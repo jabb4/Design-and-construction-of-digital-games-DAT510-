@@ -10,6 +10,7 @@ namespace Player.StateMachine
 
         [Header("Weapon Settings")]
         [SerializeField] private float unequipDelay = 10f;
+        [SerializeField, Min(0f)] private float blockRequestBufferAfterPress = 0.6f;
 
         [SerializeField]
         [Tooltip("Optional fallback timeout (seconds) if transition animation never completes. Set to 0 to disable.")]
@@ -19,6 +20,7 @@ namespace Player.StateMachine
         public bool IsTransitioningWeapon { get; private set; }
 
         private float unequipTimer = -1f;
+        private float bufferedBlockRequestUntil = float.NegativeInfinity;
         private bool hasPendingUnequipRequest;
         private bool requestedEquipWhilePending;
         private bool pendingEquipRequest;
@@ -102,13 +104,13 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (Input != null && Input.IsBlocking && Motor != null && Motor.IsGrounded)
+            if (WantsGuard() && Motor != null && Motor.IsGrounded)
             {
                 ChangeState(GetState<BlockingState>());
             }
-            else if (Input != null && Input.HasMovementInput)
+            else if (HasMoveIntent)
             {
-                ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
+                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
@@ -139,9 +141,9 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (Input != null && Input.HasMovementInput)
+            if (HasMoveIntent)
             {
-                ChangeState(Input.IsSprinting ? GetState<SprintState>() : GetState<WalkingState>());
+                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
@@ -163,8 +165,14 @@ namespace Player.StateMachine
             bool isGrounded = Motor != null && Motor.IsGrounded;
             bool canBlock = isGrounded;
             bool isAttacking = CurrentState is AttackState;
-            bool wantsEquip = isLockedOn || (Input != null && Input.IsBlocking && canBlock) || isAttacking;
-            bool isSprinting = Input != null && Input.IsSprinting;
+            if (IntentSource != null && IntentSource.BlockPressed && canBlock)
+            {
+                bufferedBlockRequestUntil = Time.time + blockRequestBufferAfterPress;
+            }
+
+            bool wantsGuard = WantsGuard() && canBlock;
+            bool wantsEquip = isLockedOn || wantsGuard || isAttacking;
+            bool isSprinting = SprintHeld;
             bool isLanding = CurrentState is JumpEndState;
             bool canUnequipNow = Motor != null && Motor.IsGrounded && !isSprinting && !isLanding;
 
@@ -219,6 +227,11 @@ namespace Player.StateMachine
             }
 
             CheckWeaponTransitionCompletion();
+        }
+
+        private bool WantsGuard()
+        {
+            return BlockHeld || Time.time <= bufferedBlockRequestUntil;
         }
 
         private void BeginEquipTransition()

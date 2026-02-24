@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 352b15d50486c43728ea8c213dd25d13, type: 3}
+  m_Name: EnemyCombatProfile_Default
+  m_EditorClassIdentifier: 
+  sharedCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
+  minAttackChain: 2
+  maxAttackChain: 5
+  minParriesBeforeCounter: 1
+  maxParriesBeforeCounter: 5
+  minDefenseDuration: 3
+  maxDefenseDuration: 10
+  parryWindowDuration: 0.2
+  parryThreatMemoryDuration: 0.5
+  parryTriggerRange: 3
+  parryExchangeRefreshSeconds: 2
+  counterPrepDelay: 0.35
+  attackTokenCooldownBase: 3
+  attackTokenCooldownPerExtraEnemy: 0.2
+  sameAttackerReentryDelay: 1
+  groupAwarenessRadius: 20
+  engageRange: 15
+  orbitRadius: 7.5
+  supportOrbitExtraRadius: 10
+  supportOrbitExtraRadiusPerEnemy: 0.5
+  supportDistanceFromPriorityEnemy: 10
+  attackRange: 1.5

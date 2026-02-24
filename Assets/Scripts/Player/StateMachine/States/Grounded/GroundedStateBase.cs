@@ -1,6 +1,7 @@
 namespace Player.StateMachine.States
 {
     using Player.StateMachine;
+    using global::StateMachine.Core;
 
     public abstract class GroundedStateBase : PlayerStateBase
     {
@@ -8,36 +9,36 @@ namespace Player.StateMachine.States
         /// Handles shared grounded transition checks for attack, block and jump.
         /// Returns true when a decision has been made (including "stay in current state").
         /// </summary>
-        protected bool TryGetCommonGroundedTransition(out IState nextState)
+        protected bool TryGetCommonGroundedTransition(out TransitionDecision decision)
         {
-            if (Input.IsAttackPressed && Motor.IsGrounded)
+            if (AttackPressed && Motor.IsGrounded)
             {
                 if (!Owner.IsEquipped)
                 {
                     Owner.RequestEquip();
-                    nextState = null;
+                    decision = TransitionDecision.None;
                     return true;
                 }
 
                 AttackState attackState = Owner.GetState<AttackState>();
                 attackState.SetComboIndex(0);
-                nextState = attackState;
+                decision = TransitionDecision.To(attackState, TransitionReason.InputAttack, priority: TransitionPriorities.InputPrimary);
                 return true;
             }
 
-            if (Input.IsBlocking && Owner.IsEquipped && Motor.IsGrounded)
+            if (BlockHeld && Owner.IsEquipped && Motor.IsGrounded)
             {
-                nextState = Owner.GetState<BlockingState>();
+                decision = TransitionDecision.To(Owner.GetState<BlockingState>(), TransitionReason.InputBlock, priority: TransitionPriorities.InputSecondary);
                 return true;
             }
 
-            if (Input.IsJumpPressed && Motor.IsGrounded)
+            if (JumpPressed && Motor.IsGrounded)
             {
-                nextState = Owner.GetState<JumpStartState>();
+                decision = TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputSecondary);
                 return true;
             }
 
-            nextState = null;
+            decision = TransitionDecision.None;
             return false;
         }
     }

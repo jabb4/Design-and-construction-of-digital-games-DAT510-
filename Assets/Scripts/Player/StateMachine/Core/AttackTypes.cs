@@ -21,9 +21,15 @@ namespace Player.StateMachine
     [Serializable]
     public struct AttackStep
     {
+        public string AttackId;
         public string AnimationStateName;
         public AttackPoseDirection EndPose;
         public float Damage;
+
+        public string ResolveAttackId()
+        {
+            return string.IsNullOrWhiteSpace(AttackId) ? AnimationStateName : AttackId;
+        }
     }
 
     public interface IAttackPhaseListener
