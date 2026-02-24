@@ -621,7 +621,7 @@ namespace Enemies.StateMachine
             IntentSource?.ClearAllIntents();
             NavBridge?.Stop();
             Enemy?.CloseParryWindow();
-            EnemyAttackTokenService.Release(this);
+            EnemyAttackTokenService.ReleaseAll(this);
             ClearCurrentAttack();
 
             currentTarget = null;

@@ -38,6 +38,7 @@ namespace Enemies.AI
 
         private const float OrbitPathRequestInterval = 0.15f;
         private const float OrbitRadiusSmoothSpeed = 4f;
+        private const float OffMeshRecoveryMaxDistance = 3f;
 
         public Vector3 CurrentVelocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
         public Vector3 DesiredVelocity => navMeshAgent != null ? navMeshAgent.desiredVelocity : Vector3.zero;
@@ -76,13 +77,14 @@ namespace Enemies.AI
 
         private void Update()
         {
-            if (navMeshAgent == null)
+            if (navMeshAgent == null || !navMeshAgent.isActiveAndEnabled || !navMeshAgent.enabled)
             {
                 return;
             }
 
-            if (!IsAgentReadyForCommands())
+            if (!navMeshAgent.isOnNavMesh)
             {
+                TryRecoverOffMeshAgent();
                 return;
             }
 
@@ -265,6 +267,19 @@ namespace Enemies.AI
                    navMeshAgent.isOnNavMesh;
         }
 
+        private void TryRecoverOffMeshAgent()
+        {
+            if (navMeshAgent == null || !navMeshAgent.isActiveAndEnabled)
+            {
+                return;
+            }
+
+            if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, OffMeshRecoveryMaxDistance, NavMesh.AllAreas))
+            {
+                navMeshAgent.Warp(hit.position);
+            }
+        }
+
         private void RestoreAgentPositionSyncIfNeeded()
         {
             if (!impulsePauseActive || navMeshAgent == null || !navMeshAgent.enabled)
@@ -274,7 +289,15 @@ namespace Enemies.AI
 
             if (restoreUpdatePositionAfterImpulse)
             {
-                navMeshAgent.nextPosition = transform.position;
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, OffMeshRecoveryMaxDistance, NavMesh.AllAreas))
+                {
+                    navMeshAgent.Warp(hit.position);
+                }
+                else
+                {
+                    navMeshAgent.nextPosition = transform.position;
+                }
+
                 navMeshAgent.updatePosition = true;
             }
 
