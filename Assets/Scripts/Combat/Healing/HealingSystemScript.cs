@@ -21,7 +21,8 @@ namespace Combat
         // Time until bandage can be used again
         [SerializeField]
         private float healDelay = 3;
-        private float healTime;
+        [SerializeField]
+        private float healTime = 0;
 
         // Update is called once per frame
         void Update()
@@ -54,15 +55,15 @@ namespace Combat
                 Destroy(other.gameObject);
             }
         }
-        void IncreaseBandages(int amuont)
+        void IncreaseBandages(int amount)
         {
-            amountBandages += amountBandages;
+            amountBandages += amount;
             Math.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }
         void DecreaseBandages(int amount)
         {
-            amountBandages -= amountBandages;
+            amountBandages -= amount;
             Math.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }

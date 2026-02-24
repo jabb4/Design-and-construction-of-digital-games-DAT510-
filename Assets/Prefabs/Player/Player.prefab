@@ -976,9 +976,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerHealth: {fileID: 690294675353372127}
-  amountBandages: 3
+  maxBandages: 5
+  amountBandages: 5
   healAmount: 10
   healDelay: 3
+  healTime: 0
 --- !u!1 &1618196678623144074
 GameObject:
   m_ObjectHideFlags: 0
