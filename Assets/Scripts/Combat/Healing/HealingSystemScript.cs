@@ -48,7 +48,7 @@ namespace Combat
         }
         void OnTriggerEnter(Collider other)
         {
-            if (other.tag == "Bandage")
+            if (other.CompareTag("Bandage"))
             {
                 IncreaseBandages(1);
 
@@ -58,19 +58,19 @@ namespace Combat
         void IncreaseBandages(int amount)
         {
             amountBandages += amount;
-            Math.Clamp(amountBandages, 0, maxBandages);
+            amountBandages = Mathf.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }
         void DecreaseBandages(int amount)
         {
             amountBandages -= amount;
-            Math.Clamp(amountBandages, 0, maxBandages);
+            amountBandages = Mathf.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }
         void SetBandages(int amount)
         {
             amountBandages = amount;
-            Math.Clamp(amountBandages, 0, maxBandages);
+            amountBandages = Mathf.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }
         
