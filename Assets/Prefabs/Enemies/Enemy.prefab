@@ -2397,7 +2397,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0
+  m_BaseOffset: -0.075
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!114 &5908862388057485691
@@ -2502,6 +2502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bf417c2f9b74f4b8cde71347ccfe4f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  suppressAirtimeWhenGrounded: 1
   characterMotor: {fileID: 0}
   fallbackRigidbody: {fileID: 7443819372610488867}
 --- !u!114 &4001000000000000011
