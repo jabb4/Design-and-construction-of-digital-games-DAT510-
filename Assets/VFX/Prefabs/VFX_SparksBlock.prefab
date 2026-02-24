@@ -4903,7 +4903,7 @@ GameObject:
   - component: {fileID: 2448172917383529169}
   - component: {fileID: 5762270562323044273}
   m_Layer: 0
-  m_Name: VFX_SparkBlock
+  m_Name: VFX_SparksBlock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -226,7 +226,8 @@ namespace Player.Combat
                 Resolution = resolution,
                 Defender = this,
                 DefenderPushDirection = pushDirection,
-                HitPoint = hit.HitPoint
+                HitPoint = hit.HitPoint,
+                HitNormal = hit.HitNormal
             };
 
             for (int i = 0; i < outcomeFeedbackHooks.Count; i++)

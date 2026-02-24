@@ -44,10 +44,6 @@ namespace Combat
 
         private void OnValidate()
         {
-            blockedPushDistance = Mathf.Max(0f, blockedPushDistance);
-            blockedPushDuration = Mathf.Max(0.01f, blockedPushDuration);
-            parriedPushDistance = Mathf.Max(0f, parriedPushDistance);
-            parriedPushDuration = Mathf.Max(0.01f, parriedPushDuration);
             ResolveOptionalReferences(allowRuntimeCreate: false);
         }
 
@@ -68,7 +64,7 @@ namespace Combat
                     OnIgnored?.Invoke(context);
                     break;
                 case DamageOutcome.FullHit:
-                    TriggerVisualAndAudio(fullHitVfx, fullHitSfx);
+                    TriggerVisualAndAudioAtPoint(fullHitVfx, fullHitSfx, context.HitPoint, context.HitNormal);
                     OnFullHit?.Invoke(context);
                     break;
                 case DamageOutcome.Blocked:
@@ -94,6 +90,23 @@ namespace Combat
         {
             if (vfx != null)
             {
+                vfx.Play(true);
+            }
+
+            if (audioSource != null && clip != null)
+            {
+                audioSource.PlayOneShot(clip);
+            }
+        }
+
+        private void TriggerVisualAndAudioAtPoint(ParticleSystem vfx, AudioClip clip, Vector3 worldPos, Vector3 hitNormal = default)
+        {
+            if (vfx != null)
+            {
+                vfx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                vfx.transform.position = worldPos;
+                if (hitNormal != Vector3.zero)
+                    vfx.transform.rotation = Quaternion.LookRotation(hitNormal);
                 vfx.Play(true);
             }
 

@@ -126,12 +126,15 @@ namespace Combat
 
             float damage = currentAttack?.Damage ?? 0f;
             Vector3 hitPoint = other.ClosestPoint(transform.position);
+            Vector3 hitNormal = (hitPoint - transform.position).normalized;
+            if (hitNormal == Vector3.zero) hitNormal = Vector3.forward;
             var hit = new AttackHitInfo
             {
                 Damage = damage,
                 Attacker = owner,
                 Attack = currentAttack,
-                HitPoint = hitPoint
+                HitPoint = hitPoint,
+                HitNormal = hitNormal
             };
 
             hurtOwner.ReceiveHit(hit);

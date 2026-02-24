@@ -287,6 +287,7 @@ public class Enemy : MonoBehaviour, ICombatant
             Defender = this,
             DefenderPushDirection = pushDirection,
             HitPoint = hit.HitPoint,
+            HitNormal = hit.HitNormal,
             IsEndParry = isEndParry
         };
 
