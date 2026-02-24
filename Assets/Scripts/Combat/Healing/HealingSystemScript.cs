@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace Combat
@@ -6,6 +7,9 @@ namespace Combat
     {
         public HealthComponent playerHealth;
 
+
+        [SerializeField]
+        private int maxBandages;
         [SerializeField]
         private int amountBandages;
         public static event System.Action<int> OnBandagesChanged;
@@ -53,16 +57,19 @@ namespace Combat
         void IncreaseBandages(int amuont)
         {
             amountBandages += amountBandages;
+            Math.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }
         void DecreaseBandages(int amount)
         {
             amountBandages -= amountBandages;
+            Math.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }
         void SetBandages(int amount)
         {
             amountBandages = amount;
+            Math.Clamp(amountBandages, 0, maxBandages);
             OnBandagesChanged?.Invoke(amountBandages);
         }
         
