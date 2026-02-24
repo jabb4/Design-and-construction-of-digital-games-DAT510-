@@ -79,6 +79,8 @@ namespace Enemies.StateMachine
         private float nextTargetRefreshAt = float.NegativeInfinity;
         private int cachedNearbyEnemyCount = 1;
         private float cachedNearbyEnemyRadius = -1f;
+        private float nextNearbyEnemyRefreshAt = float.NegativeInfinity;
+        private const float nearbyEnemyRefreshInterval = 0.2f;
         private Vector2 smoothedLocalVelocity;
         private Vector2 smoothedLocalVelocityRef;
 
@@ -321,9 +323,11 @@ namespace Enemies.StateMachine
             }
 
             float clampedRadius = Mathf.Max(0.1f, radius);
-            if (Mathf.Abs(cachedNearbyEnemyRadius - clampedRadius) > 0.01f)
+            if (Mathf.Abs(cachedNearbyEnemyRadius - clampedRadius) > 0.01f
+                || Time.time >= nextNearbyEnemyRefreshAt)
             {
                 RefreshNearbyEnemyCount(clampedRadius);
+                nextNearbyEnemyRefreshAt = Time.time + nearbyEnemyRefreshInterval;
             }
 
             return Mathf.Max(1, cachedNearbyEnemyCount);
@@ -625,6 +629,7 @@ namespace Enemies.StateMachine
             nextTargetRefreshAt = float.NegativeInfinity;
             cachedNearbyEnemyCount = 1;
             cachedNearbyEnemyRadius = -1f;
+            nextNearbyEnemyRefreshAt = float.NegativeInfinity;
             smoothedLocalVelocity = Vector2.zero;
             smoothedLocalVelocityRef = Vector2.zero;
         }

@@ -27,12 +27,14 @@ namespace Enemies.AI
         private Transform target;
         private float stoppingDistance = 1.8f;
         private float orbitRadius = 2.75f;
+        private float targetOrbitRadius = 2.75f;
         private float orbitAngleDegrees;
         private float orbitPathRequestTimer;
         private bool impulsePauseActive;
         private bool restoreUpdatePositionAfterImpulse = true;
 
         private const float OrbitPathRequestInterval = 0.15f;
+        private const float OrbitRadiusSmoothSpeed = 4f;
 
         public Vector3 CurrentVelocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
         public Vector3 DesiredVelocity => navMeshAgent != null ? navMeshAgent.desiredVelocity : Vector3.zero;
@@ -110,7 +112,7 @@ namespace Enemies.AI
         {
             target = orbitTarget;
             mode = target == null ? MoveMode.Stopped : MoveMode.Orbit;
-            orbitRadius = Mathf.Max(0.1f, desiredRadius);
+            targetOrbitRadius = Mathf.Max(0.1f, desiredRadius);
         }
 
         public void Stop()
@@ -137,6 +139,8 @@ namespace Enemies.AI
             {
                 return;
             }
+
+            orbitRadius = Mathf.MoveTowards(orbitRadius, targetOrbitRadius, OrbitRadiusSmoothSpeed * Time.deltaTime);
 
             Vector3 center = target.position;
             orbitAngleDegrees += orbitAngularSpeedDegrees * Time.deltaTime;

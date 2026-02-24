@@ -8,6 +8,7 @@ namespace Enemies.StateMachine.States
     public sealed class EnemyDefenseTurnState : EnemyStateBase
     {
         private const float FocusPriorityDurationSeconds = 1.25f;
+        private const float SupportRingHysteresisSeconds = 0.5f;
 
         private int requiredParries;
         private int successfulParries;
@@ -19,6 +20,8 @@ namespace Enemies.StateMachine.States
         private bool counterQueued;
         private bool hasPriorityToken;
         private bool handoffTokenToAttackTurn;
+        private bool latchedSupportRing;
+        private float supportRingLatchUntil;
 
         public int RequiredParries => requiredParries;
         public float DefenseTimeRemainingSeconds => Mathf.Max(0f, defenseUntilAt - Time.time);
@@ -41,6 +44,8 @@ namespace Enemies.StateMachine.States
             lastParryThreatAt = float.NegativeInfinity;
             hasPriorityToken = false;
             handoffTokenToAttackTurn = false;
+            latchedSupportRing = false;
+            supportRingLatchUntil = float.NegativeInfinity;
 
             if (Enemy != null)
             {
@@ -210,7 +215,20 @@ namespace Enemies.StateMachine.States
 
             int nearbyEnemyCount = Owner.GetNearbyEnemyCount(Profile != null ? Profile.GroupAwarenessRadius : 8f);
             bool isFrontliner = EnemyAttackTokenService.IsHolder(Owner) || EnemyAttackTokenService.IsPriorityOwner(Owner);
-            bool useSupportRing = nearbyEnemyCount > 1 && !isFrontliner;
+            bool ongoingFight = !isFrontliner && EnemyAttackTokenService.IsHeldByOther(Owner);
+            bool wantsSupportRing = (nearbyEnemyCount > 1 || ongoingFight) && !isFrontliner;
+
+            if (wantsSupportRing && !latchedSupportRing)
+            {
+                latchedSupportRing = true;
+                supportRingLatchUntil = Time.time + SupportRingHysteresisSeconds;
+            }
+            else if (!wantsSupportRing && latchedSupportRing && Time.time >= supportRingLatchUntil)
+            {
+                latchedSupportRing = false;
+            }
+
+            bool useSupportRing = latchedSupportRing;
             float orbitRadius = useSupportRing
                 ? Owner.ComputeSupportOrbitRadiusForCurrentGroup()
                 : (Profile != null ? Profile.OrbitRadius : 2.75f);
