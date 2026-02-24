@@ -60,8 +60,16 @@ public class CameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float lockBreakDistance = 35f;
     [SerializeField, Min(0f)] private float lineOfSightGraceSeconds = 0.5f;
     [SerializeField, Min(0f)] private float targetPointHeightOffset = 1.2f;
+    [SerializeField] private string targetPointTransformName = "clavicle_l";
     [SerializeField] private bool retargetOnInvalid = true;
     [SerializeField] private bool enableLockOnDebugLogs;
+
+    [Header("Lock-On Indicator")]
+    [SerializeField, Min(0f)] private float indicatorPositionSmoothing = 18f;
+    [SerializeField, Min(0f)] private float indicatorBloomIntensity = 3f;
+    [SerializeField, Min(1f)] private float indicatorBloomScale = 2.25f;
+    [SerializeField, Min(0f)] private float indicatorBloomPulseAmplitude = 0.1f;
+    [SerializeField, Min(0f)] private float indicatorBloomPulseSpeed = 8f;
 
     private Camera cam;
     private CameraOrbitRig cameraOrbitRig;
@@ -77,6 +85,11 @@ public class CameraController : MonoBehaviour
 
     private void Awake()
     {
+        if (string.IsNullOrWhiteSpace(targetPointTransformName))
+        {
+            targetPointTransformName = "clavicle_l";
+        }
+
         cam = GetComponent<Camera>();
         cam.fieldOfView = fieldOfView;
 
@@ -99,7 +112,14 @@ public class CameraController : MonoBehaviour
         lockOnInputRouter = new LockOnInputRouter(targetSwitchCooldown);
         lockOnInputRouter.ToggleLockRequested += HandleToggleLockRequested;
 
-        lockOnIndicatorPresenter = new LockOnIndicatorPresenter(cam, targetPointHeightOffset, enableLockOnDebugLogs);
+        lockOnIndicatorPresenter = new LockOnIndicatorPresenter(
+            cam,
+            indicatorPositionSmoothing,
+            indicatorBloomIntensity,
+            indicatorBloomScale,
+            indicatorBloomPulseAmplitude,
+            indicatorBloomPulseSpeed,
+            enableLockOnDebugLogs);
 
         InitializeLockOnGraph();
     }
@@ -148,8 +168,20 @@ public class CameraController : MonoBehaviour
                     lockOnSession.TrySwitchTarget(switchDirection);
                 }
 
-                cameraOrbitRig.UpdateLockOn(playerTransform, lockOnSession.LockedTarget, Time.deltaTime);
-                lockOnIndicatorPresenter?.Update(lockOnSession.LockedTarget, true);
+                Transform lockedTarget = lockOnSession.LockedTarget;
+                if (lockedTarget == null)
+                {
+                    lockOnIndicatorPresenter?.Hide();
+                    return;
+                }
+
+                Vector3 lockOnTargetPoint = TargetPointResolver.ResolveTargetPoint(
+                    lockedTarget,
+                    targetPointHeightOffset,
+                    targetPointTransformName);
+
+                cameraOrbitRig.UpdateLockOn(playerTransform, lockOnTargetPoint, Time.deltaTime);
+                lockOnIndicatorPresenter?.Update(lockOnTargetPoint, true, Time.deltaTime);
                 return;
             }
         }
@@ -202,6 +234,7 @@ public class CameraController : MonoBehaviour
             lockBreakDistance,
             lineOfSightGraceSeconds,
             targetPointHeightOffset,
+            targetPointTransformName,
             enableLockOnDebugLogs);
 
         lockedTargetBinding = new LockedTargetBinding();

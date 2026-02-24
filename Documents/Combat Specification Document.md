@@ -13,6 +13,17 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 3. **Simple systems, clear feedback:** Every combat interaction must have obvious visual/audio feedback to feel satisfying to the player.
 4. **Handle small enemy groups:** Too many enemies will overwhelm the player.
 
+#### Combat duel flow
+
+Enemy behaviour is a pressure exchange, not constant offense.
+
+- Defensive and offensive turns alternate in short cycles
+- Enemy parries some player attacks before taking initiative
+- An end-parry feedback acts as a clear momentum shift into counteroffense
+- Group pressure stays limited so 1v1 timing remains the core skill test
+
+This gives combat a "back and forth" exchange instead of one-sided pressure.
+
 ---
 
 ## Core Feature Set
@@ -30,11 +41,12 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 ### Enemy Mechanics
 
-| Feature    | Description                          |
-| ---------- | ------------------------------------ |
-| Attacks    | 3-4 melee attacks                    |
-| Telegraphs | Clear wind-up before each attack     |
-| Health     | Enemy can die if health reaches zero |
+| Feature    | Description                                                      |
+| ---------- | ---------------------------------------------------------------- |
+| Attacks    | Shared 5-step melee combo (same combo data source as the player) |
+| Telegraphs | Clear wind-up before each attack                                 |
+| Parry      | Parry-focused defense with end-parry momentum shift, no blocking |
+| Health     | Enemy can die if health reaches zero                             |
 
 ---
 
@@ -88,6 +100,7 @@ To make outcomes readable in moment-to-moment play, combat applies short horizon
 - Push direction is based on attacker-to-defender direction on the XZ plane
 - If attacker direction is unavailable, fallback uses defender backward direction
 - `Blocked` pushback is stronger than `Parried` pushback
+- End-parry uses the same pushback as parry, with distinct optional VFX/SFX
 
 This creates a clear physical response on successful defense and helps communicate outcome strength.
 
@@ -97,8 +110,14 @@ This creates a clear physical response on successful defense and helps communica
 - Applies a short forward horizontal impulse to the attacker
 - Uses current attack facing direction on the XZ plane
 - Intended as a slight commitment step to improve impact and spacing feel
+- Applied to both player and enemy attack phases through shared attack feedback hooks
 
 This keeps attack animations feeling connected to movement.
+
+#### Impulse tuning
+
+- Impulses use smooth horizontal velocity decay over their duration, then clear horizontal velocity
+- Enemy NavMesh movement is paused during active impulses and resumed afterward to preserve smooth lunge/pushback motion
 
 ---
 
@@ -123,18 +142,15 @@ Attack windows and eligibility checks are tied to animation events configured in
 
 #### Enemy States & Animations
 
-- **Idle:** Facing player
-  - **Walking:** Slow movement
-  - **Sprinting:** Fast movement
-- **Active:**
-  - **Attacking:** (with animation phases)
-    - **Wind-Up:** Telegraphing attack
-    - **Slash:** Active hit frames
-    - **Slow-down:** Brief pause after attack
-  - **Defensive:**
-    - **Pursuit:** Walking towards player
-    - **Orbiting:** Circling around player
-- **Dead:** Falls to the ground, disabled
+- **Idle:** Faces target, no attack/parry window
+- **Defensive Turn:**
+  - **Pursuit:** Move toward target until engagement distance
+  - **Orbit:** Circle target at orbit radius while maintaining facing
+  - **Parry Reactions:** Directional parry reaction clips
+- **Attack Turn:**
+  - Plays a sampled length of the shared combo attack chain
+  - Uses wind-up -> slash -> recovery attack phases from animation events
+- **Dead:** Combat flags close and the enemy object is disabled
 
 ### Player Specification
 
@@ -147,6 +163,8 @@ Attack windows and eligibility checks are tied to animation events configured in
   - **Slash 1:** Wind-Up → Slash → Slow-down
   - **Slash 2:** Wind-Up → Slash → Slow-down
   - **Slash 3:** Wind-Up → Slash → Slow-down
+  - **Slash 4:** Wind-Up → Slash → Slow-down
+  - **Slash 5:** Wind-Up → Slash → Slow-down
 - **Dead:** Falls to the ground, game over
 
 #### Player Attack Chain
@@ -155,9 +173,9 @@ The player attack system implements a combo chain using a state machine approach
 
 When the attack input is pressed while in Idle or certain movement states, transition to Slash 1. Each slash state follows a phased animation: Wind-Up (telegraph) → Slash (hit frames) → Slow-down (recovery).
 
-- If attack input is detected during the Slow-down phase of Slash 1, transition immediately to Slash 2, skipping the full return to Idle.
-- Similarly for Slash 2 → Slash 3.
-- After Slash 3's Slow-down, or if no input is received, transition back to Idle.
+- If attack input is detected during the Slow-down phase of Slash 1, transition immediately to Slash 2.
+- Similarly for Slash 2 → Slash 3, Slash 3 → Slash 4, and Slash 4 → Slash 5.
+- After Slash 5's Slow-down, or if no input is received, transition back to Idle.
 - Each subsequent slash starts from the pose at the end of the previous Slow-down, ensuring seamless visual flow without redundant animations.
 
 This allows for combos, with timing windows for inputs during recovery phases to maintain responsiveness.
@@ -266,49 +284,31 @@ When the window reaches `0.0s`, guard still blocks but no perfect parry is possi
 
 ### Enemy Behaviour
 
-Like our player controller, all state machine nodes extend from a common class, the Hierarchical Finite State Machine (HFSM). On ready, we check each node for children, and if they have children, the node is marked as a container. Every game tick, we check the top of the hierarchy, and if the node is a container we check conditions to determine which internal move is chosen. This is repeated indefinitely until a non-container node is selected. While we can run code in container nodes, the bulk of the behaviour is coded into the non-container. Here is a simplified hierarchy:
+Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defense Turn ...`) with dead-state override.
 
-- Active
-  - Attacking
-    - Combo series
-      - Attack 1
-      - Attack 2
-  - Defensive
-    - Pursuit
-    - Orbiting
+#### Defensive turn
 
-When choosing between the attacking or defensive container we can for example determine this by the distance to the player.
+- On entering defense, enemy samples:
+  - A defense duration from profile min/max
+  - A required number of successful parries before counter from profile min/max
+- During defense, enemy movement mode is distance-based:
+  - Pursue while outside engage range
+  - Orbit while inside engage range
+- Defensive turn keeps the enemy continuously parry-ready while it has a valid target.
+- Enemy defense is parry-only, no blocking.
+- Each successful parry increments a counter. On the final required parry:
+  - End-parry feedback is queued (distinct SFX/VFX variant)
+  - A configurable `counterPrepDelay` timer starts
+  - Enemy transitions into attack turn when that timer is ready
 
-While defensive, the enemy will either walk towards the player or orbit them depending on the distance between them. Upon entering the defensive hierarchy, the AI picks a random length of time from a range to stay defensive for:
+#### Attack turn
 
-```
-defence_timer = rand_range(min_def_time, max_def_time)
-```
-
-Once the timer finishes, we transition to the attacking hierarchy. When attacking, we could assign attack combos and special attacks. We can make these being chosen either randomly or if certain conditions are met. For example initiating a lunge attack that is a special attack at medium or long range (special attack container, sibling of combo series, if we have time).
-
-In the attack combo node when active it should choose a random number of attacks to do within a range:
-
-```
-attacks_to_do = rand_range(min_attacks, max_attacks)
-```
-
-We could choose which attack it starts on as the attack cycle can loop. On each node of the combo, we should determine which attack can follow the previous one, choosing randomly if more than one follow-up attack. It would be nice if any attack that ends with the sword on a certain side, can be followed up by an attack that starts with the sword on that same side the previous ended on.
-
-To make the combat a "back and forth" exchange, the enemy should be able to parry when the player is attacking. We should check the player's `is_attacking` variable that we can retrieve from the animations and check if it is true. If it is true, then we can tell the enemy to parry. In Sekiro, enemies will only parry a certain number of attacks before countering with their own. When the enemy shifts from defence to offense it should be apparent by a more pronounced parry that is more dramatic with a different sound effect and look. We should set a random range of attacks to parry:
-
-```
-will_parry_amount = rand_range(min_parries, max_parries)
-```
-
-Every time the enemy parries an attack, we decrement this variable, and if it is `1` we transition to the end parry state, that is that dramatic parry mentioned before. After exiting this state, the enemy then immediately transitions into attacking.
-
-Defensive nodes (Pursuit or Orbiting) and Attack nodes (Combos) should evaluate player states during each game tick. For instance:
-
-- If `player.is_attacking == true`, transition to Parry.
-- After executing an end parry, transition directly to the Combo series for counterattacks.
-
-This setup should mean that when we attack the enemy, they will parry for a certain amount of times before firing back with their own attacks that we need to parry ourselves.
+- On entering attack turn, enemy closes parry window and remains does not parry for the whole attack turn.
+- Enemy acquires a global attack token before starting attacks so group pressure stays controlled (one active attacker at a time).
+- Enemy samples a combo chain length from profile min/max.
+- Range is required only to start the combo chain.
+- Once the first attack starts, the combo is committed and enemy finishes the sampled chain even if target distance changes.
+- After chain completion, enemy transitions back to defensive turn.
 
 ---
 
@@ -357,5 +357,5 @@ The combat system is successful if:
 ## Optional features if we have time
 
 - Heavy attacks that knocks the player back
-- Parry system with posture damage and breaking mechanics
 - Posture system for enemies and players
+  - Parry system with posture damage and stance breaking mechanics

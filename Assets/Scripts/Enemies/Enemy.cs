@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using Combat;
@@ -7,7 +8,7 @@ using Combat;
 public class Enemy : MonoBehaviour, ICombatant
 {
     [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
-    [SerializeField] private bool disableGameObjectOnDeath = true;
+    [SerializeField] private bool destroyGameObjectOnDeath = true;
 
     private HealthComponent health;
     private CombatFlagsComponent flags;
@@ -15,9 +16,15 @@ public class Enemy : MonoBehaviour, ICombatant
     private global::Combat.CombatHorizontalImpulseDriver impulseDriver;
     private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
+    private bool endParryOutcomeQueued;
+
+    public event Action<AttackHitInfo, DamageResolution> OnDamageResolved;
+    public event Action<AttackHitInfo> OnParriedAttack;
 
     public CombatTeam Team => CombatTeam.Enemy;
     public bool IsVulnerable => flags != null && flags.IsVulnerable;
+    public bool IsAlive => health == null || !health.IsDead;
+    public bool IsParryWindowActive => flags != null && flags.IsParryWindowActive;
     public bool IsAttacking
     {
         get => flags != null && flags.IsAttacking;
@@ -71,8 +78,26 @@ public class Enemy : MonoBehaviour, ICombatant
             return;
         }
 
+        // Enemy defense is parry-only; blocking is never valid.
+        if (flags != null)
+        {
+            flags.IsBlocking = false;
+        }
+
         DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
-        DispatchOutcomeFeedback(hit, resolution);
+        OnDamageResolved?.Invoke(hit, resolution);
+        bool isEndParry = false;
+        if (resolution.Outcome == DamageOutcome.Parried)
+        {
+            OnParriedAttack?.Invoke(hit);
+            isEndParry = ConsumeQueuedEndParryOutcome();
+        }
+        else
+        {
+            endParryOutcomeQueued = false;
+        }
+
+        DispatchOutcomeFeedback(hit, resolution, isEndParry);
 
         if (resolution.Outcome == DamageOutcome.Ignored)
         {
@@ -81,6 +106,27 @@ public class Enemy : MonoBehaviour, ICombatant
 
         health.ApplyDamage(resolution.AppliedDamage);
         SyncCombatFlags();
+    }
+
+    public void OpenParryWindow(float durationSeconds)
+    {
+        if (flags == null || !IsAlive)
+        {
+            return;
+        }
+
+        flags.IsBlocking = false;
+        flags.OpenParryWindow(durationSeconds);
+    }
+
+    public void CloseParryWindow()
+    {
+        flags?.CloseParryWindow();
+    }
+
+    public void QueueEndParryOutcomeFeedback()
+    {
+        endParryOutcomeQueued = true;
     }
 
     private void OnDestroy()
@@ -93,11 +139,13 @@ public class Enemy : MonoBehaviour, ICombatant
 
     private void HandleDied()
     {
+        CloseParryWindow();
+        endParryOutcomeQueued = false;
         SyncCombatFlags();
 
-        if (disableGameObjectOnDeath)
+        if (destroyGameObjectOnDeath)
         {
-            gameObject.SetActive(false);
+            Destroy(gameObject);
         }
     }
 
@@ -115,6 +163,8 @@ public class Enemy : MonoBehaviour, ICombatant
         if (!isAlive)
         {
             flags.IsAttacking = false;
+            flags.CloseParryWindow();
+            endParryOutcomeQueued = false;
         }
     }
 
@@ -222,7 +272,7 @@ public class Enemy : MonoBehaviour, ICombatant
         GetComponents(outcomeFeedbackHooks);
     }
 
-    private void DispatchOutcomeFeedback(AttackHitInfo hit, DamageResolution resolution)
+    private void DispatchOutcomeFeedback(AttackHitInfo hit, DamageResolution resolution, bool isEndParry)
     {
         if (outcomeFeedbackHooks.Count == 0)
         {
@@ -236,7 +286,8 @@ public class Enemy : MonoBehaviour, ICombatant
             Resolution = resolution,
             Defender = this,
             DefenderPushDirection = pushDirection,
-            HitPoint = hit.HitPoint
+            HitPoint = hit.HitPoint,
+            IsEndParry = isEndParry
         };
 
         for (int i = 0; i < outcomeFeedbackHooks.Count; i++)
@@ -272,5 +323,12 @@ public class Enemy : MonoBehaviour, ICombatant
         }
 
         return Vector3.forward;
+    }
+
+    private bool ConsumeQueuedEndParryOutcome()
+    {
+        bool queued = endParryOutcomeQueued;
+        endParryOutcomeQueued = false;
+        return queued;
     }
 }

@@ -2198,12 +2198,20 @@ GameObject:
   - component: {fileID: 2038420169931308288}
   - component: {fileID: 1331946697309384196}
   - component: {fileID: 7443819372610488867}
+  - component: {fileID: 4001000000000000017}
   - component: {fileID: 5908862388057485691}
   - component: {fileID: 5832811830406196893}
   - component: {fileID: 315235738487360374}
   - component: {fileID: 268441700114297531}
   - component: {fileID: 844221109955667789}
   - component: {fileID: 5732198460847952312}
+  - component: {fileID: 4001000000000000011}
+  - component: {fileID: 4001000000000000012}
+  - component: {fileID: 4001000000000000013}
+  - component: {fileID: 4001000000000000014}
+  - component: {fileID: 4001000000000000015}
+  - component: {fileID: 4001000000000000016}
+  - component: {fileID: 4001000000000000018}
   m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
@@ -2239,7 +2247,7 @@ Animator:
   m_GameObject: {fileID: 6880349450255457242}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: dee954a3a25ad4244bdd4fb3bc34c518, type: 3}
-  m_Controller: {fileID: 9100000, guid: 593b7e3a01cff418fba5fef2eb994e3c, type: 2}
+  m_Controller: {fileID: 9100000, guid: 2275cc601bd34eee9dbaed7676c633ba, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -2301,6 +2309,28 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 112
   m_CollisionDetection: 1
+--- !u!195 &4001000000000000017
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!114 &5908862388057485691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2313,8 +2343,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2db7d142b9cbf679083f80364e5fde9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  currentHealth: 100
+  maxHealth: 30
+  currentHealth: 30
   initializeCurrentToMaxOnAwake: 1
 --- !u!114 &5832811830406196893
 MonoBehaviour:
@@ -2368,10 +2398,12 @@ MonoBehaviour:
   fullHitVfx: {fileID: 0}
   blockedVfx: {fileID: 0}
   parriedVfx: {fileID: 0}
+  endParryVfx: {fileID: 0}
   ignoredSfx: {fileID: 0}
   fullHitSfx: {fileID: 0}
   blockedSfx: {fileID: 0}
   parriedSfx: {fileID: 0}
+  endParrySfx: {fileID: 0}
 --- !u!114 &844221109955667789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2385,8 +2417,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableSlashLunge: 1
-  lungeDistance: 0.55
-  lungeDuration: 0.14
+  lungeDistance: 0.75
+  lungeDuration: 0.12
   lungeEndSpeedFraction: 0.2
   impulseDriver: {fileID: 5732198460847952312}
 --- !u!114 &5732198460847952312
@@ -2403,6 +2435,121 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterMotor: {fileID: 0}
   fallbackRigidbody: {fileID: 7443819372610488867}
+--- !u!114 &4001000000000000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f74fb97132e54ca9960081470e26c474, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveThreshold: 0.1
+--- !u!114 &4001000000000000012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09e50da581584a7192a69b4fe7470e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  combatProfile: {fileID: 11400000, guid: 57cf64c5cada4398900d238f05d68c32, type: 2}
+  targetRefreshIntervalSeconds: 0.2
+  locomotionSmoothingSeconds: 0.08
+  movingSpeedThreshold: 0.05
+--- !u!114 &4001000000000000013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79250e3170f3348da8c009f26d22716e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  navMeshAgent: {fileID: 4001000000000000017}
+  impulseDriver: {fileID: 5732198460847952312}
+  orbitAngularSpeedDegrees: 90
+  orbitDestinationTolerance: 0.25
+--- !u!114 &4001000000000000014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 549e32d88475546cd8e9196e9a191bab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateMachine: {fileID: 4001000000000000012}
+--- !u!114 &4001000000000000015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 955c4697a96b64283b1b389579abacdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateMachine: {fileID: 4001000000000000012}
+  combatant: {fileID: 5832811830406196893}
+  hitbox: {fileID: 8327949807240639356}
+  weaponBoneName: katana_r
+--- !u!114 &4001000000000000016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2659f650966704db38c1a45fdd8cca6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reactionCrossFadeDuration: 0.06
+  returnCrossFadeDuration: 0.08
+  reactionCompleteThreshold: 0.95
+  reactionTimeoutSeconds: 1.5
+  animator: {fileID: 2038420169931308288}
+  enemy: {fileID: 5832811830406196893}
+  stateMachine: {fileID: 4001000000000000012}
+--- !u!114 &4001000000000000018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d916b6e34bb440389bd422552c659fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibleOnStart: 0
+  toggleKey: 25
+  worldOffset: 0.35
+  textRefreshInterval: 0.1
+  fontSize: 16
+  maxLabelWidth: 260
+  screenPixelOffset: {x: 0, y: -8}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  backgroundColor: {r: 0, g: 0, b: 0, a: 0.65}
+  labelScale: 0.1
 --- !u!1 &6883821836884234579
 GameObject:
   m_ObjectHideFlags: 0
