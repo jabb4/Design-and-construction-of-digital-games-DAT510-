@@ -91,34 +91,15 @@ public sealed class CameraOrbitRig
         cameraTransform.rotation = Quaternion.Slerp(cameraTransform.rotation, desiredRotation, smoothingFactor);
     }
 
-    public void UpdateLockOn(Transform playerTransform, Vector3 lockedTargetPoint, float deltaTime)
+    public void UpdateLockOn(Transform playerTransform, Transform lockedTarget, float deltaTime)
     {
-        if (playerTransform == null)
+        if (playerTransform == null || lockedTarget == null)
         {
             return;
         }
 
-        Vector3 vectorToTarget = lockedTargetPoint - playerTransform.position;
-        if (vectorToTarget.sqrMagnitude <= 0.0001f)
-        {
-            return;
-        }
-
-        // Keep lock-on camera height stable by orbiting from planar (XZ) direction only.
-        Vector3 planarDirectionToTarget = Vector3.ProjectOnPlane(vectorToTarget, Vector3.up);
-        if (planarDirectionToTarget.sqrMagnitude <= 0.0001f)
-        {
-            planarDirectionToTarget = playerTransform.forward;
-        }
-
-        Vector3 directionToTarget = planarDirectionToTarget.normalized;
-        float followDistance = Mathf.Max(0.1f, Mathf.Abs(offset.z));
-        Vector3 right = Vector3.Cross(Vector3.up, directionToTarget).normalized;
-        Vector3 desiredCameraPosition =
-            playerTransform.position
-            - directionToTarget * followDistance
-            + right * offset.x
-            + Vector3.up * offset.y;
+        Vector3 directionToTarget = (lockedTarget.position - playerTransform.position).normalized;
+        Vector3 desiredCameraPosition = playerTransform.position - directionToTarget * offset.magnitude + Vector3.up * offset.y;
         Vector3 playerAimPoint = ResolvePlayerAimPoint(playerTransform);
         Vector3 resolvedPosition = collisionSolver.ResolvePosition(
             playerAimPoint,
@@ -136,7 +117,7 @@ public sealed class CameraOrbitRig
             smoothWhenColliding: false);
 
         Quaternion desiredCameraRotation = ResolveLookRotation(
-            lockedTargetPoint - resolvedPosition,
+            lockedTarget.position + Vector3.up - resolvedPosition,
             cameraTransform.rotation);
 
         float smoothingFactor = ComputeSmoothingFactor(lockOnCameraSmoothing, deltaTime);

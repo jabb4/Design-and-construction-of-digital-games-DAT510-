@@ -154,7 +154,7 @@ MonoBehaviour:
   offset: {x: 0, y: 3, z: -6}
   rotationSpeed: 1
   freeCameraSmoothing: 30
-  lockOnCameraSmoothing: 10
+  lockOnCameraSmoothing: 20
   minVerticalAngle: -25
   maxVerticalAngle: 50
   fieldOfView: 45
@@ -178,11 +178,5 @@ MonoBehaviour:
   lockBreakDistance: 35
   lineOfSightGraceSeconds: 0.5
   targetPointHeightOffset: 1.2
-  targetPointTransformName: spine_03
   retargetOnInvalid: 1
   enableLockOnDebugLogs: 0
-  indicatorPositionSmoothing: 0
-  indicatorBloomIntensity: 1.5
-  indicatorBloomScale: 3
-  indicatorBloomPulseAmplitude: 0.25
-  indicatorBloomPulseSpeed: 5

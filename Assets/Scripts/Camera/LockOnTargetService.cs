@@ -11,7 +11,6 @@ public sealed class LockOnTargetService
     private readonly float lockBreakDistance;
     private readonly float lineOfSightGraceSeconds;
     private readonly float targetPointHeightOffset;
-    private readonly string targetPointTransformName;
     private readonly bool enableDebugLogs;
 
     private readonly RaycastHit[] lineOfSightHits = new RaycastHit[16];
@@ -26,7 +25,6 @@ public sealed class LockOnTargetService
         float lockBreakDistance,
         float lineOfSightGraceSeconds,
         float targetPointHeightOffset,
-        string targetPointTransformName,
         bool enableDebugLogs)
     {
         this.playerTransform = playerTransform;
@@ -37,7 +35,6 @@ public sealed class LockOnTargetService
         this.lockBreakDistance = Mathf.Max(0f, lockBreakDistance);
         this.lineOfSightGraceSeconds = Mathf.Max(0f, lineOfSightGraceSeconds);
         this.targetPointHeightOffset = targetPointHeightOffset;
-        this.targetPointTransformName = targetPointTransformName;
         this.enableDebugLogs = enableDebugLogs;
     }
 
@@ -81,7 +78,7 @@ public sealed class LockOnTargetService
                 continue;
             }
 
-            Vector3 viewportPos = camera.WorldToViewportPoint(TargetPointResolver.ResolveTargetPoint(candidate, targetPointHeightOffset, targetPointTransformName));
+            Vector3 viewportPos = camera.WorldToViewportPoint(TargetPointResolver.ResolveTargetPoint(candidate, targetPointHeightOffset));
             if (!IsInViewport(viewportPos))
             {
                 continue;
@@ -116,7 +113,7 @@ public sealed class LockOnTargetService
             return null;
         }
 
-        Vector3 currentTargetViewport = camera.WorldToViewportPoint(TargetPointResolver.ResolveTargetPoint(currentTarget, targetPointHeightOffset, targetPointTransformName));
+        Vector3 currentTargetViewport = camera.WorldToViewportPoint(TargetPointResolver.ResolveTargetPoint(currentTarget, targetPointHeightOffset));
         Vector2 normalizedInput = inputDirection.normalized;
 
         Transform bestTarget = null;
@@ -135,7 +132,7 @@ public sealed class LockOnTargetService
                 continue;
             }
 
-            Vector3 viewportPos = camera.WorldToViewportPoint(TargetPointResolver.ResolveTargetPoint(candidate, targetPointHeightOffset, targetPointTransformName));
+            Vector3 viewportPos = camera.WorldToViewportPoint(TargetPointResolver.ResolveTargetPoint(candidate, targetPointHeightOffset));
             if (!IsInViewport(viewportPos))
             {
                 continue;
@@ -250,7 +247,7 @@ public sealed class LockOnTargetService
     private bool HasLineOfSight(Transform target)
     {
         Vector3 origin = camera.transform.position;
-        Vector3 aimPoint = TargetPointResolver.ResolveTargetPoint(target, targetPointHeightOffset, targetPointTransformName);
+        Vector3 aimPoint = TargetPointResolver.ResolveTargetPoint(target, targetPointHeightOffset);
         Vector3 direction = aimPoint - origin;
         float distance = direction.magnitude;
 

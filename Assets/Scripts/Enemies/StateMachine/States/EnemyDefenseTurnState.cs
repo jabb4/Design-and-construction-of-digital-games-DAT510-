@@ -13,7 +13,6 @@ namespace Enemies.StateMachine.States
         private int successfulParries;
         private float counterReadyAt;
         private float defenseUntilAt;
-        private float parryExchangeExpiresAt;
         private float lastParryThreatAt;
         private EnemyDefenseReactionAnimationDriver defenseReactionDriver;
         private bool counterQueued;
@@ -37,7 +36,6 @@ namespace Enemies.StateMachine.States
             counterReadyAt = float.PositiveInfinity;
             float sampledDefenseDuration = Owner != null ? Owner.SampleDefenseDurationSeconds() : 1.2f;
             defenseUntilAt = Time.time + sampledDefenseDuration;
-            parryExchangeExpiresAt = float.NegativeInfinity;
             lastParryThreatAt = float.NegativeInfinity;
             hasPriorityToken = false;
             handoffTokenToAttackTurn = false;
@@ -59,7 +57,6 @@ namespace Enemies.StateMachine.States
         public override void OnUpdate()
         {
             FaceTarget();
-            ResetPartialParryExchangeIfExpired();
             MaintainPriorityToken();
             UpdateMovementMode();
             MaintainThreatDrivenParryWindow();
@@ -87,8 +84,6 @@ namespace Enemies.StateMachine.States
 
         public override TransitionDecision EvaluateTransition()
         {
-            ResetPartialParryExchangeIfExpired();
-
             if (TryTransitionDead(out TransitionDecision deadTransition))
             {
                 return deadTransition;
@@ -162,13 +157,11 @@ namespace Enemies.StateMachine.States
             EnsurePriorityToken();
             if (successfulParries < requiredParries)
             {
-                RefreshParryExchangeTimeout();
                 return;
             }
 
             Enemy?.QueueEndParryOutcomeFeedback();
             counterQueued = true;
-            parryExchangeExpiresAt = float.PositiveInfinity;
             float prepDelay = Profile != null ? Profile.CounterPrepDelay : 0f;
             counterReadyAt = Time.time + Mathf.Max(0f, prepDelay);
         }
@@ -334,35 +327,6 @@ namespace Enemies.StateMachine.States
 
             hasPriorityToken = true;
             return true;
-        }
-
-        private void RefreshParryExchangeTimeout()
-        {
-            float refreshSeconds = Profile != null ? Profile.ParryExchangeRefreshSeconds : 2f;
-            parryExchangeExpiresAt = Time.time + Mathf.Max(0.1f, refreshSeconds);
-        }
-
-        private void ResetPartialParryExchangeIfExpired()
-        {
-            if (!IsParrySequenceInProgress())
-            {
-                return;
-            }
-
-            if (Time.time <= parryExchangeExpiresAt)
-            {
-                return;
-            }
-
-            successfulParries = 0;
-            parryExchangeExpiresAt = float.NegativeInfinity;
-
-            if (hasPriorityToken && EnemyAttackTokenService.IsHolder(Owner) && !handoffTokenToAttackTurn)
-            {
-                EnemyAttackTokenService.Release(Owner);
-            }
-
-            hasPriorityToken = false;
         }
 
         private bool TryGetCurrentFrontliner(out EnemyStateMachine frontliner)
