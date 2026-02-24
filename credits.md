@@ -15,6 +15,7 @@
 - Wind in trees - [nicotep](https://freesound.org/people/nicotep/sounds/843926/)
 - Car motor - [enric592](https://freesound.org/people/enric592/sounds/185743/)
 - Gong Gong - [juskiddink](https://freesound.org/people/juskiddink/sounds/122681/)
+- Car starting - [giddster](https://freesound.org/people/giddster/sounds/437352/)
 
 ### Music
 - Main menu music - [Kike Gutz](https://www.freepik.com/audio/tune/taiko-flame-call)
