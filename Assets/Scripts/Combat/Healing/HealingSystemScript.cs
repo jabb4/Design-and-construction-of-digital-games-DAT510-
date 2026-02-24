@@ -37,7 +37,6 @@ namespace Combat
             healTime = 0;
 
             DecreaseBandages(1);
-            OnBandagesChanged?.Invoke(amountBandages);
 
             playerHealth.Heal(healAmount);
 
