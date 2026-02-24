@@ -318,16 +318,16 @@ With this timing-based combat every action must have immediate, clear responses 
 
 | Event                   | Visual                              | Audio                        |
 | ----------------------- | ----------------------------------- | ---------------------------- |
-| **Player Light Attack** | Sword slash                         | Whoosh                       |
+| **Player Light Attack** | Sword slash trail                   | Whoosh                       |
 | **Enemy Attack**        | Wind-up animation                   | Whoosh                       |
-| **Block**               | Shield shimmer, no damage flash     | Dull clang, short block      |
+| **Block**               | Sparks, no damage flash             | Dull clang, short block      |
 | **Perfect Parry**       | Bright sparks                       | Loud satisfying clang + echo |
 | **End Parry**           | More bright sparks                  | Different clang sound        |
 | **Player Hit**          | Blood splatter                      | Meaty thud                   |
 | **Enemy Hit**           | Metal particles                     | Robot sounds or metal thud   |
 | **Player Death**        | Fade to black, death pose           | Scream??                     |
 | **Enemy Death**         | Collapse animation, dissolve effect | Robot and metal sounds       |
-| **Lock-On**             | Target highlight, camera rotation   | Nothing                      |
+| **Lock-On**             | Camera rotation, lock-on indicator  | Nothing                      |
 
 ---
 
