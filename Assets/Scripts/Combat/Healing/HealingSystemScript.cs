@@ -5,6 +5,7 @@ namespace Combat
     public class HealingSystemScript : MonoBehaviour
     {
         public HealthComponent playerHealth;
+        //public ItemUiController uiController;
 
         [SerializeField]
         private int amountBandages;
@@ -15,19 +16,14 @@ namespace Combat
         // Time until bandage can be used again
         [SerializeField]
         private float healDelay = 3;
-
         private float healTime;
 
         // Update is called once per frame
         void Update()
         {
             if (healTime <= healDelay) healTime += Time.deltaTime;
-
-            /* 
-             TODO: 
-             Update the ui so that the amount of bandages is displayed.
             
-            */
+            //uiController.SetItemAmount(amountBandages);
 
             if (InputSystem.actions.FindAction("Player/Heal").IsPressed()){
                 UseBandage();
@@ -53,5 +49,6 @@ namespace Combat
                 Destroy(other.gameObject);
             }
         }
+        
     }
 }
