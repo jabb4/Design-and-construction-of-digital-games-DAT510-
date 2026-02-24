@@ -605,6 +605,7 @@ GameObject:
   - component: {fileID: 6454816486720408189}
   - component: {fileID: 5381006803888713966}
   - component: {fileID: 653449905938209425}
+  - component: {fileID: 1854238989994023126}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -962,6 +963,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   comboSources:
   - {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
+--- !u!114 &1854238989994023126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1616043764315128934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef15979b8679b9243bb12d569275a87f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerHealth: {fileID: 690294675353372127}
+  amountBandages: 3
+  healAmount: 10
+  healDelay: 3
 --- !u!1 &1618196678623144074
 GameObject:
   m_ObjectHideFlags: 0
