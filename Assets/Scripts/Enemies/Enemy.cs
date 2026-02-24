@@ -8,7 +8,6 @@ using Combat;
 public class Enemy : MonoBehaviour, ICombatant
 {
     [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
-    [SerializeField] private bool destroyGameObjectOnDeath = true;
 
     private HealthComponent health;
     private CombatFlagsComponent flags;
@@ -17,6 +16,7 @@ public class Enemy : MonoBehaviour, ICombatant
     private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
     private bool endParryOutcomeQueued;
+    private EnemyDeathHandler deathHandler;
 
     public event Action<AttackHitInfo, DamageResolution> OnDamageResolved;
     public event Action<AttackHitInfo> OnParriedAttack;
@@ -53,6 +53,8 @@ public class Enemy : MonoBehaviour, ICombatant
 
         EnsureRigidbody();
         EnsureImpulseDriver();
+
+        deathHandler = GetComponent<EnemyDeathHandler>();
 
         if (health != null)
         {
@@ -143,7 +145,7 @@ public class Enemy : MonoBehaviour, ICombatant
         endParryOutcomeQueued = false;
         SyncCombatFlags();
 
-        if (destroyGameObjectOnDeath)
+        if (deathHandler == null)
         {
             Destroy(gameObject);
         }
