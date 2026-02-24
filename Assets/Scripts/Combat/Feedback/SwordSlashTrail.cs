@@ -164,6 +164,9 @@ namespace Combat
             float newest = samples[n - 1].Time;
             float span   = Mathf.Max(newest - oldest, 0.0001f);
 
+            var boundsMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            var boundsMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
             for (int i = 0; i < n; i++)
             {
                 Sample s = samples[i];
@@ -185,6 +188,11 @@ namespace Combat
                 uvs[i * 2 + 1]   = new Vector2(1f, t);
                 cols[i * 2]      = cRoot;
                 cols[i * 2 + 1]  = cTip;
+
+                boundsMin = Vector3.Min(boundsMin, s.Root);
+                boundsMin = Vector3.Min(boundsMin, s.Tip);
+                boundsMax = Vector3.Max(boundsMax, s.Root);
+                boundsMax = Vector3.Max(boundsMax, s.Tip);
             }
 
             for (int i = 0; i < n - 1; i++)
@@ -216,7 +224,7 @@ namespace Combat
             mesh.uv        = uvs;
             mesh.colors    = cols;
             mesh.triangles = tris;
-            mesh.RecalculateBounds();
+            mesh.bounds    = new Bounds((boundsMin + boundsMax) * 0.5f, boundsMax - boundsMin);
         }
     }
 }

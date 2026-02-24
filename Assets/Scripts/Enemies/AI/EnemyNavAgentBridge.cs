@@ -28,8 +28,11 @@ namespace Enemies.AI
         private float stoppingDistance = 1.8f;
         private float orbitRadius = 2.75f;
         private float orbitAngleDegrees;
+        private float orbitPathRequestTimer;
         private bool impulsePauseActive;
         private bool restoreUpdatePositionAfterImpulse = true;
+
+        private const float OrbitPathRequestInterval = 0.15f;
 
         public Vector3 CurrentVelocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
         public Vector3 DesiredVelocity => navMeshAgent != null ? navMeshAgent.desiredVelocity : Vector3.zero;
@@ -145,6 +148,13 @@ namespace Enemies.AI
             {
                 return;
             }
+
+            orbitPathRequestTimer -= Time.deltaTime;
+            if (orbitPathRequestTimer > 0f)
+            {
+                return;
+            }
+            orbitPathRequestTimer = OrbitPathRequestInterval;
 
             navMeshAgent.stoppingDistance = 0.1f;
             navMeshAgent.SetDestination(candidate);
