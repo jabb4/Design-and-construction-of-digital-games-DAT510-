@@ -16,8 +16,6 @@ public class Enemy : MonoBehaviour, ICombatant
     private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
     private bool endParryOutcomeQueued;
-    private EnemyDeathHandler deathHandler;
-
     public event Action<AttackHitInfo, DamageResolution> OnDamageResolved;
     public event Action<AttackHitInfo> OnParriedAttack;
 
@@ -54,9 +52,7 @@ public class Enemy : MonoBehaviour, ICombatant
         EnsureRigidbody();
         EnsureImpulseDriver();
 
-        deathHandler = GetComponent<EnemyDeathHandler>();
-
-        if (health != null)
+        if (health != null && GetComponent<EnemyDeathHandler>() == null)
         {
             health.OnDied += HandleDied;
         }
@@ -139,16 +135,17 @@ public class Enemy : MonoBehaviour, ICombatant
         }
     }
 
-    private void HandleDied()
+    public void NotifyDeath()
     {
         CloseParryWindow();
         endParryOutcomeQueued = false;
         SyncCombatFlags();
+    }
 
-        if (deathHandler == null)
-        {
-            Destroy(gameObject);
-        }
+    private void HandleDied()
+    {
+        NotifyDeath();
+        Destroy(gameObject);
     }
 
     private void SyncCombatFlags()

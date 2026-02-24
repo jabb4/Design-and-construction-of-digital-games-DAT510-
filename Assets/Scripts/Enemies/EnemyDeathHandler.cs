@@ -13,6 +13,7 @@ public class EnemyDeathHandler : MonoBehaviour
     [SerializeField, Min(0f)] private float ragdollImpulseMagnitude = 4f;
     [SerializeField, Range(0f, 1f)] private float ragdollUpwardImpulseFraction = 0.25f;
     [SerializeField, Min(0f)] private float ragdollDestroyDelay = 4f;
+    [SerializeField] private string hipsBoneName = "pelvis";
 
     [Header("VFX")]
     [SerializeField] private GameObject deathVfxPrefab;
@@ -70,6 +71,7 @@ public class EnemyDeathHandler : MonoBehaviour
 
     private void HandleDied()
     {
+        enemy?.NotifyDeath();
         navBridge?.Stop();
         SpawnDeathVfx();
 
@@ -114,47 +116,33 @@ public class EnemyDeathHandler : MonoBehaviour
             }
         }
 
-        // Directly ignore collision between the ragdoll and all gameplay actors so the
-        // corpse never physically interacts with the player or living enemies.
-        Collider[] ragdollColliders = ragdollInstance.GetComponentsInChildren<Collider>();
-        IgnoreCollisionsWithActors(ragdollColliders);
-
         // Apply an impulse to the hips to sell the direction of the killing blow.
-        Rigidbody hipsBody = ragdollInstance.GetComponentInChildren<Rigidbody>();
+        Rigidbody hipsBody = FindHipsRigidbody(ragdollInstance);
         if (hipsBody != null)
         {
             Vector3 impulse = lastHitFromDirection * ragdollImpulseMagnitude;
-            impulse.y = ragdollImpulseMagnitude * ragdollUpwardImpulseFraction;
+            impulse.y += ragdollImpulseMagnitude * ragdollUpwardImpulseFraction;
             hipsBody.AddForce(impulse, ForceMode.Impulse);
         }
 
         Destroy(ragdollInstance, ragdollDestroyDelay);
     }
 
-    private static void IgnoreCollisionsWithActors(Collider[] ragdollColliders)
+    private Rigidbody FindHipsRigidbody(GameObject ragdollInstance)
     {
-        var player = FindFirstObjectByType<Player.Combat.Player>(FindObjectsInactive.Exclude);
-        if (player != null)
+        foreach (Transform child in ragdollInstance.GetComponentsInChildren<Transform>(true))
         {
-            IgnoreColliderPairs(ragdollColliders, player.GetComponentsInChildren<Collider>());
-        }
-
-        var enemies = FindObjectsByType<Enemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        foreach (Enemy enemy in enemies)
-        {
-            IgnoreColliderPairs(ragdollColliders, enemy.GetComponentsInChildren<Collider>());
-        }
-    }
-
-    private static void IgnoreColliderPairs(Collider[] ragdollColliders, Collider[] actorColliders)
-    {
-        foreach (Collider ragCol in ragdollColliders)
-        {
-            foreach (Collider actorCol in actorColliders)
+            if (child.name == hipsBoneName)
             {
-                Physics.IgnoreCollision(ragCol, actorCol);
+                Rigidbody rb = child.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    return rb;
+                }
             }
         }
+
+        return ragdollInstance.GetComponentInChildren<Rigidbody>();
     }
 
     private void SpawnDeathVfx()
