@@ -27,12 +27,12 @@ namespace Combat
         [Header("Trail Settings")]
         [SerializeField] private Material  trailMaterial;
         [SerializeField, Range(8, 64)]  private int   maxSamples      = 40;
-        [SerializeField, Min(0f)]       private float fadeOutDuration = 0.08f; // how fast trail dissolves on Recovery
+        [SerializeField, Min(0f)]       private float fadeOutDuration = 0.2f;   // how fast trail dissolves on Recovery
 
         [Header("Opacity")]
-        [SerializeField, Range(0f, 1f)] private float peakAlpha         = 0.22f;
-        [SerializeField, Min(0.1f)]     private float fadeCurve         = 1.6f;  // higher = tail disappears faster
-        [SerializeField, Range(0f, 1f)] private float rootAlphaFraction = 0.15f; // guard end relative to tip
+        [SerializeField, Range(0f, 1f)] private float peakAlpha         = 0.15f;
+        [SerializeField, Min(0.1f)]     private float fadeCurve         = 4f;   // higher = tail disappears faster
+        [SerializeField, Range(0f, 1f)] private float rootAlphaFraction = 0f;   // guard end relative to tip
 
         // -----------------------------------------------------------------------
 
