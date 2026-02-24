@@ -8,7 +8,7 @@ using Combat;
 public class Enemy : MonoBehaviour, ICombatant
 {
     [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
-    [SerializeField] private bool disableGameObjectOnDeath = true;
+    [SerializeField] private bool destroyGameObjectOnDeath = true;
 
     private HealthComponent health;
     private CombatFlagsComponent flags;
@@ -143,9 +143,9 @@ public class Enemy : MonoBehaviour, ICombatant
         endParryOutcomeQueued = false;
         SyncCombatFlags();
 
-        if (disableGameObjectOnDeath)
+        if (destroyGameObjectOnDeath)
         {
-            gameObject.SetActive(false);
+            Destroy(gameObject);
         }
     }
 
