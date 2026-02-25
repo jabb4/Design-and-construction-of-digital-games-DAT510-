@@ -608,6 +608,7 @@ GameObject:
   - component: {fileID: 8504124487822662462}
   - component: {fileID: 4404991417083988173}
   - component: {fileID: 7229739942821558323}
+  - component: {fileID: 2460417445448874445}
   m_Layer: 9
   m_Name: Player
   m_TagString: Untagged
@@ -828,7 +829,7 @@ MonoBehaviour:
   showDebugInfo: 0
   slowMotionEnabled: 0
   slowMotionScale: 1
-  startEquipped: 0
+  startEquipped: 1
   unequipDelay: 5
   blockRequestBufferAfterPress: 0.6
   weaponTransitionTimeout: 3
@@ -1025,9 +1026,24 @@ MonoBehaviour:
   ragdollUpwardImpulseFraction: 0.4
   ragdollSpreadFraction: 0.5
   ragdollDestroyDelay: 8
-  hipsBoneName: clavicle
+  hipsBoneName: pelvis
+  cameraController: {fileID: 0}
   deathVfxPrefab: {fileID: 3631104653736160645, guid: a3f5b99ba235c4f8892597411ff2f930, type: 3}
-  vfxSpawnOffset: {x: 0, y: 1, z: 0}
+  vfxBoneName: spine_03
+--- !u!114 &2460417445448874445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1616043764315128934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625510e171e54485ebc8153c55f838a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boneName: Weapon_l
+  targetName: Scabbard_Target01
 --- !u!1 &1618196678623144074
 GameObject:
   m_ObjectHideFlags: 0

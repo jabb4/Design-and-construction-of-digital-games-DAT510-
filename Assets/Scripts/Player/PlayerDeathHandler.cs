@@ -17,9 +17,12 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
     [SerializeField, Min(0f)] private float ragdollDestroyDelay = 8f;
     [SerializeField] private string hipsBoneName = "pelvis";
 
+    [Header("Camera")]
+    [SerializeField] private CameraController cameraController;
+
     [Header("VFX")]
     [SerializeField] private GameObject deathVfxPrefab;
-    [SerializeField] private Vector3 vfxSpawnOffset = new Vector3(0f, 1f, 0f);
+    [SerializeField] private string vfxBoneName = "spine_03";
 
     public event Action OnPlayerDied;
 
@@ -74,8 +77,15 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
 
         if (ragdollPrefab != null)
         {
-            Transform hips = SpawnRagdoll();
-            SpawnDeathVfx(hips);
+            Transform hips = SpawnRagdoll(out Transform vfxBone);
+            Transform followBone = vfxBone != null ? vfxBone : hips;
+            SpawnDeathVfx(followBone);
+
+            if (cameraController != null)
+            {
+                cameraController.SetFollowTarget(followBone);
+            }
+
             OnPlayerDied?.Invoke();
             Destroy(gameObject);
         }
@@ -87,8 +97,10 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
         }
     }
 
-    private Transform SpawnRagdoll()
+    private Transform SpawnRagdoll(out Transform vfxAttachBone)
     {
+        vfxAttachBone = null;
+
         Transform[] sourceBones = GetComponentsInChildren<Transform>(true);
         var boneMap = new Dictionary<string, Transform>(sourceBones.Length);
         foreach (Transform bone in sourceBones)
@@ -120,6 +132,7 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
         {
             if (t.name == "Weapon_l") ragdollWeaponL = t;
             else if (t.name == "Scabbard_Target01") ragdollScabbardTarget = t;
+            else if (t.name == vfxBoneName) vfxAttachBone = t;
         }
         if (ragdollWeaponL != null && ragdollScabbardTarget != null)
         {
@@ -173,7 +186,9 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
             return;
         }
 
-        Vector3 spawnPos = transform.position + vfxSpawnOffset;
+        Vector3 spawnPos = followTarget != null
+            ? followTarget.position
+            : transform.position;
         Quaternion spawnRot = lastHitFromDirection.sqrMagnitude > 0.0001f
             ? Quaternion.LookRotation(lastHitFromDirection)
             : Quaternion.identity;

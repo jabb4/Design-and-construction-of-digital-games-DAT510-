@@ -18,7 +18,7 @@ public class EnemyDeathHandler : MonoBehaviour
 
     [Header("VFX")]
     [SerializeField] private GameObject deathVfxPrefab;
-    [SerializeField] private Vector3 vfxSpawnOffset = new Vector3(0f, 1f, 0f);
+    [SerializeField] private string vfxBoneName = "spine_03";
 
     private HealthComponent health;
     private Enemy enemy;
@@ -77,8 +77,8 @@ public class EnemyDeathHandler : MonoBehaviour
 
         if (ragdollPrefab != null)
         {
-            Transform hips = SpawnRagdoll();
-            SpawnDeathVfx(hips);
+            Transform hips = SpawnRagdoll(out Transform vfxBone);
+            SpawnDeathVfx(vfxBone != null ? vfxBone : hips);
             Destroy(gameObject);
         }
         else
@@ -94,8 +94,10 @@ public class EnemyDeathHandler : MonoBehaviour
         }
     }
 
-    private Transform SpawnRagdoll()
+    private Transform SpawnRagdoll(out Transform vfxAttachBone)
     {
+        vfxAttachBone = null;
+
         // Build a name → transform lookup from the live skeleton in O(n).
         Transform[] sourceBones = GetComponentsInChildren<Transform>(true);
         var boneMap = new Dictionary<string, Transform>(sourceBones.Length);
@@ -127,6 +129,7 @@ public class EnemyDeathHandler : MonoBehaviour
         {
             if (t.name == "Weapon_l") ragdollWeaponL = t;
             else if (t.name == "Scabbard_Target01") ragdollScabbardTarget = t;
+            else if (t.name == vfxBoneName) vfxAttachBone = t;
         }
         if (ragdollWeaponL != null && ragdollScabbardTarget != null)
         {
@@ -180,7 +183,9 @@ public class EnemyDeathHandler : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPos = transform.position + vfxSpawnOffset;
+        Vector3 spawnPos = followTarget != null
+            ? followTarget.position
+            : transform.position;
         Quaternion spawnRot = lastHitFromDirection.sqrMagnitude > 0.0001f
             ? Quaternion.LookRotation(lastHitFromDirection)
             : Quaternion.identity;

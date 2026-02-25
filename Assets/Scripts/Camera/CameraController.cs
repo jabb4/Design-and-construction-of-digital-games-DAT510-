@@ -60,7 +60,7 @@ public class CameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float lockBreakDistance = 35f;
     [SerializeField, Min(0f)] private float lineOfSightGraceSeconds = 0.5f;
     [SerializeField, Min(0f)] private float targetPointHeightOffset = 1.2f;
-    [SerializeField] private string targetPointTransformName = "clavicle_l";
+    [SerializeField] private string targetPointTransformName = "spine_03";
     [SerializeField] private bool retargetOnInvalid = true;
     [SerializeField] private bool enableLockOnDebugLogs;
 
@@ -83,11 +83,26 @@ public class CameraController : MonoBehaviour
 
     public Transform GetLockedTarget() => lockOnSession != null ? lockOnSession.LockedTarget : null;
 
+    /// <summary>
+    /// Switches the camera follow target (e.g. to a ragdoll bone on player death).
+    /// Releases any active lock-on.
+    /// </summary>
+    public void SetFollowTarget(Transform newTarget, float lookHeightOffset = 0f)
+    {
+        if (lockOnSession != null && lockOnSession.IsLockedOn)
+        {
+            lockOnSession.UnlockManual();
+        }
+
+        playerTransform = newTarget;
+        cameraOrbitRig?.SetLookHeight(lookHeightOffset);
+    }
+
     private void Awake()
     {
         if (string.IsNullOrWhiteSpace(targetPointTransformName))
         {
-            targetPointTransformName = "clavicle_l";
+            targetPointTransformName = "spine_03";
         }
 
         cam = GetComponent<Camera>();
