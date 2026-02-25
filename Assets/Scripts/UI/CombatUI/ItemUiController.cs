@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Combat;
 
 public class ItemUiController : MonoBehaviour
 {
@@ -12,8 +13,25 @@ public class ItemUiController : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI visibleKeybind;
 
-    private float itemAmount;
+    private int itemAmount;
     private string keybind;
+
+
+  private void OnEnable()
+    {
+        HealingSystemScript.OnBandagesChanged += SetItemAmount;
+
+        var healingSystem = FindObjectOfType<HealingSystemScript>();
+        if (healingSystem != null)
+        {
+            SetItemAmount(healingSystem.AmountBandages);
+        }
+    }
+
+    private void OnDisable()
+    {
+        HealingSystemScript.OnBandagesChanged -= SetItemAmount;
+    }
 
     public void SetKeybind(string Keybind)
     {
@@ -27,7 +45,7 @@ public class ItemUiController : MonoBehaviour
 
     }
 
-    public void SetItemAmount(float ItemAmount)
+    public void SetItemAmount(int ItemAmount)
     {
         itemAmount = ItemAmount;
 
