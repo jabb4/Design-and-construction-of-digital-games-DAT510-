@@ -1,23 +1,40 @@
 using UnityEngine;
+using Combat;
 
 public class BarUiController : MonoBehaviour
 {
-    public float MaxResource, Width, Height, Resource;
+    [SerializeField] private RectTransform bar;
+    [SerializeField] private HealthComponent playerHealth; 
+    [SerializeField] private float width = 140f;
+    [SerializeField] private float height = 21f;
 
-    [SerializeField]
-    private RectTransform bar;
-
-    public void SetMaxResource(float maxResource)
-    {
-        MaxResource = maxResource;
+    private void Start() {
+        //Called in start instead of awake to let HealthComponent initialize,
+        //otherwise CurrentHealth == 1;
+        //Could be done using Script Execution Order, but this could cause
+        //conflicts within git. Might be worth changing later
+        UpdateHealthDisplay(playerHealth.CurrentHealth, playerHealth.MaxHealth);
     }
 
-    public void SetCurrentResource(float resource)
+    private void OnEnable()
+    {    
+        if (playerHealth != null)
+        {
+            playerHealth.OnHealthChanged += UpdateHealthDisplay;
+        }
+    }
+
+    private void OnDisable()
     {
-        Resource = resource;
+        if (playerHealth != null)
+        {
+            playerHealth.OnHealthChanged -= UpdateHealthDisplay;
+        }
+    }
 
-        float newWidth = Width * (Resource/MaxResource);
-
-        bar.sizeDelta = new Vector2(newWidth, Height);
+    private void UpdateHealthDisplay(float currentHealth, float maxHealth)
+    {
+        float newWidth = width * (currentHealth / maxHealth);
+        bar.sizeDelta = new Vector2(newWidth, height);
     }
 }

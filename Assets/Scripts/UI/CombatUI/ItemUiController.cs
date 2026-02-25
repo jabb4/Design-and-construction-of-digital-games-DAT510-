@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using TMPro;
 using Combat;
 
@@ -16,12 +17,27 @@ public class ItemUiController : MonoBehaviour
     private int itemAmount;
     private string keybind;
 
+    private void Start() 
+    {
+        var healAction = InputSystem.actions.FindAction("Player/Heal");
+        if (healAction != null)
+        {
+            SetKeybind(healAction.GetBindingDisplayString(0));
+        }
+        else
+        {
+        SetKeybind("?");  
+        Debug.LogWarning("Heal action not found in Input System!");
+        }
+    }
 
-  private void OnEnable()
+    private void OnEnable()
     {
         HealingSystemScript.OnBandagesChanged += SetItemAmount;
 
-        var healingSystem = FindObjectOfType<HealingSystemScript>();
+        //Could also use a direct variable for HealingSystemScript,
+        // but should only ever exist one at a time, reduces manual coupling in editor
+        var healingSystem = FindFirstObjectByType<HealingSystemScript>();
         if (healingSystem != null)
         {
             SetItemAmount(healingSystem.AmountBandages);
@@ -38,7 +54,7 @@ public class ItemUiController : MonoBehaviour
         keybind = Keybind;
 
 
-        if (keybind != null)
+        if (visibleKeybind != null)
             visibleKeybind.text = keybind;
         else
             visibleKeybind.text = "missing keybind error";
