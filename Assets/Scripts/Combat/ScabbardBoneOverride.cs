@@ -1,9 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Snaps a bone to a target transform every frame after the Animator runs.
-/// Used to keep the scabbard (Weapon_l) pinned to Scabbard_Target01 at the hip,
-/// overriding any animation that would move it elsewhere.
+/// Live-skeleton scabbard fix: snaps Weapon_l to Scabbard_Target01 every frame
+/// after the Animator runs, overriding any animation that would move it elsewhere.
+/// Ragdolls use a one-time hierarchy reparent instead (see EnemyDeathHandler /
+/// PlayerDeathHandler) since they have no Animator driving bones.
 /// </summary>
 public class ScabbardBoneOverride : MonoBehaviour
 {

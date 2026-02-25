@@ -607,6 +607,7 @@ GameObject:
   - component: {fileID: 653449905938209425}
   - component: {fileID: 8504124487822662462}
   - component: {fileID: 4404991417083988173}
+  - component: {fileID: 7229739942821558323}
   m_Layer: 9
   m_Name: Player
   m_TagString: Untagged
@@ -1007,6 +1008,26 @@ MonoBehaviour:
   holdDuration: 0.05
   fadeOutDuration: 0.5
   peakAlpha: 0.3
+--- !u!114 &7229739942821558323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1616043764315128934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9d11947b1c4d442190fe871fde2ab20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ragdollPrefab: {fileID: 6021235121471109386, guid: 774e0dbcf0c2d48219db7672ce8b4bce, type: 3}
+  ragdollImpulseMagnitude: 8
+  ragdollUpwardImpulseFraction: 0.4
+  ragdollSpreadFraction: 0.5
+  ragdollDestroyDelay: 8
+  hipsBoneName: clavicle
+  deathVfxPrefab: {fileID: 3631104653736160645, guid: a3f5b99ba235c4f8892597411ff2f930, type: 3}
+  vfxSpawnOffset: {x: 0, y: 1, z: 0}
 --- !u!1 &1618196678623144074
 GameObject:
   m_ObjectHideFlags: 0
