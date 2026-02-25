@@ -2414,8 +2414,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2db7d142b9cbf679083f80364e5fde9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 30
-  currentHealth: 30
+  maxHealth: 10
+  currentHealth: 1
   initializeCurrentToMaxOnAwake: 1
 --- !u!114 &5832811830406196893
 MonoBehaviour:
@@ -2659,7 +2659,7 @@ MonoBehaviour:
   ragdollSpreadFraction: 0.5
   ragdollDestroyDelay: 4
   hipsBoneName: pelvis
-  deathVfxPrefab: {fileID: 0}
+  deathVfxPrefab: {fileID: 1349612467939472336, guid: 733738c7446f74385b7469a9596b21f1, type: 3}
   vfxSpawnOffset: {x: 0, y: 1, z: 0}
 --- !u!114 &9056497955300651876
 MonoBehaviour:

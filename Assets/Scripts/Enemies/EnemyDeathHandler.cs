@@ -74,15 +74,17 @@ public class EnemyDeathHandler : MonoBehaviour
     {
         enemy?.NotifyDeath();
         navBridge?.Stop();
-        SpawnDeathVfx();
 
         if (ragdollPrefab != null)
         {
-            SpawnRagdoll();
+            Transform hips = SpawnRagdoll();
+            SpawnDeathVfx(hips);
             Destroy(gameObject);
         }
         else
         {
+            SpawnDeathVfx(null);
+
             if (animator != null)
             {
                 animator.CrossFadeInFixedTime("Death", 0.1f);
@@ -92,7 +94,7 @@ public class EnemyDeathHandler : MonoBehaviour
         }
     }
 
-    private void SpawnRagdoll()
+    private Transform SpawnRagdoll()
     {
         // Build a name → transform lookup from the live skeleton in O(n).
         Transform[] sourceBones = GetComponentsInChildren<Transform>(true);
@@ -149,6 +151,9 @@ public class EnemyDeathHandler : MonoBehaviour
         }
 
         Destroy(ragdollInstance, ragdollDestroyDelay);
+
+        Rigidbody hipsRb = hipsBody != null ? hipsBody : ragdollInstance.GetComponentInChildren<Rigidbody>();
+        return hipsRb != null ? hipsRb.transform : ragdollInstance.transform;
     }
 
     private Rigidbody FindHipsRigidbody(GameObject ragdollInstance)
@@ -168,7 +173,7 @@ public class EnemyDeathHandler : MonoBehaviour
         return ragdollInstance.GetComponentInChildren<Rigidbody>();
     }
 
-    private void SpawnDeathVfx()
+    private void SpawnDeathVfx(Transform followTarget)
     {
         if (deathVfxPrefab == null)
         {
@@ -176,7 +181,15 @@ public class EnemyDeathHandler : MonoBehaviour
         }
 
         Vector3 spawnPos = transform.position + vfxSpawnOffset;
-        GameObject vfxInstance = Instantiate(deathVfxPrefab, spawnPos, Quaternion.identity);
+        Quaternion spawnRot = lastHitFromDirection.sqrMagnitude > 0.0001f
+            ? Quaternion.LookRotation(lastHitFromDirection)
+            : Quaternion.identity;
+        GameObject vfxInstance = Instantiate(deathVfxPrefab, spawnPos, spawnRot);
+
+        if (followTarget != null)
+        {
+            vfxInstance.transform.SetParent(followTarget, true);
+        }
 
         ParticleSystem ps = vfxInstance.GetComponent<ParticleSystem>();
         if (ps != null)
