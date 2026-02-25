@@ -30,6 +30,8 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
     [SerializeField] private string targetScene = "VanView";
     [SerializeField, Min(0.01f)] private float fadeOutDuration = 1f;
 
+    public static Transform ActiveRagdoll { get; private set; }
+
     public event Action OnPlayerDied;
 
     private HealthComponent health;
@@ -167,6 +169,7 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
         Destroy(ragdollInstance, ragdollDestroyDelay);
 
         Rigidbody hipsRb = hipsBody != null ? hipsBody : ragdollInstance.GetComponentInChildren<Rigidbody>();
+        ActiveRagdoll = hipsRb != null ? hipsRb.transform : ragdollInstance.transform;
         return hipsRb != null ? hipsRb.transform : ragdollInstance.transform;
     }
 
@@ -222,5 +225,11 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
     private void SpawnDeathFade()
     {
         ScreenFade.Create(fadeDelay, fadeDuration, targetScene, fadeOutDuration);
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        ActiveRagdoll = null;
     }
 }

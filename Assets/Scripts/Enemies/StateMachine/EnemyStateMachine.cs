@@ -53,7 +53,8 @@ namespace Enemies.StateMachine
         public Transform CurrentTarget => currentTarget;
         public ICombatant CurrentTargetCombatant => currentTargetCombatant;
         public bool IsAlive => Enemy != null && Enemy.IsAlive;
-        public bool HasTarget => currentTarget != null && currentTargetCombatant != null && currentTargetCombatant.IsVulnerable;
+        public bool IsTargetingRagdoll { get; private set; }
+        public bool HasTarget => currentTarget != null && (IsTargetingRagdoll || (currentTargetCombatant != null && currentTargetCombatant.IsVulnerable));
         public bool IsTargetAttacking => currentTargetCombatant != null && currentTargetCombatant.IsAttacking;
         public float DistanceToTarget
         {
@@ -388,16 +389,27 @@ namespace Enemies.StateMachine
             }
 
             nextTargetRefreshAt = Time.time + targetRefreshIntervalSeconds;
-            if (!TryResolvePlayerTarget(out currentTarget, out currentTargetCombatant) ||
-                !currentTargetCombatant.IsVulnerable)
+            if (TryResolvePlayerTarget(out currentTarget, out currentTargetCombatant) &&
+                currentTargetCombatant.IsVulnerable)
             {
-                currentTarget = null;
-                currentTargetCombatant = null;
-                return false;
+                IsTargetingRagdoll = false;
+                RefreshNearbyEnemyCount(combatProfile != null ? combatProfile.GroupAwarenessRadius : 8f);
+                return currentTarget != null;
             }
 
-            RefreshNearbyEnemyCount(combatProfile != null ? combatProfile.GroupAwarenessRadius : 8f);
-            return currentTarget != null;
+            Transform ragdoll = PlayerDeathHandler.ActiveRagdoll;
+            if (ragdoll != null)
+            {
+                currentTarget = ragdoll;
+                currentTargetCombatant = null;
+                IsTargetingRagdoll = true;
+                return true;
+            }
+
+            currentTarget = null;
+            currentTargetCombatant = null;
+            IsTargetingRagdoll = false;
+            return false;
         }
 
         public bool TryCrossFadeState(string stateName, float duration = 0.08f, int layer = 0)
@@ -502,7 +514,17 @@ namespace Enemies.StateMachine
 
         private bool IsTargetStillValid()
         {
-            return currentTarget != null && currentTargetCombatant != null && currentTargetCombatant.IsVulnerable;
+            if (currentTarget == null)
+            {
+                return false;
+            }
+
+            if (IsTargetingRagdoll)
+            {
+                return true;
+            }
+
+            return currentTargetCombatant != null && currentTargetCombatant.IsVulnerable;
         }
 
         private void HandleStateChanging(IState previous, IState next)
@@ -626,6 +648,7 @@ namespace Enemies.StateMachine
 
             currentTarget = null;
             currentTargetCombatant = null;
+            IsTargetingRagdoll = false;
             nextTargetRefreshAt = float.NegativeInfinity;
             cachedNearbyEnemyCount = 1;
             cachedNearbyEnemyRadius = -1f;

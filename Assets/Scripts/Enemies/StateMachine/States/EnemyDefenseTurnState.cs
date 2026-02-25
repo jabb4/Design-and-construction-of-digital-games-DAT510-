@@ -106,6 +106,11 @@ namespace Enemies.StateMachine.States
                 return TransitionDecision.To(Owner.GetState<EnemyIdleState>(), TransitionReason.StandardFlow);
             }
 
+            if (Owner.IsTargetingRagdoll)
+            {
+                return TransitionDecision.None;
+            }
+
             if (counterQueued)
             {
                 if (IsCounterResponseReady())
