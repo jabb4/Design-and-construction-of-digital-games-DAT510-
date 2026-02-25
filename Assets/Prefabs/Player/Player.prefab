@@ -829,7 +829,7 @@ MonoBehaviour:
   showDebugInfo: 0
   slowMotionEnabled: 0
   slowMotionScale: 1
-  startEquipped: 1
+  startEquipped: 0
   unequipDelay: 5
   blockRequestBufferAfterPress: 0.6
   weaponTransitionTimeout: 3
