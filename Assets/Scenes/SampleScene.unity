@@ -1553,11 +1553,30 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
+--- !u!1 &2104148738 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1616043764315128934, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+  m_PrefabInstance: {fileID: 4766243096130346978}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &231308397011411975 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
   m_PrefabInstance: {fileID: 4766243096130346978}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &231308397011411995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2104148738}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625510e171e54485ebc8153c55f838a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boneName: Weapon_l
+  targetName: Scabbard_Target01
 --- !u!1001 &4044997279558330592
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1690,7 +1709,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1616043764315128934, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 231308397011411995}
   m_SourcePrefab: {fileID: 100100000, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
