@@ -1,0 +1,560 @@
+fileFormatVersion: 2
+guid: ced6f5c8d79fd463aa4b5c81b28695aa
+ModelImporter:
+  serializedVersion: 22200
+  internalIDToNameTable:
+  - first:
+      74: 8993902097722301239
+    second: LightAttack01
+  externalObjects: {}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: LightAttack01
+      takeName: LightAttack01
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 180
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events:
+      - time: 0
+        functionName: OnAttackWindup
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.15452595
+        functionName: OnAttackSlash
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.31586394
+        functionName: OnAttackRecovery
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 191891744de1b49ca9669f86ade9181c, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton:
+    - name: LightAttack01(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: root
+      parentName: LightAttack01(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
+      scale: {x: 1, y: 1, z: 1}
+    - name: pelvis
+      parentName: root
+      position: {x: -0.0048519894, y: 0.0062851855, z: 0.91322803}
+      rotation: {x: -0.05187394, y: 0.72676986, z: -0.07957292, w: 0.68028134}
+      scale: {x: 1, y: 1, z: 1}
+    - name: spine_01
+      parentName: pelvis
+      position: {x: -0.10809971, y: -0.008493705, z: 0.0000016784668}
+      rotation: {x: -0.048276044, y: -0.028490193, z: 0.16071562, w: 0.98540765}
+      scale: {x: 1, y: 1, z: 1}
+    - name: spine_02
+      parentName: spine_01
+      position: {x: -0.18897189, y: 0.03784231, z: -0.00000030517575}
+      rotation: {x: 0.023822071, y: -0.024301747, z: 0.05177179, w: 0.998079}
+      scale: {x: 1, y: 1, z: 1}
+    - name: spine_03
+      parentName: spine_02
+      position: {x: -0.13405612, y: 0.0042740377, z: 0.0000066566445}
+      rotation: {x: -0.043611113, y: 0.0007820123, z: 0.06893975, w: 0.99666685}
+      scale: {x: 1, y: 1, z: 1}
+    - name: clavicle_l
+      parentName: spine_03
+      position: {x: -0.11883658, y: -0.02732087, z: -0.037819844}
+      rotation: {x: 0.18590365, y: -0.7259415, z: -0.09793679, w: 0.6548719}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - name: upperarm_l
+      parentName: clavicle_l
+      position: {x: -0.1578703, y: -0.000024771687, z: -0.000050919032}
+      rotation: {x: -0.0016303656, y: 0.055089377, z: 0.15290909, w: 0.9867023}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: lowerarm_l
+      parentName: upperarm_l
+      position: {x: -0.30346924, y: 0.000031909927, z: -0.000012989045}
+      rotation: {x: -0.06061086, y: 0.016254853, z: 0.024087297, w: 0.99773836}
+      scale: {x: 1, y: 1, z: 1}
+    - name: hand_l
+      parentName: lowerarm_l
+      position: {x: -0.26914755, y: -0.0010957714, z: 0.002452831}
+      rotation: {x: -0.757518, y: -0.01534104, z: 0.1002751, w: 0.6448845}
+      scale: {x: 1, y: 1, z: 1}
+    - name: index_01_l
+      parentName: hand_l
+      position: {x: -0.12094537, y: 0.017100424, z: -0.020584518}
+      rotation: {x: -0.0051554125, y: 0.03699666, z: -0.12584697, w: 0.99134624}
+      scale: {x: 1, y: 1, z: 1}
+    - name: index_02_l
+      parentName: index_01_l
+      position: {x: -0.043062877, y: 0.00033211458, z: 0.000000553131}
+      rotation: {x: 0.012515332, y: -0.00054685754, z: -0.021056466, w: 0.99969983}
+      scale: {x: 1, y: 1, z: 1}
+    - name: index_03_l
+      parentName: index_02_l
+      position: {x: -0.034496635, y: 0.0012068897, z: 0.00006841178}
+      rotation: {x: 0.0028646442, y: 0.00013927462, z: -0.14254123, w: 0.9897847}
+      scale: {x: 1, y: 1, z: 1}
+    - name: middle_01_l
+      parentName: hand_l
+      position: {x: -0.12254732, y: 0.012944126, z: 0.0058760117}
+      rotation: {x: -0.11822365, y: 0.03828543, z: -0.11340525, w: 0.98574674}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+    - name: middle_02_l
+      parentName: middle_01_l
+      position: {x: -0.046906326, y: 0.0008530298, z: 0.000048003185}
+      rotation: {x: -0.018121917, y: 0.00357462, z: -0.011602421, w: 0.9997621}
+      scale: {x: 1, y: 1, z: 1}
+    - name: middle_03_l
+      parentName: middle_02_l
+      position: {x: -0.037172075, y: 0.0019647137, z: -0.00014858712}
+      rotation: {x: 0.010364921, y: 0.0038211423, z: -0.28056294, w: 0.9597721}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+    - name: pinky_01_l
+      parentName: hand_l
+      position: {x: -0.10074973, y: 0.023174195, z: 0.045786742}
+      rotation: {x: -0.20946655, y: 0.04844964, z: -0.10332804, w: 0.9711332}
+      scale: {x: 1, y: 0.99999994, z: 1}
+    - name: pinky_02_l
+      parentName: pinky_01_l
+      position: {x: -0.035501275, y: 0.0007772672, z: -0.00001954078}
+      rotation: {x: -0.00010694562, y: -0.0023032387, z: -0.019261422, w: 0.9998118}
+      scale: {x: 1, y: 1, z: 1}
+    - name: pinky_03_l
+      parentName: pinky_02_l
+      position: {x: -0.030009922, y: 0.001071837, z: 0.0001521491}
+      rotation: {x: 0.0042465036, y: 0.005806729, z: -0.2750224, w: 0.96141094}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ring_01_l
+      parentName: hand_l
+      position: {x: -0.11475657, y: 0.017919064, z: 0.028232217}
+      rotation: {x: -0.17184481, y: 0.046086557, z: -0.10698293, w: 0.97821265}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ring_02_l
+      parentName: ring_01_l
+      position: {x: -0.044306066, y: 0.000988382, z: -0.00005960462}
+      rotation: {x: 0.0051234066, y: -0.0017598122, z: -0.010384265, w: 0.99993145}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ring_03_l
+      parentName: ring_02_l
+      position: {x: -0.03527497, y: 0.0019653365, z: 0.000078167905}
+      rotation: {x: 0.0022162795, y: -0.0055412645, z: -0.31498474, w: 0.94907796}
+      scale: {x: 1, y: 1, z: 1}
+    - name: thumb_01_l
+      parentName: hand_l
+      position: {x: -0.04792398, y: 0.023997173, z: -0.024780847}
+      rotation: {x: 0.6159566, y: -0.266453, z: 0.18613002, w: 0.7176042}
+      scale: {x: 1, y: 1, z: 1}
+    - name: thumb_02_l
+      parentName: thumb_01_l
+      position: {x: -0.038530007, y: -0.0000698876, z: 0.000477376}
+      rotation: {x: -0.0015724596, y: 0.0009815095, z: -0.012492326, w: 0.99992025}
+      scale: {x: 1, y: 1, z: 1}
+    - name: thumb_03_l
+      parentName: thumb_02_l
+      position: {x: -0.040380742, y: 0.0018479123, z: 0.00022689343}
+      rotation: {x: -0.024797678, y: 0.042903215, z: -0.22363009, w: 0.9734136}
+      scale: {x: 1, y: 1, z: 1}
+    - name: katana_l
+      parentName: hand_l
+      position: {x: -0.094903916, y: 0.06173178, z: 0.016065374}
+      rotation: {x: 0.6787882, y: 0.38913596, z: 0.06954493, w: 0.61885643}
+      scale: {x: 0.99999994, y: 0.99999994, z: 0.99999994}
+    - name: bow
+      parentName: hand_l
+      position: {x: -0.0949042, y: 0.06173163, z: 0.016065374}
+      rotation: {x: 0.67878735, y: 0.3891359, z: 0.06954462, w: 0.61885744}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.9999999}
+    - name: String
+      parentName: bow
+      position: {x: -0.000000040531134, y: -0.0000003159044, z: 0.17000005}
+      rotation: {x: 0.00000045448542, y: -0.00000014528632, z: 0.0000005960465, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Weapon_l
+      parentName: hand_l
+      position: {x: 0.18051878, y: 0.19261023, z: 0.050322726}
+      rotation: {x: 0.31052956, y: -0.69099575, z: -0.41183075, w: 0.50645006}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: lowerarm_twist_01_l
+      parentName: lowerarm_l
+      position: {x: -0.14000009, y: -0.00000002861022, z: 0.00000006675719}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: upperarm_twist_01_l
+      parentName: upperarm_l
+      position: {x: -0.004999879, y: 0.000000015646211, z: 0.00000008672477}
+      rotation: {x: 0, y: -0.00000000745058, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: clavicle_r
+      parentName: spine_03
+      position: {x: -0.11883751, y: -0.028476056, z: 0.034117863}
+      rotation: {x: 0.7312773, y: 0.122139834, z: 0.6702216, w: 0.033441745}
+      scale: {x: 0.9999999, y: 0.9999999, z: 0.99999994}
+    - name: upperarm_r
+      parentName: clavicle_r
+      position: {x: 0.15811847, y: 0.00001963615, z: -0.00010734076}
+      rotation: {x: 0.20392491, y: 0.061704047, z: 0.14971194, w: 0.9655018}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - name: lowerarm_r
+      parentName: upperarm_r
+      position: {x: 0.3036153, y: -0.000104351, z: 0.000042572017}
+      rotation: {x: -0.06048177, y: 0.015936513, z: 0.023546698, w: 0.99776435}
+      scale: {x: 1, y: 1, z: 1}
+    - name: hand_r
+      parentName: lowerarm_r
+      position: {x: 0.2711258, y: -0.00082539505, z: -0.0022837438}
+      rotation: {x: -0.768463, y: 0.121501535, z: -0.08794353, w: 0.62206745}
+      scale: {x: 1, y: 0.9999999, z: 0.99999994}
+    - name: index_01_r
+      parentName: hand_r
+      position: {x: 0.12042139, y: -0.019192912, z: 0.020693786}
+      rotation: {x: 0.08498704, y: 0.017539404, z: -0.0875994, w: 0.9923688}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+    - name: index_02_r
+      parentName: index_01_r
+      position: {x: 0.043037623, y: -0.0032340738, z: -0.000008797641}
+      rotation: {x: 0.015510714, y: -0.0011920196, z: -0.0059337695, w: 0.99986136}
+      scale: {x: 1, y: 1, z: 1}
+    - name: index_03_r
+      parentName: index_02_r
+      position: {x: 0.03424977, y: -0.0029867112, z: -0.0000005459782}
+      rotation: {x: 0.021624537, y: -0.011709154, z: -0.42636192, w: 0.9042184}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: middle_01_r
+      parentName: hand_r
+      position: {x: 0.121494584, y: -0.015001745, z: -0.005764395}
+      rotation: {x: 0.0091795875, y: 0.02733812, z: -0.08771353, w: 0.9957283}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: middle_02_r
+      parentName: middle_01_r
+      position: {x: 0.046750944, y: -0.0028620453, z: 0.000041398984}
+      rotation: {x: -0.010572225, y: -0.0007558629, z: -0.010013846, w: 0.9998937}
+      scale: {x: 0.99999994, y: 0.9999999, z: 1}
+    - name: middle_03_r
+      parentName: middle_02_r
+      position: {x: 0.037329257, y: -0.0024329647, z: -0.00007068273}
+      rotation: {x: -0.018363116, y: 0.038920283, z: -0.37939584, w: 0.9242331}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: pinky_01_r
+      parentName: hand_r
+      position: {x: 0.10013706, y: -0.024494063, z: -0.046018455}
+      rotation: {x: -0.0925454, y: 0.045488443, z: -0.093034014, w: 0.99030846}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+    - name: pinky_02_r
+      parentName: pinky_01_r
+      position: {x: 0.034878813, y: -0.0015934269, z: -0.00004469632}
+      rotation: {x: 0.012187711, y: -0.0009569742, z: -0.0015065846, w: 0.9999241}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+    - name: pinky_03_r
+      parentName: pinky_02_r
+      position: {x: 0.029324848, y: -0.001959293, z: -0.000077728}
+      rotation: {x: 0.028686348, y: -0.022513272, z: -0.5070144, w: 0.86116594}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ring_01_r
+      parentName: hand_r
+      position: {x: 0.11373074, y: -0.01961422, z: -0.028273603}
+      rotation: {x: -0.06513636, y: 0.038751535, z: -0.087348774, w: 0.99329036}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ring_02_r
+      parentName: ring_01_r
+      position: {x: 0.043621752, y: -0.0024460754, z: 0.000024886122}
+      rotation: {x: 0.002997032, y: -0.000014770769, z: -0.0051045916, w: 0.99998254}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ring_03_r
+      parentName: ring_02_r
+      position: {x: 0.0350412, y: -0.0024026365, z: 0.000023425806}
+      rotation: {x: 0.019255074, y: -0.027430177, z: -0.39927706, w: 0.91621757}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: thumb_01_r
+      parentName: hand_r
+      position: {x: 0.04712979, y: -0.0252044, z: 0.025403837}
+      rotation: {x: 0.3799357, y: -0.26713762, z: 0.2247683, w: 0.8566012}
+      scale: {x: 1, y: 1, z: 1}
+    - name: thumb_02_r
+      parentName: thumb_01_r
+      position: {x: 0.038243674, y: -0.0011645288, z: -0.0004549946}
+      rotation: {x: 0.012626341, y: 0.0047062007, z: -0.003544939, w: 0.9999029}
+      scale: {x: 1, y: 1, z: 1}
+    - name: thumb_03_r
+      parentName: thumb_02_r
+      position: {x: 0.03955535, y: -0.0029150296, z: 0.0000430894}
+      rotation: {x: -0.01772976, y: -0.0048850034, z: -0.45965487, w: 0.8879072}
+      scale: {x: 1, y: 1, z: 1}
+    - name: katana_r
+      parentName: hand_r
+      position: {x: 0.076869875, y: -0.05336608, z: -0.009026827}
+      rotation: {x: -0.35383826, y: -0.2962541, z: 0.57661706, w: 0.67419946}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Weapon_r
+      parentName: hand_r
+      position: {x: 0.07686996, y: -0.053366058, z: -0.00902678}
+      rotation: {x: -0.35383716, y: -0.2962537, z: 0.5766174, w: 0.6741998}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - name: arrow
+      parentName: hand_r
+      position: {x: 0.11392816, y: -0.052535743, z: 0.023433242}
+      rotation: {x: 0.5312823, y: 0.41720915, z: -0.45052236, w: 0.5836996}
+      scale: {x: 0.99999994, y: 0.9999999, z: 0.9999999}
+    - name: lowerarm_twist_01_r
+      parentName: lowerarm_r
+      position: {x: 0.14000006, y: 0.0000002431868, z: 0}
+      rotation: {x: -0.11762726, y: 1.8809993e-17, z: -0.0000000074505815, w: 0.99305785}
+      scale: {x: 1, y: 1, z: 1}
+    - name: upperarm_twist_01_r
+      parentName: upperarm_r
+      position: {x: 0.004999992, y: -0.000000031590446, z: 0.000000009834765}
+      rotation: {x: -0.17323482, y: 0.00000002980232, z: 0.000000022351742, w: 0.98488057}
+      scale: {x: 1, y: 1, z: 1}
+    - name: neck_01
+      parentName: spine_03
+      position: {x: -0.16558722, y: -0.0035486966, z: -0.000013027187}
+      rotation: {x: 0.2302726, y: -0.08413968, z: 0.06480358, w: 0.9673136}
+      scale: {x: 1, y: 1, z: 1}
+    - name: head
+      parentName: neck_01
+      position: {x: -0.09285728, y: 0.0037795915, z: -0.00011056897}
+      rotation: {x: 0.18002419, y: -0.06713688, z: -0.27387363, w: 0.9423785}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Bow_BackTarget
+      parentName: spine_02
+      position: {x: -0.041384425, y: 0.21849105, z: 0.072790146}
+      rotation: {x: 0.7602674, y: 0.624133, z: 0.12037873, w: 0.13401698}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Quiver_BackTarget
+      parentName: spine_02
+      position: {x: -0.0050942414, y: 0.18336149, z: -0.060597785}
+      rotation: {x: -0.072265156, y: -0.5019972, z: -0.06622685, w: 0.85929656}
+      scale: {x: 1, y: 1, z: 1}
+    - name: thigh_l
+      parentName: pelvis
+      position: {x: 0.014489345, y: -0.0053207874, z: -0.09006241}
+      rotation: {x: 0.23580468, y: 0.08809066, z: -0.00434158, w: 0.96778995}
+      scale: {x: 1, y: 1, z: 1}
+    - name: calf_l
+      parentName: thigh_l
+      position: {x: 0.42547762, y: -0.0008789155, z: 0.00011226653}
+      rotation: {x: -0.0470541, y: -0.006284483, z: 0.21197097, w: 0.9761223}
+      scale: {x: 1, y: 1, z: 1}
+    - name: calf_twist_01_l
+      parentName: calf_l
+      position: {x: 0.20476773, y: 0, z: 0.000000076293915}
+      rotation: {x: 0.0028089287, y: 0.0019333998, z: 0.0076126913, w: 0.99996525}
+      scale: {x: 1, y: 1, z: 1}
+    - name: foot_l
+      parentName: calf_l
+      position: {x: 0.402144, y: -0.0005694865, z: -0.00032974232}
+      rotation: {x: -0.06320817, y: -0.018489107, z: -0.10056318, w: 0.99274874}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ball_l
+      parentName: foot_l
+      position: {x: 0.10456818, y: -0.16577913, z: 0.0008539867}
+      rotation: {x: -0.03163254, y: -0.02997985, z: 0.7178642, w: 0.69481766}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+    - name: thigh_twist_01_l
+      parentName: thigh_l
+      position: {x: 0.22094226, y: 0.000000038146958, z: 0.000000019073484}
+      rotation: {x: -0.047443602, y: -0.00002148281, z: 0.00049110124, w: 0.99887383}
+      scale: {x: 1, y: 1, z: 1}
+    - name: thigh_r
+      parentName: pelvis
+      position: {x: 0.014492463, y: -0.0053169345, z: 0.09005994}
+      rotation: {x: -0.16858307, y: 0.13916382, z: 0.97569096, w: -0.0155058205}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1}
+    - name: calf_r
+      parentName: thigh_r
+      position: {x: -0.42545816, y: 0.001301021, z: -0.00016761776}
+      rotation: {x: -0.045852937, y: -0.00039369112, z: 0.27841163, w: 0.9593667}
+      scale: {x: 1, y: 1, z: 1}
+    - name: calf_twist_01_r
+      parentName: calf_r
+      position: {x: -0.20476909, y: 0, z: 0.00000000953674}
+      rotation: {x: 0.00280726, y: 0.0019336942, z: 0.0076125874, w: 0.99996525}
+      scale: {x: 1, y: 1, z: 1}
+    - name: foot_r
+      parentName: calf_r
+      position: {x: -0.40055767, y: -0.0012425611, z: 0.0011273191}
+      rotation: {x: -0.006888663, y: -0.101202264, z: -0.199612, w: 0.97461057}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ball_r
+      parentName: foot_r
+      position: {x: -0.10453783, y: 0.16578136, z: -0.0006158448}
+      rotation: {x: -0.0017584489, y: 0.0019274949, z: 0.7185986, w: 0.6954202}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+    - name: thigh_twist_01_r
+      parentName: thigh_r
+      position: {x: -0.22094245, y: -0.000000019073477, z: 0}
+      rotation: {x: -0.04744521, y: -0.00002190471, z: 0.0004911871, w: 0.9988738}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Scabbard_Target01
+      parentName: pelvis
+      position: {x: -0.056429498, y: 0.08142479, z: -0.15904568}
+      rotation: {x: 0.23810458, y: 0.6991871, z: -0.06901441, w: 0.6705823}
+      scale: {x: 1.0000001, y: 1, z: 1.0000001}
+    - name: katana_Targer01
+      parentName: Scabbard_Target01
+      position: {x: -0.0000039386764, y: -0.23999743, z: -0.000003967282}
+      rotation: {x: 0.0000001639128, y: 0.0000010728835, z: 1, w: 0.00000013315788}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ik_foot_root
+      parentName: root
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ik_foot_l
+      parentName: ik_foot_root
+      position: {x: -0.18427284, y: -0.2722768, z: 0.13472089}
+      rotation: {x: -0.12756231, y: 0.72615767, z: 0.117043614, w: 0.6653749}
+      scale: {x: 0.99999994, y: 1, z: 1}
+    - name: ik_foot_r
+      parentName: ik_foot_root
+      position: {x: 0.14427741, y: 0.28005475, z: 0.13514027}
+      rotation: {x: 0.6112792, y: 0.35549796, z: 0.61119056, w: -0.35553494}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ik_hand_root
+      parentName: root
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ik_hand_gun
+      parentName: ik_hand_root
+      position: {x: 0.18547985, y: 0.33501065, z: 0.8540895}
+      rotation: {x: 0.41435766, y: 0.004324528, z: 0.3109809, w: 0.8553245}
+      scale: {x: 1, y: 1, z: 0.99999994}
+    - name: ik_hand_l
+      parentName: ik_hand_gun
+      position: {x: -0.6675325, y: -0.00068924, z: 0.38877037}
+      rotation: {x: 0.81889755, y: 0.47456658, z: -0.1386764, w: -0.29148275}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.9999998}
+    - name: ik_hand_r
+      parentName: ik_hand_gun
+      position: {x: 0.040343158, y: 0.040776484, z: 0.07448555}
+      rotation: {x: 0.35383725, y: 0.2962533, z: -0.57661706, w: 0.67420024}
+      scale: {x: 0.9999998, y: 0.9999998, z: 0.99999994}
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 1
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

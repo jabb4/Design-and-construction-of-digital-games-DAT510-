@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c43bc137ca9a04e50940b6ba71d14163, type: 3}
+  m_Name: AttackCombo_KatanaShared
+  m_EditorClassIdentifier: 
+  attacks:
+  - AttackId: katana_stand_attack_01
+    AnimationStateName: Stand_Attack_01 1
+    EndPose: 3
+    Damage: 10
+  - AttackId: katana_stand_attack_03
+    AnimationStateName: Stand_Attack_03 2
+    EndPose: 2
+    Damage: 12
+  - AttackId: katana_stand_attack_04
+    AnimationStateName: Stand_Attack_01 4
+    EndPose: 4
+    Damage: 14
+  - AttackId: katana_light_attack_01
+    AnimationStateName: LightAttack01
+    EndPose: 1
+    Damage: 12
+  - AttackId: katana_light_attack_06
+    AnimationStateName: LightAttack06
+    EndPose: 3
+    Damage: 15

@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - van
+  - city
+  - temple
+  - Bandage
   layers:
   - Default
   - TransparentFX
@@ -12,8 +16,8 @@ TagManager:
   - Water
   - UI
   - Terrain
-  - 
-  - 
+  - Hitbox
+  - Hurtbox
   - 
   - 
   - 

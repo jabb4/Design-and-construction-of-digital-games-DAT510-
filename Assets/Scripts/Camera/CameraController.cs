@@ -1,6 +1,6 @@
+using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Camera))]
 public class CameraController : MonoBehaviour
@@ -8,83 +8,130 @@ public class CameraController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform playerTransform;
 
+    /// <summary>
+    /// Event fired when camera locks onto a target.
+    /// Used by PlayerStateMachine for auto-equip weapon.
+    /// </summary>
+    public event Action OnLockOnStarted;
+
+    /// <summary>
+    /// Event fired when camera lock-on is released.
+    /// Used by PlayerStateMachine for delayed auto-unequip weapon.
+    /// </summary>
+    public event Action OnLockOnEnded;
+
+    /// <summary>
+    /// Event fired when lock-on target changes while lock remains active.
+    /// Invoked for both manual and automatic re-targeting.
+    /// </summary>
+    public event Action<Transform, Transform> OnLockTargetChanged;
+
     [Header("Camera Settings")]
-    [SerializeField] private Vector3 offset = new Vector3(0, 3.5f, -6f);
-    [Range(0.1f, 10.0f)]
+    [SerializeField] private Vector3 offset = new Vector3(0f, 3.5f, -6f);
+    [Range(0.1f, 10f)]
     [SerializeField] private float rotationSpeed = 1f;
-    [SerializeField] private float cameraSmoothSpeed = 20f;
-    [SerializeField] private float minVerticalAngle = -35;
+
+    [Header("Camera Smoothing")]
+    [SerializeField, Min(0f)] private float freeCameraSmoothing = 14f;
+    [FormerlySerializedAs("cameraSmoothSpeed")]
+    [SerializeField, Min(0f)] private float lockOnCameraSmoothing = 20f;
+
+    [SerializeField] private float minVerticalAngle = -35f;
     [SerializeField] private float maxVerticalAngle = 50f;
     [SerializeField] private float fieldOfView = 60f;
+
+    [Header("Camera Collision")]
+    [SerializeField] private LayerMask cameraCollisionMask = ~0;
+    [SerializeField, Min(0.01f)] private float collisionRadius = 0.25f;
+    [SerializeField, Min(0f)] private float collisionSafetyOffset = 0.1f;
+    [SerializeField, Min(0f)] private float collisionMinDistance = 1.2f;
+    [SerializeField, Min(0f)] private float collisionInSpeed = 16f;
+    [SerializeField, Min(0f)] private float collisionOutSpeed = 8f;
 
     [Header("Target Switching")]
     [Range(5f, 15f)]
     [SerializeField] private float targetSwitchSensitivity = 10f;
+    [SerializeField, Min(0f)] private float targetSwitchCooldown = 0.2f;
 
     [Header("Lock-On Settings")]
     [SerializeField] private float lockOnRange = 30f;
     [SerializeField] private LayerMask enemyLayer;
+    [SerializeField] private LayerMask lineOfSightBlockerLayer = ~0;
+    [SerializeField, Min(0f)] private float lockBreakDistance = 35f;
+    [SerializeField, Min(0f)] private float lineOfSightGraceSeconds = 0.5f;
+    [SerializeField, Min(0f)] private float targetPointHeightOffset = 1.2f;
+    [SerializeField] private string targetPointTransformName = "clavicle_l";
+    [SerializeField] private bool retargetOnInvalid = true;
+    [SerializeField] private bool enableLockOnDebugLogs;
+
+    [Header("Lock-On Indicator")]
+    [SerializeField, Min(0f)] private float indicatorPositionSmoothing = 18f;
+    [SerializeField, Min(0f)] private float indicatorBloomIntensity = 3f;
+    [SerializeField, Min(1f)] private float indicatorBloomScale = 2.25f;
+    [SerializeField, Min(0f)] private float indicatorBloomPulseAmplitude = 0.1f;
+    [SerializeField, Min(0f)] private float indicatorBloomPulseSpeed = 8f;
 
     private Camera cam;
-    private bool isLockedOn;
-    private Transform lockedTarget;
-    private float currentHorizontalAngle;
-    private float currentVerticalAngle;
-    private InputSystem_Actions playerControls;
-    private bool canSwitchTargets = true;
-    private Canvas uiCanvas;
-    private GameObject lockOnIndicator;
-    private Image indicatorImage;
+    private CameraOrbitRig cameraOrbitRig;
+    private LockOnInputRouter lockOnInputRouter;
+    private LockOnTargetService lockOnTargetService;
+    private LockedTargetBinding lockedTargetBinding;
+    private LockOnSession lockOnSession;
+    private LockOnIndicatorPresenter lockOnIndicatorPresenter;
 
-    private Vector3 targetCameraPosition;
-    private Quaternion targetCameraRotation;
-    private bool isTransitioningOutOfLock = false;
+    public bool IsLockedOn => lockOnSession != null && lockOnSession.IsLockedOn;
 
-    private System.Collections.IEnumerator SwitchCooldown()
-    {
-        canSwitchTargets = false;
-        yield return new WaitForSeconds(0.2f); // 200ms cooldown
-        canSwitchTargets = true;
-    }
+    public Transform GetLockedTarget() => lockOnSession != null ? lockOnSession.LockedTarget : null;
 
     private void Awake()
     {
+        if (string.IsNullOrWhiteSpace(targetPointTransformName))
+        {
+            targetPointTransformName = "clavicle_l";
+        }
+
         cam = GetComponent<Camera>();
         cam.fieldOfView = fieldOfView;
 
-        // Create UI Canvas for lock-on indicator
-        GameObject canvasGO = new GameObject("LockOnCanvas");
-        uiCanvas = canvasGO.AddComponent<Canvas>();
-        uiCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvasGO.AddComponent<CanvasScaler>();
-        canvasGO.AddComponent<GraphicRaycaster>();
-        uiCanvas.sortingOrder = 100; // Render on top
+        cameraCollisionMask = ResolveDefaultCameraCollisionMask(cameraCollisionMask);
+        cameraOrbitRig = new CameraOrbitRig(
+            transform,
+            offset,
+            rotationSpeed,
+            freeCameraSmoothing,
+            lockOnCameraSmoothing,
+            minVerticalAngle,
+            maxVerticalAngle,
+            new CameraCollisionSolver(),
+            cameraCollisionMask,
+            collisionRadius,
+            collisionSafetyOffset,
+            collisionMinDistance,
+            collisionInSpeed,
+            collisionOutSpeed);
+        lockOnInputRouter = new LockOnInputRouter(targetSwitchCooldown);
+        lockOnInputRouter.ToggleLockRequested += HandleToggleLockRequested;
 
-        // Create lock-on indicator UI element
-        lockOnIndicator = new GameObject("LockOnIndicator");
-        lockOnIndicator.transform.SetParent(uiCanvas.transform);
-        indicatorImage = lockOnIndicator.AddComponent<Image>();
-        indicatorImage.color = Color.white;
-        indicatorImage.rectTransform.sizeDelta = new Vector2(10, 10);
+        lockOnIndicatorPresenter = new LockOnIndicatorPresenter(
+            cam,
+            indicatorPositionSmoothing,
+            indicatorBloomIntensity,
+            indicatorBloomScale,
+            indicatorBloomPulseAmplitude,
+            indicatorBloomPulseSpeed,
+            enableLockOnDebugLogs);
 
-        // Load the reticle texture and create sprite
-        Texture2D reticleTexture = Resources.Load<Texture2D>("LockOnIndicator");
-        indicatorImage.sprite = Sprite.Create(reticleTexture, new Rect(0, 0, reticleTexture.width, reticleTexture.height), new Vector2(0.5f, 0.5f));
-
-        lockOnIndicator.SetActive(false);
-
-        playerControls = new InputSystem_Actions();
-        playerControls.Player.LockOn.performed += OnLockOnToggle;
+        InitializeLockOnGraph();
     }
 
     private void OnEnable()
     {
-        playerControls.Enable();
+        lockOnInputRouter?.Enable();
     }
 
     private void OnDisable()
     {
-        playerControls.Disable();
+        lockOnInputRouter?.Disable();
     }
 
     private void Start()
@@ -92,266 +139,193 @@ public class CameraController : MonoBehaviour
         if (playerTransform == null)
         {
             Debug.LogError("Player Transform not assigned to CameraController!");
+            return;
         }
+
+        InitializeLockOnGraph();
     }
 
     private void LateUpdate()
     {
-        Vector2 currentLookInput = playerControls.Player.Look.ReadValue<Vector2>();
-
-        if (isLockedOn && lockedTarget != null)
+        if (playerTransform == null)
         {
-            HandleLockOnCamera();
-            UpdateLockOnIndicator();
-            // Handle target switching with mouse input
-            if (currentLookInput.magnitude > targetSwitchSensitivity && canSwitchTargets)
+            return;
+        }
+
+        InitializeLockOnGraph();
+
+        lockOnInputRouter.Tick(Time.deltaTime);
+        Vector2 lookInput = lockOnInputRouter.ReadLookInput();
+
+        if (lockOnSession != null)
+        {
+            lockOnSession.Validate(Time.deltaTime);
+
+            if (lockOnSession.IsLockedOn)
             {
-                SwitchTarget(currentLookInput);
-                StartCoroutine(SwitchCooldown());
+                if (lockOnInputRouter.TryConsumeSwitchInput(lookInput, targetSwitchSensitivity, out Vector2 switchDirection))
+                {
+                    lockOnSession.TrySwitchTarget(switchDirection);
+                }
+
+                Transform lockedTarget = lockOnSession.LockedTarget;
+                if (lockedTarget == null)
+                {
+                    lockOnIndicatorPresenter?.Hide();
+                    return;
+                }
+
+                Vector3 lockOnTargetPoint = TargetPointResolver.ResolveTargetPoint(
+                    lockedTarget,
+                    targetPointHeightOffset,
+                    targetPointTransformName);
+
+                cameraOrbitRig.UpdateLockOn(playerTransform, lockOnTargetPoint, Time.deltaTime);
+                lockOnIndicatorPresenter?.Update(lockOnTargetPoint, true, Time.deltaTime);
+                return;
             }
         }
-        else if (isTransitioningOutOfLock)
+
+        cameraOrbitRig.UpdateFree(playerTransform, lookInput, Time.deltaTime);
+        lockOnIndicatorPresenter?.Hide();
+    }
+
+    private void OnDestroy()
+    {
+        if (lockOnSession != null)
         {
-            HandleTransitionOutOfLock();
+            lockOnSession.OnLockOnStarted -= HandleSessionLockOnStarted;
+            lockOnSession.OnLockOnEnded -= HandleSessionLockOnEnded;
+            lockOnSession.OnLockTargetChanged -= HandleSessionLockTargetChanged;
+            lockOnSession.Dispose();
+            lockOnSession = null;
+        }
+
+        if (lockedTargetBinding != null)
+        {
+            lockedTargetBinding.Dispose();
+            lockedTargetBinding = null;
+        }
+
+        if (lockOnInputRouter != null)
+        {
+            lockOnInputRouter.ToggleLockRequested -= HandleToggleLockRequested;
+            lockOnInputRouter.Dispose();
+            lockOnInputRouter = null;
+        }
+
+        lockOnIndicatorPresenter?.Dispose();
+        lockOnIndicatorPresenter = null;
+    }
+
+    private void InitializeLockOnGraph()
+    {
+        if (lockOnSession != null || playerTransform == null)
+        {
+            return;
+        }
+
+        lockOnTargetService = new LockOnTargetService(
+            playerTransform,
+            cam,
+            enemyLayer,
+            lineOfSightBlockerLayer,
+            lockOnRange,
+            lockBreakDistance,
+            lineOfSightGraceSeconds,
+            targetPointHeightOffset,
+            targetPointTransformName,
+            enableLockOnDebugLogs);
+
+        lockedTargetBinding = new LockedTargetBinding();
+
+        lockOnSession = new LockOnSession(
+            lockOnTargetService,
+            lockedTargetBinding,
+            retargetOnInvalid,
+            enableLockOnDebugLogs);
+
+        lockOnSession.OnLockOnStarted += HandleSessionLockOnStarted;
+        lockOnSession.OnLockOnEnded += HandleSessionLockOnEnded;
+        lockOnSession.OnLockTargetChanged += HandleSessionLockTargetChanged;
+    }
+
+    private void HandleToggleLockRequested()
+    {
+        if (playerTransform == null)
+        {
+            return;
+        }
+
+        InitializeLockOnGraph();
+        if (lockOnSession == null)
+        {
+            return;
+        }
+
+        if (lockOnSession.IsLockedOn)
+        {
+            lockOnSession.UnlockManual();
         }
         else
         {
-            HandleFreeCamera();
+            lockOnSession.TryLockBestTarget();
         }
     }
 
-    private void HandleFreeCamera()
+    private void HandleSessionLockOnStarted()
     {
-        Vector2 currentLookInput = playerControls.Player.Look.ReadValue<Vector2>();
-
-        currentHorizontalAngle += currentLookInput.x * rotationSpeed;
-        currentVerticalAngle -= currentLookInput.y * rotationSpeed;
-        currentVerticalAngle = Mathf.Clamp(currentVerticalAngle, minVerticalAngle, maxVerticalAngle);
-
-        Quaternion rotation = Quaternion.Euler(currentVerticalAngle, currentHorizontalAngle, 0);
-
-        Vector3 desiredPosition = playerTransform.position + rotation * offset;
-        Quaternion desiredRotation = Quaternion.LookRotation(playerTransform.position + Vector3.up * 1.5f - desiredPosition);
-
-        // Smooth camera movement and rotation
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * cameraSmoothSpeed);
-        transform.rotation = Quaternion.Lerp(transform.rotation, desiredRotation, Time.deltaTime * cameraSmoothSpeed);
+        OnLockOnStarted?.Invoke();
     }
 
-    private void HandleLockOnCamera()
+    private void HandleSessionLockOnEnded()
     {
-        // Calculate target position and rotation
-        Vector3 directionToTarget = (lockedTarget.position - playerTransform.position).normalized;
-        Vector3 desiredCameraPosition = playerTransform.position - directionToTarget * offset.magnitude + Vector3.up * offset.y;
-        Quaternion desiredCameraRotation = Quaternion.LookRotation(lockedTarget.position + Vector3.up * 1.5f - desiredCameraPosition);
+        cameraOrbitRig?.SyncFreeAnglesFromCurrent();
+        lockOnIndicatorPresenter?.Hide();
+        OnLockOnEnded?.Invoke();
+    }
 
-        transform.position = Vector3.Lerp(transform.position, desiredCameraPosition, Time.deltaTime * cameraSmoothSpeed);
-        transform.rotation = Quaternion.Lerp(transform.rotation, desiredCameraRotation, Time.deltaTime * cameraSmoothSpeed);
+    private void HandleSessionLockTargetChanged(Transform previousTarget, Transform currentTarget)
+    {
+        OnLockTargetChanged?.Invoke(previousTarget, currentTarget);
+    }
 
-        // Make player face the target
-        Vector3 playerToTarget = lockedTarget.position - playerTransform.position;
-        playerToTarget.y = 0;
-        if (playerToTarget != Vector3.zero)
+    private void OnDrawGizmosSelected()
+    {
+        if (!enableLockOnDebugLogs || playerTransform == null)
         {
-            playerTransform.rotation = Quaternion.LookRotation(playerToTarget);
+            return;
         }
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(playerTransform.position, lockOnRange);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(playerTransform.position, lockBreakDistance);
     }
 
-
-    private void OnLockOnToggle(InputAction.CallbackContext context)
+    private static LayerMask ResolveDefaultCameraCollisionMask(LayerMask configuredMask)
     {
-        if (isLockedOn)
+        if (configuredMask.value != ~0)
         {
-            UnlockTarget();
+            return configuredMask;
         }
-        else
+
+        int resolvedMask = ~0;
+        ExcludeLayerByName(ref resolvedMask, "Enemy");
+        ExcludeLayerByName(ref resolvedMask, "Hitbox");
+        ExcludeLayerByName(ref resolvedMask, "Hurtbox");
+        ExcludeLayerByName(ref resolvedMask, "UI");
+        ExcludeLayerByName(ref resolvedMask, "Ignore Raycast");
+        return resolvedMask;
+    }
+
+    private static void ExcludeLayerByName(ref int mask, string layerName)
+    {
+        int layerIndex = LayerMask.NameToLayer(layerName);
+        if (layerIndex >= 0)
         {
-            FindAndLockTarget();
+            mask &= ~(1 << layerIndex);
         }
-    }
-
-    private void FindAndLockTarget()
-    {
-        Collider[] enemiesInRange = Physics.OverlapSphere(playerTransform.position, lockOnRange, enemyLayer);
-
-        if (enemiesInRange.Length == 0) return;
-
-        Transform bestTarget = null;
-        float bestScore = float.MaxValue;
-
-        // Get player's viewport position to determine sections top and bottom section
-        Vector3 playerViewportPos = cam.WorldToViewportPoint(playerTransform.GetComponent<Collider>().bounds.center);
-
-        foreach (Collider enemy in enemiesInRange)
-        {
-            Vector3 viewportPos = cam.WorldToViewportPoint(enemy.transform.position);
-            if (viewportPos.z <= 0 || viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0 || viewportPos.y > 1)
-                continue; // Not in view
-
-            // Check top section first, then bottom (prioritize top)
-            bool isInTopSection = viewportPos.y > playerViewportPos.y;
-            float sectionPriority = isInTopSection ? 0 : 1;
-
-            // Distance from center
-            float centerDistance = Vector2.Distance(new Vector2(viewportPos.x, viewportPos.y), new Vector2(0.5f, 0.5f));
-
-            // Distance from player
-            float playerDistance = Vector3.Distance(playerTransform.position, enemy.transform.position);
-
-            // Score: prioritize section (top first), then player distance, then center proximity
-            float score = sectionPriority * 1000 + playerDistance * 100 + centerDistance;
-
-            if (score < bestScore)
-            {
-                bestScore = score;
-                bestTarget = enemy.transform;
-            }
-        }
-
-        if (bestTarget != null)
-        {
-            LockOnTarget(bestTarget);
-        }
-    }
-
-    private void LockOnTarget(Transform target)
-    {
-        lockedTarget = target;
-        isLockedOn = true;
-        AddLockOnIndicator(target);
-        UpdateTargetCameraTransform();
-    }
-
-    private void UpdateTargetCameraTransform()
-    {
-        if (lockedTarget != null)
-        {
-            Vector3 directionToTarget = (lockedTarget.position - playerTransform.position).normalized;
-            targetCameraPosition = playerTransform.position - directionToTarget * offset.magnitude + Vector3.up * offset.y;
-            targetCameraRotation = Quaternion.LookRotation(lockedTarget.position + Vector3.up * 1.5f - targetCameraPosition);
-        }
-    }
-
-    private void UnlockTarget()
-    {
-        if (lockedTarget != null)
-        {
-            RemoveLockOnIndicator(lockedTarget);
-        }
-        isLockedOn = false;
-        lockedTarget = null;
-
-        UpdateFreeCameraAnglesFromCurrent();
-    }
-
-    private void UpdateFreeCameraAnglesFromCurrent()
-    {
-        Vector3 cameraForward = transform.forward;
-        cameraForward.y = 0;
-        if (cameraForward != Vector3.zero)
-        {
-            currentHorizontalAngle = Mathf.Atan2(cameraForward.x, cameraForward.z) * Mathf.Rad2Deg;
-        }
-
-        Vector3 cameraForwardNormalized = transform.forward.normalized;
-        currentVerticalAngle = -Mathf.Asin(cameraForwardNormalized.y) * Mathf.Rad2Deg;
-        currentVerticalAngle = Mathf.Clamp(currentVerticalAngle, minVerticalAngle, maxVerticalAngle);
-    }
-
-    private void UpdateFreeCameraTarget()
-    {
-        Quaternion rotation = Quaternion.Euler(currentVerticalAngle, currentHorizontalAngle, 0);
-        targetCameraPosition = playerTransform.position + rotation * offset;
-        targetCameraRotation = Quaternion.LookRotation(playerTransform.position + Vector3.up * 1.5f - targetCameraPosition);
-    }
-
-    private void HandleTransitionOutOfLock()
-    {
-        // Allow mouse input during transition for gradual control takeover
-        Vector2 currentLookInput = playerControls.Player.Look.ReadValue<Vector2>();
-        currentHorizontalAngle += currentLookInput.x * rotationSpeed;
-        currentVerticalAngle -= currentLookInput.y * rotationSpeed;
-        currentVerticalAngle = Mathf.Clamp(currentVerticalAngle, minVerticalAngle, maxVerticalAngle);
-
-        UpdateFreeCameraTarget();
-
-        transform.position = Vector3.Lerp(transform.position, targetCameraPosition, Time.deltaTime * cameraSmoothSpeed);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetCameraRotation, Time.deltaTime * cameraSmoothSpeed);
-
-        if (Vector3.Distance(transform.position, targetCameraPosition) < 0.5f &&
-            Quaternion.Angle(transform.rotation, targetCameraRotation) < 5f)
-        {
-            isTransitioningOutOfLock = false;
-        }
-    }
-
-    public bool IsLockedOn => isLockedOn;
-
-    private void UpdateLockOnIndicator()
-    {
-        Vector3 worldPos = lockedTarget.GetComponent<Collider>().bounds.center;
-
-        Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
-        Vector2 localPos;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(uiCanvas.GetComponent<RectTransform>(), screenPos, null, out localPos); // Use null for screen space overlay
-        indicatorImage.rectTransform.localPosition = localPos;
-        lockOnIndicator.SetActive(isLockedOn && lockedTarget != null); // Always show when locked, regardless of position
-    }
-    public void SwitchTarget(Vector2 inputDirection)
-    {
-        if (!isLockedOn || lockedTarget == null || inputDirection.magnitude < 0.1f) return;
-
-        Collider[] enemiesInRange = Physics.OverlapSphere(playerTransform.position, lockOnRange, enemyLayer);
-        Transform bestTarget = null;
-        float bestAngle = float.MaxValue;
-
-        // Get current target viewport position
-        Vector3 currentTargetViewport = cam.WorldToViewportPoint(lockedTarget.position);
-
-        // Normalize input direction (mouse delta)
-        Vector2 normalizedInput = inputDirection.normalized;
-
-        foreach (Collider enemy in enemiesInRange)
-        {
-            if (enemy.transform == lockedTarget) continue;
-
-            Vector3 enemyViewport = cam.WorldToViewportPoint(enemy.transform.position);
-            if (enemyViewport.z <= 0 || enemyViewport.x < 0 || enemyViewport.x > 1 || enemyViewport.y < 0 || enemyViewport.y > 1)
-                continue;
-
-            // Vector from current target to enemy in view space
-            Vector2 viewSpaceDirection = new Vector2(enemyViewport.x - currentTargetViewport.x, enemyViewport.y - currentTargetViewport.y);
-
-            // Calculate angle between input direction and view space direction
-            float angle = Vector2.Angle(normalizedInput, viewSpaceDirection.normalized);
-
-            // Consider distance as secondary factor (closer targets preferred)
-            float distance = viewSpaceDirection.magnitude;
-            angle += distance * 0.1f; // Small penalty for distance
-
-            if (angle < bestAngle)
-            {
-                bestAngle = angle;
-                bestTarget = enemy.transform;
-            }
-        }
-
-        if (bestTarget != null)
-        {
-            RemoveLockOnIndicator(lockedTarget);
-            lockedTarget = bestTarget;
-            AddLockOnIndicator(bestTarget);
-            UpdateTargetCameraTransform();
-        }
-    }
-
-    private void AddLockOnIndicator(Transform target)
-    {
-        lockOnIndicator.SetActive(true);
-    }
-
-    private void RemoveLockOnIndicator(Transform target)
-    {
-        lockOnIndicator.SetActive(false);
     }
 }

@@ -4,14 +4,25 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 - Timing-based parrying
 - Aggressive melee duels
-- A timing-based parrying mechanic
+- Clear, readable combat feedback
 
 ### Core design priorities
 
 1. **Timing over stats:** Player success depends on reaction timing, not upgrades.
-2. **Aggression is rewarded:** Attacking and parrying is safer than passive blocking.
+2. **Aggression is rewarded:** Attacking and parrying are safer than passive blocking.
 3. **Simple systems, clear feedback:** Every combat interaction must have obvious visual/audio feedback to feel satisfying to the player.
 4. **Handle small enemy groups:** Too many enemies will overwhelm the player.
+
+#### Combat duel flow
+
+Enemy behaviour is a pressure exchange, not constant offense.
+
+- Defensive and offensive turns alternate in short cycles
+- Enemy parries some player attacks before taking initiative
+- An end-parry feedback acts as a clear momentum shift into counteroffense
+- Group pressure stays limited so 1v1 timing remains the core skill test
+
+This gives combat a "back and forth" exchange instead of one-sided pressure.
 
 ---
 
@@ -19,23 +30,23 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 ### Player Mechanics
 
-| Feature       | Description                            |
-| ------------- | -------------------------------------- |
-| Movement      | WASD + SHIFT to sprint                 |
-| Camera        | Third-person camera with lock-on       |
-| Light Attack  | Sword slash                            |
-| Block         | Hold to block incoming attacks         |
-| Perfect Parry | Timed block during enemy attack window |
-| Health        | Player can die if health reaches zero  |
+| Feature       | Description                           |
+| ------------- | ------------------------------------- |
+| Movement      | WASD + SHIFT to sprint                |
+| Camera        | Third-person camera with lock-on      |
+| Light Attack  | Sword slash                           |
+| Block         | Guard input (tap or hold)             |
+| Perfect Parry | Timed deflect during parry window     |
+| Health        | Player can die if health reaches zero |
 
 ### Enemy Mechanics
 
-| Feature     | Description                                                                                                   |
-| ----------- | ------------------------------------------------------------------------------------------------------------- |
-| Enemy Types | 1 enemy: <br>Regular enemy = low health <br>Miniboss = higher health<br>Boss = higher health + faster attacks |
-| Attacks     | 3-4 melee attacks                                                                                             |
-| Telegraphs  | Clear wind-up before each attack                                                                              |
-| Health      | Enemy can die if health reaches zero                                                                          |
+| Feature    | Description                                                      |
+| ---------- | ---------------------------------------------------------------- |
+| Attacks    | Shared 5-step melee combo (same combo data source as the player) |
+| Telegraphs | Clear wind-up before each attack                                 |
+| Parry      | Parry-focused defense with end-parry momentum shift, no blocking |
+| Health     | Enemy can die if health reaches zero                             |
 
 ---
 
@@ -51,17 +62,24 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 
 #### Block
 
-- Activated by holding the parry button (right click)
+- Activated by guard input (right click), using tap or hold
+- Holding keeps block active continuously
+- Tapping opens a short block linger window so block/parry can register without holding
 - Dull sound effect
 - Reduces damage dealt (50% reduction)
 
+**Block linger:**
+
+- Why it matters: It keeps combat outcomes consistent with player feel, so quick guard taps are not punished by frame-perfect release timing.
+- How it works: On guard release, blocking remains active for a short linger duration before turning off. Animation still follows live input (tap/hold), while linger only affects combat damage resolution.
+
 #### Perfect Parry
 
-- Triggered by pressing parry **within a short timing window** before impact
+- Triggered when guard is pressed and the hit lands **within the active parry window**
 - Negates all damage
 - Plays special sound + VFX
 
-**Timing Window:** 0.2 seconds.
+**Base Timing Window:** 0.2 seconds from the latest guard press.
 
 ### Attack Resolution Rules
 
@@ -70,6 +88,36 @@ Create a **small, polished, Sekiro-inspired combat experience** that demonstrate
 | No block      | Full health damage    |
 | Block         | Reduced health damage |
 | Perfect parry | No damage             |
+
+### Combat Movement Feedback
+
+To make outcomes readable in moment-to-moment play, combat applies short horizontal motion feedback in addition to damage/audio/VFX outcomes.
+
+#### Defender pushback on defended hits
+
+- Triggered on `Blocked` and `Parried` outcomes
+- Applies to the defender (player or enemy)
+- Push direction is based on attacker-to-defender direction on the XZ plane
+- If attacker direction is unavailable, fallback uses defender backward direction
+- `Blocked` pushback is stronger than `Parried` pushback
+- End-parry uses the same pushback as parry, with distinct optional VFX/SFX
+
+This creates a clear physical response on successful defense and helps communicate outcome strength.
+
+#### Attacker lunge on basic attack slash
+
+- Triggered on attack `Slash` phase
+- Applies a short forward horizontal impulse to the attacker
+- Uses current attack facing direction on the XZ plane
+- Intended as a slight commitment step to improve impact and spacing feel
+- Applied to both player and enemy attack phases through shared attack feedback hooks
+
+This keeps attack animations feeling connected to movement.
+
+#### Impulse tuning
+
+- Impulses use smooth horizontal velocity decay over their duration, then clear horizontal velocity
+- Enemy NavMesh movement is paused during active impulses and resumed afterward to preserve smooth lunge/pushback motion
 
 ---
 
@@ -85,7 +133,7 @@ Attack windows and eligibility checks are tied to animation events configured in
 - Signal transitions between states like idle, wind-up, and recovery.
   Implementation relies on Animator parameters and conditions, which should align with the state machine hierarchy to maintain timing consistency.
 
-#### Free assets:
+#### Free assets
 
 - Mixamo
 - Unity Starter Assets (humanoid animations)
@@ -94,30 +142,15 @@ Attack windows and eligibility checks are tied to animation events configured in
 
 #### Enemy States & Animations
 
-- **Idle:** Facing player
-  - **Walking:** Slow movement
-  - **Sprinting:** Fast movement
-- **Active:**
-  - **Attacking:** (with animation phases)
-    - **Wind-Up:** Telegraphing attack
-    - **Slash:** Active hit frames
-    - **Slow-down:** Brief pause after attack
-  - **Defensive:**
-    - **Pursuit:** Walking towards player
-    - **Orbiting:** Circling around player
-- **Dead:** Falls to the ground, disabled
-
-#### Enemy Types
-
-**Regular enemy:** low health
-**Miniboss:** higher health
-**Boss:** Higher health (+ faster attacks?)
-
-#### Enemy Attacks & Telegraphs
-
-- Attacks: 3-4 melee base attack animations, that chain into attack combos
-- Telegraphs: Clear wind-up before each attack
-- Health: Enemy can die if health reaches zero
+- **Idle:** Faces target, no attack/parry window
+- **Defensive Turn:**
+  - **Pursuit:** Move toward target until engagement distance
+  - **Orbit:** Circle target at orbit radius while maintaining facing
+  - **Parry Reactions:** Directional parry reaction clips
+- **Attack Turn:**
+  - Plays a sampled length of the shared combo attack chain
+  - Uses wind-up -> slash -> recovery attack phases from animation events
+- **Dead:** Combat flags close and the enemy object is disabled
 
 ### Player Specification
 
@@ -130,6 +163,8 @@ Attack windows and eligibility checks are tied to animation events configured in
   - **Slash 1:** Wind-Up → Slash → Slow-down
   - **Slash 2:** Wind-Up → Slash → Slow-down
   - **Slash 3:** Wind-Up → Slash → Slow-down
+  - **Slash 4:** Wind-Up → Slash → Slow-down
+  - **Slash 5:** Wind-Up → Slash → Slow-down
 - **Dead:** Falls to the ground, game over
 
 #### Player Attack Chain
@@ -138,9 +173,9 @@ The player attack system implements a combo chain using a state machine approach
 
 When the attack input is pressed while in Idle or certain movement states, transition to Slash 1. Each slash state follows a phased animation: Wind-Up (telegraph) → Slash (hit frames) → Slow-down (recovery).
 
-- If attack input is detected during the Slow-down phase of Slash 1, transition immediately to Slash 2, skipping the full return to Idle.
-- Similarly for Slash 2 → Slash 3.
-- After Slash 3's Slow-down, or if no input is received, transition back to Idle.
+- If attack input is detected during the Slow-down phase of Slash 1, transition immediately to Slash 2.
+- Similarly for Slash 2 → Slash 3, Slash 3 → Slash 4, and Slash 4 → Slash 5.
+- After Slash 5's Slow-down, or if no input is received, transition back to Idle.
 - Each subsequent slash starts from the pose at the end of the previous Slow-down, ensuring seamless visual flow without redundant animations.
 
 This allows for combos, with timing windows for inputs during recovery phases to maintain responsiveness.
@@ -149,7 +184,7 @@ Every attack in the combo chain registers active hit detection during specific a
 
 #### Anti-spam system
 
-The player's parry mechanic includes an anti-spamming system that reduces the timing window for parries after successive missed attempts.
+The player's parry mechanic includes an anti-spamming system that reduces the timing window for parries after successive rapid presses.
 
 ---
 
@@ -161,7 +196,7 @@ A scalable design for the player state machine. Instead of complicated player co
 
 This is great for creating custom behaviours that only occur in given states, for example customizing the behaviour executed upon entry or exit of a particular state. For example the implementation of **weighted movement:** (idle -> start-running -> running -> stop-running -> idle) and also **attack combos:** (slash 1 -> slash 2 -> slash 3).
 
-Each state should contain its own logic that dictates wether it should switch to a new state or stay on the current one. This switch logic may need to be checked each tick, switching the active state where applicable before finally executing any state specific code.
+Each state should contain its own logic that dictates whether it should switch to a new state or stay on the current one. This switch logic may need to be checked each tick, switching the active state where applicable before finally executing any state specific code.
 
 Interaction triggers like hit, block, and parry are controlled by state transitions. Unity's Animation system ensures that reaction states (e.g., Parry or Block State) activate during specified animation frames. For example, a hitbox/hurtbox interaction triggers `react_on_hit()` only if the state conditions align with the animation event.
 
@@ -173,23 +208,40 @@ Example Integration with Combat Logic:
 
 ### Camera Locking System
 
-When toggling the camera lock, it should check the camera's view for any lock-on components that are on screen. It should first check the top section of the view (over the players standing point), and if no target are found, we check the bottom section. Upon identifying targets, those closest to the center of the screen are considered, with a weighting system to favor targets closer to the player. With an optimal target selected, the camera rig is then rotated to face the target.
+When toggling the camera lock, it should check the camera's view for any lock-on components that are on screen. It should first check the top section of the view (over the player's standing point), and if no targets are found, we check the bottom section. Upon identifying targets, those closest to the center of the screen are considered, with a weighting system to favor targets closer to the player. With an optimal target selected, the camera rig is then rotated to face the target.
 
-To switch between targets, we take the input vector of the mouse and draw a line from the target in that direction in the view space. The view space is the coordinate system where the x and y axis are parallell to the screen, with the z axis corresponding to depth into the scene. We can use the x and y coordinates of objects in the view space to identify where they are on screen. We will calculate the difference in the angle between the input vector and each other target on screen. With consideration to distance, the target with the smallest angle is selected as the new camera target.
+To switch between targets, we take the input vector of the mouse and draw a line from the target in that direction in the view space. The view space is the coordinate system where the x and y axis are parallel to the screen, with the z axis corresponding to depth into the scene. We can use the x and y coordinates of objects in the view space to identify where they are on screen. We will calculate the difference in the angle between the input vector and each other target on screen. With consideration to distance, the target with the smallest angle is selected as the new camera target.
 
-> Use Cinemachine Target Group for initial lock-on, extend later with custom scripting. (Cinemachine could not be used, package does not have valid signature)
+> Initially planned to use Cinemachine Target Group for lock-on, but the package signature was invalid so it could not be used.
 
-### Omnidirectional Movement
+### Weighted Locomotion
 
-When we lock on to a target, the movement animations will be thrown off due to the player always moving forwards to the way it is facing.
+Movement is camera-relative, with animation blending driven by the current input direction and lock-on state.
 
-The players movement input vector should be used to determine which animations are used, and what influence they have on the final pose. (Equivalent of Godots SkeletonModifier3D, one for forward + backward, one for side to side). The x component controlling the left to right, and the y component controlling front to back.
+When locked on, the full 2D input vector drives directional blending (strafe + forward/back). When not locked on, blending prioritizes forward/back motion, with strafe reduced in the animation weighting. Locomotion flows through start/loop/stop phases, with the chosen phase and direction adapting to lock-on vs free movement.
+
+### Player Movement Weighting & Weapon Handling
+
+#### Movement Weighting
+
+- Locomotion uses a start -> loop -> stop flow, with directional starts and stops while locked on
+- Acceleration/deceleration for input press/releases for a more natural movement feel
+- Airborne movement has reduced control compared to grounded movement
+- Landing blends movement back in before full rotation and locomotion control resumes
+
+#### Equip/Unequip & Transition Rules
+
+- Equip weapon triggers when locked on, blocking, or attacking, and only begins while grounded
+- Unequip weapon triggers after a delay when none of those conditions are true, and is suppressed while sprinting or jumping
+- Equip/unequip transitions suppress movement and state transitions until the animation completes
+- Blocking is only valid when equipped and grounded
+- During attack recovery, blocking can start immediately, but movement and jump transitions are delayed until recovery passes
 
 ### Combat Mechanics
 
 #### Hit Detection
 
-When a hitbox intersects with a hurtbox, we trigger the owner of the hurtbox to reach on hit: `hurtbox.owner.react_on_hit()`. The eligibility checks we need to do when they hitbox and hurtboxes collide are:
+When a hitbox intersects with a hurtbox, we trigger the owner of the hurtbox to react on hit: `hurtbox.owner.react_on_hit()`. The eligibility checks we need to do when the hitbox and hurtboxes collide are:
 
 - The intersecting hitbox and hurtbox do not share the same owner
 - Is the hurtbox owner currently vulnerable? `is_vulnerable == true`
@@ -202,59 +254,61 @@ Attack windows for hitbox and hurtbox checks rely heavily on Unity's Animator sy
 - `is_attacking` and `is_vulnerable` are animation-driven flags updated dynamically by the state machine.
 - These variables should be synchronized with Unity Animator triggers, ensuring behavior aligns with visual timing.
 
-After verifying the elegibility of a hit, we then check the receiver's current state to decide between three outcomes. Parry state that triggers the parry logic, Block state that triggers the block logic, and anything else (other states) triggers the hit logic. For each of these states, we call a react function that adjusts the health (and posture later) based on the attack's hit data. We then force the state machine to transition the respective reactionary state. Each outcome has its own particles, lighting and sound effects that is triggered upon activation.
+After verifying the eligibility of a hit, we then check the receiver's current state to decide between three outcomes. Parry state that triggers the parry logic, Block state that triggers the block logic, and anything else (other states) triggers the hit logic. For each of these states, we call a react function that adjusts the health (and posture if implemented) based on the attack's hit data. We then force the state machine to transition the respective reactionary state. Each outcome has its own particles, lighting and sound effects that are triggered upon activation.
 
 #### Spam Prevention
 
 Every time the player presses the parry button in quick succession without actively parrying an attack, it should diminish the timeframe in which the parry window is active. This is to prevent the player spamming the parry button.
 
-To achieve this we should add a parry counter that counts how many parries are pressed in a given time frame. Every parry spam without parrying an attack, should add to the counter until the max of 4. For the first two parry inputs, there should be no effect on the parry timing window, staying at 0.2 seconds. However on the third parry input, the parry window should be reduced by 0.1 seconds, and for the fourth, 0 seconds, meaning that all parries will register as blocks. This prevention mechanic can be reset by not spamming parry for a certain amount of time or by successfully parrying an attack, resetting the counter.
+To achieve this we use a parry counter that tracks rapid guard presses.
+
+| Rapid press count | Parry window |
+| ----------------- | ------------ |
+| 1                 | 0.2s         |
+| 2                 | 0.2s         |
+| 3                 | 0.1s         |
+| 4+                | 0.0s         |
+
+When the window reaches `0.0s`, guard still blocks but no perfect parry is possible.
+
+**Reset conditions:**
+
+- No rapid presses for ~0.5 seconds
+- Successful perfect parry
+
+**Post-parry / post-block-release behaviour:**
+
+- On a quick tap parry, the player can remain in `BlockingState` briefly even after releasing guard
+- During this short linger, other actions are temporarily hindered, creating the current post-parry lock feel
+- If guard is held longer, releasing block allows attacking almost immediately, which keeps combat responsive
 
 ### Enemy Behaviour
 
-Like our player controller, all state machine nodes extend from a common class, the Hierarchal Finite State Machine (HFSM). On ready, we check each node for children, and if they have children, the node is marked as a container. Every game tick, we check the top of the hierarchy, and if the node is a container we check conditions to determine which internal move is chosen. This is repeated indefinetly until a non-container node is selected. While we can run code in container nodes, the bulk of the behaviour is coded into the non-container. Here is a simplified hierarchy:
+Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defense Turn ...`) with dead-state override.
 
-- Active
-  - Attacking
-    - Combo series
-      - Attack 1
-      - Attack 2
-  - Defensive
-    - Pursuit
-    - Orbiting
+#### Defensive turn
 
-When choosing between the attacking or defensive container we can for example determine this by the distance to the player.
+- On entering defense, enemy samples:
+  - A defense duration from profile min/max
+  - A required number of successful parries before counter from profile min/max
+- During defense, enemy movement mode is distance-based:
+  - Pursue while outside engage range
+  - Orbit while inside engage range
+- Defensive turn keeps the enemy continuously parry-ready while it has a valid target.
+- Enemy defense is parry-only, no blocking.
+- Each successful parry increments a counter. On the final required parry:
+  - End-parry feedback is queued (distinct SFX/VFX variant)
+  - A configurable `counterPrepDelay` timer starts
+  - Enemy transitions into attack turn when that timer is ready
 
-While defensive, the enemy will either walk towards the player or orbit them depending on the distance between them. Upon entering the defensive hierarchy, the AI picks a random length of time from a range to stay defensive for:
+#### Attack turn
 
-```
-defence_timer = rand_range(min_def_time, max_def_time)
-```
-
-Once the timer finishes, we transition to the attacking hierarchy. When attacking, we could assign attack combos and special attacks. We can make these being chosen either randomly or if certain conditions are met. For example initiating a lunge attack that is a special attack at medium or long range (special attack container, sibling of combo series, if we have time).
-
-In the attack combo node when active it should choose a random number of attacks to do within a range:
-
-```
-attacks_to_do = rand_range(min_attacks, max_attacks)
-```
-
-We could choose which attack it starts on as the attack cycle can loop. On each node of the combo, we should determine which attack can follow the previous one, choosing randomly if more than one follow-up attack. It would be nice if any attack that ends with the sword on a certain side, can be followed up by an attack that starts with the sword on that same side the previous ended on.
-
-To make the combat an "back and forth" exchange, the enemy should be able to parry when the player is attacking. We should check the player's `is_attacking` variable that we can retreive from the animations and check if it is true. If it is true, then we can tell the enemy to parry. In Sekiro, enemies will only parry a certain number of attacks before countering with their own. When the enemiy shifts from defence to offense it should be apparent by a more pronounced parry that is more dramatic with a different sound effect and look. We should set a random range of attacks to parry:
-
-```
-will_parry_amount = rand_range(min_parries, max_parries)
-```
-
-Every time the enemy parries an attack, we decrement this variable, and if it is `1` we transition to the end parry state, that is that dramatic parry mentioned before. After exiting this state, the enemy then immediately transition into attacking.
-
-Defensive nodes (Pursuit or Orbiting) and Attack nodes (Combos) should evaluate player states during each game tick. For instance:
-
-- If `player.is_attacking == true`, transition to Parry.
-- After executing a end parry, transition directly to the Combo series for counterattacks.
-
-This setup should mean that when we attack the enemy, they will parry for a certain amount of times before firing back with their own attacks that we need to parry ourselves.
+- On entering attack turn, enemy closes parry window and remains does not parry for the whole attack turn.
+- Enemy acquires a global attack token before starting attacks so group pressure stays controlled (one active attacker at a time).
+- Enemy samples a combo chain length from profile min/max.
+- Range is required only to start the combo chain.
+- Once the first attack starts, the combo is committed and enemy finishes the sampled chain even if target distance changes.
+- After chain completion, enemy transitions back to defensive turn.
 
 ---
 
@@ -268,7 +322,7 @@ With this timing-based combat every action must have immediate, clear responses 
 | **Enemy Attack**        | Wind-up animation                   | Whoosh                       |
 | **Block**               | Shield shimmer, no damage flash     | Dull clang, short block      |
 | **Perfect Parry**       | Bright sparks                       | Loud satisfying clang + echo |
-| **End Parry**           | More bright sparks                  | Different clanng sound       |
+| **End Parry**           | More bright sparks                  | Different clang sound        |
 | **Player Hit**          | Blood splatter                      | Meaty thud                   |
 | **Enemy Hit**           | Metal particles                     | Robot sounds or metal thud   |
 | **Player Death**        | Fade to black, death pose           | Scream??                     |
@@ -303,5 +357,5 @@ The combat system is successful if:
 ## Optional features if we have time
 
 - Heavy attacks that knocks the player back
-- Parry system with posture damage and breaking mechanics
 - Posture system for enemies and players
+  - Parry system with posture damage and stance breaking mechanics
