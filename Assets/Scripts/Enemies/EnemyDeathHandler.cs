@@ -10,8 +10,9 @@ public class EnemyDeathHandler : MonoBehaviour
     [Tooltip("A prefab containing only the skeleton with Rigidbodies, CharacterJoints, and Colliders. " +
              "No Animator, NavMeshAgent, or enemy scripts.")]
     [SerializeField] private GameObject ragdollPrefab;
-    [SerializeField, Min(0f)] private float ragdollImpulseMagnitude = 4f;
-    [SerializeField, Range(0f, 1f)] private float ragdollUpwardImpulseFraction = 0.25f;
+    [SerializeField, Min(0f)] private float ragdollImpulseMagnitude = 8f;
+    [SerializeField, Range(0f, 1f)] private float ragdollUpwardImpulseFraction = 0.4f;
+    [SerializeField, Range(0f, 1f)] private float ragdollSpreadFraction = 0.5f;
     [SerializeField, Min(0f)] private float ragdollDestroyDelay = 4f;
     [SerializeField] private string hipsBoneName = "pelvis";
 
@@ -116,13 +117,35 @@ public class EnemyDeathHandler : MonoBehaviour
             }
         }
 
-        // Apply an impulse to the hips to sell the direction of the killing blow.
-        Rigidbody hipsBody = FindHipsRigidbody(ragdollInstance);
-        if (hipsBody != null)
+        // Reparent Weapon_l to Scabbard_Target01 so the scabbard stays at the hip
+        // instead of following hand_l during ragdoll physics.
+        Transform ragdollWeaponL = null;
+        Transform ragdollScabbardTarget = null;
+        foreach (Transform t in ragdollInstance.GetComponentsInChildren<Transform>(true))
         {
-            Vector3 impulse = lastHitFromDirection * ragdollImpulseMagnitude;
-            impulse.y += ragdollImpulseMagnitude * ragdollUpwardImpulseFraction;
-            hipsBody.AddForce(impulse, ForceMode.Impulse);
+            if (t.name == "Weapon_l") ragdollWeaponL = t;
+            else if (t.name == "Scabbard_Target01") ragdollScabbardTarget = t;
+        }
+        if (ragdollWeaponL != null && ragdollScabbardTarget != null)
+        {
+            ragdollWeaponL.SetParent(ragdollScabbardTarget, true);
+        }
+
+        // Apply an impulse to all ragdoll bodies to sell the direction of the killing blow.
+        Vector3 baseImpulse = lastHitFromDirection * ragdollImpulseMagnitude;
+        baseImpulse.y += ragdollImpulseMagnitude * ragdollUpwardImpulseFraction;
+
+        Rigidbody hipsBody = FindHipsRigidbody(ragdollInstance);
+        foreach (Rigidbody rb in ragdollInstance.GetComponentsInChildren<Rigidbody>())
+        {
+            if (rb == hipsBody)
+            {
+                rb.AddForce(baseImpulse, ForceMode.Impulse);
+            }
+            else
+            {
+                rb.AddForce(baseImpulse * ragdollSpreadFraction, ForceMode.Impulse);
+            }
         }
 
         Destroy(ragdollInstance, ragdollDestroyDelay);

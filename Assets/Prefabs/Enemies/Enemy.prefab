@@ -2024,7 +2024,7 @@ Transform:
   m_GameObject: {fileID: 5606244082127673081}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.0142, z: 0.0471}
+  m_LocalPosition: {x: 0, y: -1.0035, z: 0.0743}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2281,6 +2281,7 @@ GameObject:
   - component: {fileID: 4001000000000000018}
   - component: {fileID: 1708405604126850839}
   - component: {fileID: 4024047644555340815}
+  - component: {fileID: 9056497955300651876}
   m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
@@ -2429,7 +2430,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockDamageMultiplier: 0.5
-  destroyGameObjectOnDeath: 1
 --- !u!114 &315235738487360374
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2656,9 +2656,25 @@ MonoBehaviour:
   ragdollPrefab: {fileID: 6021235121471109386, guid: aeaae90fc90c746c582615f4c7e563b6, type: 3}
   ragdollImpulseMagnitude: 4
   ragdollUpwardImpulseFraction: 0.25
+  ragdollSpreadFraction: 0.5
   ragdollDestroyDelay: 4
+  hipsBoneName: pelvis
   deathVfxPrefab: {fileID: 0}
   vfxSpawnOffset: {x: 0, y: 1, z: 0}
+--- !u!114 &9056497955300651876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880349450255457242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625510e171e54485ebc8153c55f838a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boneName: Weapon_l
+  targetName: Scabbard_Target01
 --- !u!1 &6883821836884234579
 GameObject:
   m_ObjectHideFlags: 0
