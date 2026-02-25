@@ -27,6 +27,8 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
     [Header("Screen Fade")]
     [SerializeField, Min(0f)] private float fadeDelay = 1f;
     [SerializeField, Min(0.01f)] private float fadeDuration = 6f;
+    [SerializeField] private string targetScene = "VanView";
+    [SerializeField, Min(0.01f)] private float fadeOutDuration = 1f;
 
     public event Action OnPlayerDied;
 
@@ -219,6 +221,6 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
 
     private void SpawnDeathFade()
     {
-        ScreenFade.Create(fadeDelay, fadeDuration);
+        ScreenFade.Create(fadeDelay, fadeDuration, targetScene, fadeOutDuration);
     }
 }
