@@ -24,7 +24,7 @@ public class MoneyUiController : MonoBehaviour
 
     public void UpdateCurrencyDisplay(int newAmount)
     {
-        moneyText.text = (newAmount.ToString() + " $");
+        moneyText.text = (newAmount.ToString());
     }
     
 
