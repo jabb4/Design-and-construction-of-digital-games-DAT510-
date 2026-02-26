@@ -8,14 +8,10 @@ using Combat;
 
 public class ItemUiController : MonoBehaviour
 {
-    [SerializeField]
-    private TextMeshProUGUI visibleAmount;
+    [SerializeField] private HealingSystemScript healingSystem; 
+    [SerializeField] private TextMeshProUGUI visibleAmount;
 
-    [SerializeField]
-    private TextMeshProUGUI visibleKeybind;
-
-    private int itemAmount;
-    private string keybind;
+    [SerializeField] private TextMeshProUGUI visibleKeybind;
 
     private void Start() 
     {
@@ -34,10 +30,7 @@ public class ItemUiController : MonoBehaviour
     private void OnEnable()
     {
         HealingSystemScript.OnBandagesChanged += SetItemAmount;
-
-        //Could also use a direct variable for HealingSystemScript,
-        // but should only ever exist one at a time, reduces manual coupling in editor
-        var healingSystem = FindFirstObjectByType<HealingSystemScript>();
+        
         if (healingSystem != null)
         {
             SetItemAmount(healingSystem.AmountBandages);
@@ -49,11 +42,8 @@ public class ItemUiController : MonoBehaviour
         HealingSystemScript.OnBandagesChanged -= SetItemAmount;
     }
 
-    public void SetKeybind(string Keybind)
+    public void SetKeybind(string keybind)
     {
-        keybind = Keybind;
-
-
         if (visibleKeybind != null)
             visibleKeybind.text = keybind;
         else
@@ -61,10 +51,8 @@ public class ItemUiController : MonoBehaviour
 
     }
 
-    public void SetItemAmount(int ItemAmount)
+    public void SetItemAmount(int itemAmount)
     {
-        itemAmount = ItemAmount;
-
         if (visibleAmount != null)
             visibleAmount.text = itemAmount.ToString();
         else
