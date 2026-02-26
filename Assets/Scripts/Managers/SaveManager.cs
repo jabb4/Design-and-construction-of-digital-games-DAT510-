@@ -58,6 +58,11 @@ public class SaveManager : MonoBehaviour
         return gameData.maxFuelAmount;
     }
 
+    public bool gameDataSaveExists()
+    {
+        return File.Exists(SavePath);
+    }
+
     public void LoadGameData()
     {
         if (!File.Exists(SavePath))
@@ -102,8 +107,8 @@ public class SaveManager : MonoBehaviour
     [System.Serializable]
     public class Data
     {
-        public int currency = 0;
-        public int fuelAmount = 100;
-        public int maxFuelAmount = 100;
+        public int currency = 100;
+        public int fuelAmount = 0;
+        public int maxFuelAmount = 0;
     }
 }

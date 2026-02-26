@@ -9,6 +9,8 @@ public class GameStateManager : MonoBehaviour
     private int fuelAmount;
     private int maxFuelAmount;
 
+    public bool gameSaveExists;
+
     public static event Action<int> OnCurrencyChanged;
     public static event Action<int> OnFuelChanged;
     public static event Action<int> OnMaxFuelChanged;
@@ -28,7 +30,7 @@ public class GameStateManager : MonoBehaviour
 
     private void Start()
     {
-        LoadGameState();
+        gameSaveExists =  SaveManager.Instance.gameDataSaveExists();
     }
 
     public int GetCurrency()
@@ -129,6 +131,8 @@ public class GameStateManager : MonoBehaviour
             SaveManager.Instance.SetFuelAmount(fuelAmount);
             SaveManager.Instance.SetMaxFuelAmount(maxFuelAmount);
             SaveManager.Instance.SaveGameData();
+
+            gameSaveExists =  SaveManager.Instance.gameDataSaveExists();
         }
     }
 
@@ -140,8 +144,6 @@ public class GameStateManager : MonoBehaviour
             currency = SaveManager.Instance.GetCurrency();
             fuelAmount = SaveManager.Instance.GetFuelAmount();
             maxFuelAmount = SaveManager.Instance.GetMaxFuelAmount();
-
-            OnCurrencyChanged?.Invoke(currency);
         }
     }
 }
