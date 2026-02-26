@@ -17,12 +17,6 @@ public class RaidExtractionZone : MonoBehaviour
     private bool isExtracting = false;
     private float currentHoldTime = 0f;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -86,7 +80,7 @@ public class RaidExtractionZone : MonoBehaviour
             yield return extractionUI.FadeToBlack();
         }
 
-        // Save data before exiting raid?? With GameStateManager?
+        GameStateManager.Instance.SaveGameState();
         SceneManager.LoadScene(targetSceneIndex);
     }
 }
