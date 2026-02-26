@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour, ICombatant
     private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
     private bool endParryOutcomeQueued;
+    private bool subscribedToDeath;
     public event Action<AttackHitInfo, DamageResolution> OnDamageResolved;
     public event Action<AttackHitInfo> OnParriedAttack;
 
@@ -54,6 +55,7 @@ public class Enemy : MonoBehaviour, ICombatant
 
         if (health != null && GetComponent<EnemyDeathHandler>() == null)
         {
+            subscribedToDeath = true;
             health.OnDied += HandleDied;
         }
 
@@ -129,7 +131,7 @@ public class Enemy : MonoBehaviour, ICombatant
 
     private void OnDestroy()
     {
-        if (health != null)
+        if (subscribedToDeath && health != null)
         {
             health.OnDied -= HandleDied;
         }
