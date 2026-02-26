@@ -2662,6 +2662,7 @@ MonoBehaviour:
   dissolveOnRemoval: 1
   dissolveDuration: 3
   dissolveShader: {fileID: 4800000, guid: ffca8461baed44d81ab166f211274d08, type: 3}
+  dissolveEmberMaterial: {fileID: 2100000, guid: ea1df07d3f08f4367aca73911c3b6bc0, type: 2}
   deathVfxPrefab: {fileID: 1349612467939472336, guid: 733738c7446f74385b7469a9596b21f1, type: 3}
   vfxBoneName: spine_03
 --- !u!114 &9056497955300651876
