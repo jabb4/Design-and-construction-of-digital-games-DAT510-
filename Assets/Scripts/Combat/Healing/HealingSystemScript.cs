@@ -12,6 +12,9 @@ namespace Combat
         private int maxBandages;
         [SerializeField]
         private int amountBandages;
+
+        public int AmountBandages => amountBandages; 
+
         public static event System.Action<int> OnBandagesChanged;
 
         [SerializeField]
