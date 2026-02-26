@@ -17,6 +17,9 @@
 - Gong Gong - [juskiddink](https://freesound.org/people/juskiddink/sounds/122681/)
 - Car starting - [giddster](https://freesound.org/people/giddster/sounds/437352/)
 
+### Assets
+- low poly street pack - [Dynamic Art](https://assetstore.unity.com/packages/3d/environments/urban/low-poly-street-pack-67475)
+
 ### Music
 - Main menu music - [Kike Gutz](https://www.freepik.com/audio/tune/taiko-flame-call)
 
