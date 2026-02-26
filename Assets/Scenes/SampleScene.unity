@@ -1938,6 +1938,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7229739942821558323, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      propertyPath: deathOverlaySound
+      value: 
+      objectReference: {fileID: 8300000, guid: 574d79124b0a0454caa569ae6a3961f0, type: 3}
+    - target: {fileID: 7229739942821558323, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: deathOverlayTexture
       value: 
       objectReference: {fileID: 2800000, guid: 277d39d6d89c14afba05b072de5ed58a, type: 3}

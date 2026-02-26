@@ -131,7 +131,9 @@ public class DeathOverlay : MonoBehaviour
                     SetIntensity(peakIntensity);
                     if (slamSound != null)
                     {
-                        AudioSource.PlayClipAtPoint(slamSound, Camera.main.transform.position);
+                        var audioSource = gameObject.AddComponent<AudioSource>();
+                        audioSource.spatialBlend = 0f;
+                        audioSource.PlayOneShot(slamSound);
                     }
                     phase = Phase.Slam;
                 }
