@@ -1867,7 +1867,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 690294675353372127, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: maxHealth
-      value: 100
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1616043764315128934, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_Name
@@ -1936,6 +1936,14 @@ PrefabInstance:
     - target: {fileID: 7229739942821558323, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: fadeHoldDuration
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7229739942821558323, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      propertyPath: deathOverlayTexture
+      value: 
+      objectReference: {fileID: 2800000, guid: 277d39d6d89c14afba05b072de5ed58a, type: 3}
+    - target: {fileID: 7229739942821558323, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      propertyPath: overlayFadeInDuration
+      value: 0.25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -24,6 +24,10 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
     [SerializeField] private GameObject deathVfxPrefab;
     [SerializeField] private string vfxBoneName = "spine_03";
 
+    [Header("Death Overlay")]
+    [SerializeField] private Texture deathOverlayTexture;
+    [SerializeField, Min(0f)] private float overlayDelay = 1f;
+
     [Header("Screen Fade")]
     [SerializeField, Min(0f)] private float fadeDelay = 1f;
     [SerializeField, Min(0.01f)] private float fadeDuration = 6f;
@@ -94,6 +98,7 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
                 cameraController.SetFollowTarget(followBone);
             }
 
+            SpawnDeathOverlay();
             SpawnDeathFade();
             OnPlayerDied?.Invoke();
             Destroy(gameObject);
@@ -101,6 +106,7 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
         else
         {
             SpawnDeathVfx(null);
+            SpawnDeathOverlay();
             SpawnDeathFade();
             OnPlayerDied?.Invoke();
             Destroy(gameObject, ragdollDestroyDelay);
@@ -219,6 +225,14 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
         else
         {
             Destroy(vfxInstance, ragdollDestroyDelay + 1f);
+        }
+    }
+
+    private void SpawnDeathOverlay()
+    {
+        if (deathOverlayTexture != null)
+        {
+            DeathOverlay.Create(deathOverlayTexture, overlayDelay);
         }
     }
 
