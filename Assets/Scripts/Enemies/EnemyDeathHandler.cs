@@ -16,6 +16,12 @@ public class EnemyDeathHandler : MonoBehaviour
     [SerializeField, Min(0f)] private float ragdollDestroyDelay = 4f;
     [SerializeField] private string hipsBoneName = "pelvis";
 
+    [Header("Dissolve on Removal")]
+    [Tooltip("After the ragdoll settles, dissolve it away with glowing edges instead of vanishing instantly.")]
+    [SerializeField] private bool dissolveOnRemoval = true;
+    [SerializeField, Min(0f)] private float dissolveDuration = 2f;
+    [SerializeField] private Shader dissolveShader;
+
     [Header("VFX")]
     [SerializeField] private GameObject deathVfxPrefab;
     [SerializeField] private string vfxBoneName = "spine_03";
@@ -153,7 +159,15 @@ public class EnemyDeathHandler : MonoBehaviour
             }
         }
 
-        Destroy(ragdollInstance, ragdollDestroyDelay);
+        if (dissolveOnRemoval && dissolveShader != null)
+        {
+            var dissolve = ragdollInstance.AddComponent<RagdollDissolveEffect>();
+            dissolve.Init(ragdollDestroyDelay, dissolveDuration, dissolveShader);
+        }
+        else
+        {
+            Destroy(ragdollInstance, ragdollDestroyDelay);
+        }
 
         Rigidbody hipsRb = hipsBody != null ? hipsBody : ragdollInstance.GetComponentInChildren<Rigidbody>();
         return hipsRb != null ? hipsRb.transform : ragdollInstance.transform;
