@@ -5,11 +5,14 @@ public class GameStateManager : MonoBehaviour
 {
     public static GameStateManager Instance { get; private set; }
 
+    [SerializeField] private int initCurrency = 0;
+    [SerializeField] private int initFuelAmount = 100;
+    [SerializeField] private int initMaxFuelAmount = 100;
+    public bool gameSaveExists;
+
     private int currency;
     private int fuelAmount;
     private int maxFuelAmount;
-
-    public bool gameSaveExists;
 
     public static event Action<int> OnCurrencyChanged;
     public static event Action<int> OnFuelChanged;
@@ -21,6 +24,7 @@ public class GameStateManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            gameSaveExists =  SaveManager.Instance.gameDataSaveExists();
         }
         else
         {
@@ -30,7 +34,9 @@ public class GameStateManager : MonoBehaviour
 
     private void Start()
     {
-        gameSaveExists =  SaveManager.Instance.gameDataSaveExists();
+        currency = initCurrency;
+        fuelAmount = initFuelAmount;
+        maxFuelAmount = initMaxFuelAmount;
     }
 
     public int GetCurrency()

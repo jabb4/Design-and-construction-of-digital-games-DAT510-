@@ -19,8 +19,6 @@ public class SaveManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
-        LoadGameData();
     }
 
     public void SetCurrency(int currency)
@@ -107,8 +105,8 @@ public class SaveManager : MonoBehaviour
     [System.Serializable]
     public class Data
     {
-        public int currency = 100;
-        public int fuelAmount = 0;
-        public int maxFuelAmount = 0;
+        public int currency;
+        public int fuelAmount;
+        public int maxFuelAmount;
     }
 }
