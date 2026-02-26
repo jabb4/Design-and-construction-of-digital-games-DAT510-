@@ -17,6 +17,7 @@ namespace Combat
 
         public event Action<float, float, float> OnDamaged;
         public event Action OnDied;
+        public event Action<float, float> OnHealthChanged;
 
         private void Awake()
         {
@@ -54,6 +55,7 @@ namespace Combat
 
             currentHealth -= appliedDamage;
             OnDamaged?.Invoke(appliedDamage, currentHealth, maxHealth);
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
             if (currentHealth <= 0f && !hasDied)
             {
@@ -80,6 +82,8 @@ namespace Combat
 
             float previous = currentHealth;
             currentHealth = Mathf.Min(maxHealth, currentHealth + clampedAmount);
+            
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
             return currentHealth - previous;
         }
 
@@ -87,6 +91,7 @@ namespace Combat
         {
             currentHealth = maxHealth;
             hasDied = false;
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
         }
     }
 }
