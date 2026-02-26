@@ -3412,11 +3412,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6918294161873237782, guid: 97233edd38424489c90187bcd491779e, type: 3}
       propertyPath: initialEnemies
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6918294161873237782, guid: 97233edd38424489c90187bcd491779e, type: 3}
       propertyPath: timeBetweenWaves
-      value: 5
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 6918294161873237782, guid: 97233edd38424489c90187bcd491779e, type: 3}
       propertyPath: spawnPoints.Array.size
