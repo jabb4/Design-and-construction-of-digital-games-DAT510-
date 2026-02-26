@@ -26,6 +26,7 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
 
     [Header("Death Overlay")]
     [SerializeField] private Texture deathOverlayTexture;
+    [SerializeField] private AudioClip deathOverlaySound;
     [SerializeField, Min(0f)] private float overlayDelay = 1f;
 
     [Header("Screen Fade")]
@@ -232,7 +233,7 @@ public class PlayerDeathHandler : MonoBehaviour, ICombatOutcomeFeedbackHook
     {
         if (deathOverlayTexture != null)
         {
-            DeathOverlay.Create(deathOverlayTexture, overlayDelay);
+            DeathOverlay.Create(deathOverlayTexture, overlayDelay, deathOverlaySound);
         }
     }
 

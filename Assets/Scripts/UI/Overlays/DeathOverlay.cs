@@ -22,13 +22,14 @@ public class DeathOverlay : MonoBehaviour
     private const float ShakeIntensity = 25f;
 
     private float shakeTimer;
+    private AudioClip slamSound;
 
     private enum Phase { Waiting, Slam, Bounce, Settle, Idle }
     private Phase phase = Phase.Waiting;
 
     public static DeathOverlay Create(Texture texture, float delay,
-        float baseIntensity = 4f, float peakIntensity = 60f,
-        float glowPulseDuration = 2.5f)
+        AudioClip slamSound = null, float baseIntensity = 4f,
+        float peakIntensity = 60f, float glowPulseDuration = 2.5f)
     {
         var go = new GameObject("DeathOverlay");
 
@@ -37,6 +38,7 @@ public class DeathOverlay : MonoBehaviour
         instance.baseIntensity = baseIntensity;
         instance.peakIntensity = peakIntensity;
         instance.glowPulseDuration = glowPulseDuration;
+        instance.slamSound = slamSound;
         instance.BuildUI(texture);
         return instance;
     }
@@ -125,9 +127,12 @@ public class DeathOverlay : MonoBehaviour
                 if (timer >= delay)
                 {
                     timer = 0f;
-                    // Instant full opacity — no fade
                     overlay.color = Color.white;
                     SetIntensity(peakIntensity);
+                    if (slamSound != null)
+                    {
+                        AudioSource.PlayClipAtPoint(slamSound, Camera.main.transform.position);
+                    }
                     phase = Phase.Slam;
                 }
                 break;
