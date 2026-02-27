@@ -1979,12 +1979,24 @@ PrefabInstance:
     m_TransformParent: {fileID: 2023511350}
     m_Modifications:
     - target: {fileID: 1293401702253126057, guid: c516723d43545498886028923067867e, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1293401702253126057, guid: c516723d43545498886028923067867e, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1293401702253126057, guid: c516723d43545498886028923067867e, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1293401702253126057, guid: c516723d43545498886028923067867e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1280
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1293401702253126057, guid: c516723d43545498886028923067867e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -525.7
+      value: -120
       objectReference: {fileID: 0}
     - target: {fileID: 1293401702253126057, guid: c516723d43545498886028923067867e, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2025,6 +2037,22 @@ PrefabInstance:
     - target: {fileID: 4247959911075473649, guid: c516723d43545498886028923067867e, type: 3}
       propertyPath: m_Name
       value: RaidExtractionUI
+      objectReference: {fileID: 0}
+    - target: {fileID: 6540663091551943331, guid: c516723d43545498886028923067867e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6540663091551943331, guid: c516723d43545498886028923067867e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7938543851619212701, guid: c516723d43545498886028923067867e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7938543851619212701, guid: c516723d43545498886028923067867e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
