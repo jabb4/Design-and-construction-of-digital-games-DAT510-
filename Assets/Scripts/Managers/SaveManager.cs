@@ -11,16 +11,16 @@ public class SaveManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            gameData = new Data();
+        }
+        else
         {
             Destroy(gameObject);
-            return;
         }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
-        LoadGameData();
     }
 
     public void SetCurrency(int currency)
@@ -58,11 +58,15 @@ public class SaveManager : MonoBehaviour
         return gameData.maxFuelAmount;
     }
 
+    public bool gameDataSaveExists()
+    {
+        return File.Exists(SavePath);
+    }
+
     public void LoadGameData()
     {
         if (!File.Exists(SavePath))
         {
-            gameData = new Data();
             return;
         }
 
@@ -102,8 +106,8 @@ public class SaveManager : MonoBehaviour
     [System.Serializable]
     public class Data
     {
-        public int currency = 0;
-        public int fuelAmount = 100;
-        public int maxFuelAmount = 100;
+        public int currency;
+        public int fuelAmount;
+        public int maxFuelAmount;
     }
 }

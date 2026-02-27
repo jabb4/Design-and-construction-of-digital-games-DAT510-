@@ -704,6 +704,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11f9c12029776f6419616183ca670afe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initCurrency: 0
+  initFuelAmount: 100
+  initMaxFuelAmount: 100
+  gameSaveExists: 0
   currencyOnEnemyDeath: 10
 --- !u!4 &863666438
 Transform:
@@ -1152,6 +1156,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4509746436113519221, guid: f64064a2e865b4a51a863398122b0b22, type: 3}
+      propertyPath: healingSystem
+      value: 
+      objectReference: {fileID: 231308397011411995}
     - target: {fileID: 6096798049441145297, guid: f64064a2e865b4a51a863398122b0b22, type: 3}
       propertyPath: m_Name
       value: PlayerRaidUI
@@ -2073,6 +2081,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d2db7d142b9cbf679083f80364e5fde9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &231308397011411995 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1854238989994023126, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+  m_PrefabInstance: {fileID: 4766243096130346978}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef15979b8679b9243bb12d569275a87f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &4044997279558330592

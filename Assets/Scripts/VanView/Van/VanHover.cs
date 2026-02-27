@@ -3,7 +3,9 @@ using UnityEngine.EventSystems;
 
 public class VanHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
-    public GameObject fuelTooltip;
+    [SerializeField] private GameObject vanMenu;
+    [SerializeField] private GameObject vanViewUI;
+
     private Outline outline;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -35,6 +37,7 @@ public class VanHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        fuelTooltip.SetActive(true);
+        vanViewUI.SetActive(false);
+        vanMenu.SetActive(true);
     }
 }
