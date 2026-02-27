@@ -40,14 +40,14 @@ public class MenuController : MonoBehaviour
     {
         GameStateManager.Instance.SetInitValues();
         GameStateManager.Instance.SaveGameState();
-        SceneManager.LoadSceneAsync(2);
+        SceneManager.LoadSceneAsync(1);
     }
 
     public void LoadGame()
     {
         // Make sure we load the saved values
         GameStateManager.Instance.LoadGameState();
-        SceneManager.LoadSceneAsync(2);
+        SceneManager.LoadSceneAsync(1);
     }
 
     public void QuitGame()
