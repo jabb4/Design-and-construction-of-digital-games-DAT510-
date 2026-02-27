@@ -39,6 +39,30 @@ namespace Enemies.AI
             Release(owner, 0f, 0f);
         }
 
+        public static void ReleaseAll(EnemyStateMachine owner)
+        {
+            if (owner == null)
+            {
+                return;
+            }
+
+            int instanceId = owner.GetInstanceID();
+            if (currentHolderId == instanceId)
+            {
+                currentHolderId = -1;
+                currentHolder = null;
+            }
+
+            if (priorityOwnerId == instanceId)
+            {
+                priorityOwnerId = -1;
+                priorityOwner = null;
+                priorityOwnerUntilTime = float.NegativeInfinity;
+            }
+
+            reentryBlockedUntilByOwnerId.Remove(instanceId);
+        }
+
         public static void Release(EnemyStateMachine owner, float globalCooldownSeconds, float reentryDelaySeconds)
         {
             if (owner == null)

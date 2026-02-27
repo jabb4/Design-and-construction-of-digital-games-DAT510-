@@ -18,6 +18,7 @@ namespace Combat
         public event Action<float, float, float> OnDamaged;
         public event Action OnDied;
         public event Action<float, float> OnHealthChanged;
+        public static event Action<HealthComponent> OnHealthComponentCreated;
 
         private void Awake()
         {
@@ -31,6 +32,7 @@ namespace Combat
             }
 
             hasDied = currentHealth <= 0f;
+            OnHealthComponentCreated?.Invoke(this);
         }
 
         private void OnValidate()

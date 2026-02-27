@@ -196,7 +196,7 @@ namespace Player.StateMachine
         /// Useful for short, controlled attack nudges.
         /// </summary>
         /// <param name="horizontalVelocity">World-space horizontal velocity (y ignored).</param>
-        public void SetHorizontalVelocity(Vector3 horizontalVelocity)
+        public void SetHorizontalVelocity(Vector3 horizontalVelocity, bool suppressUpwardVelocity = false)
         {
             if (rb == null)
             {
@@ -206,6 +206,10 @@ namespace Player.StateMachine
             Vector3 velocity = rb.linearVelocity;
             velocity.x = horizontalVelocity.x;
             velocity.z = horizontalVelocity.z;
+            if (suppressUpwardVelocity && IsGrounded && velocity.y > 0f)
+            {
+                velocity.y = 0f;
+            }
             rb.linearVelocity = velocity;
         }
 

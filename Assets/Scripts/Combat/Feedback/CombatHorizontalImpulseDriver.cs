@@ -7,6 +7,9 @@ namespace Combat
     [DisallowMultipleComponent]
     public sealed class CombatHorizontalImpulseDriver : MonoBehaviour
     {
+        [Header("Ground Behavior")]
+        [SerializeField] private bool suppressAirtimeWhenGrounded = true;
+
         [Header("Optional References")]
         [SerializeField] private CharacterMotor characterMotor;
         [SerializeField] private Rigidbody fallbackRigidbody;
@@ -126,7 +129,7 @@ namespace Combat
         {
             if (characterMotor != null)
             {
-                characterMotor.SetHorizontalVelocity(velocity);
+                characterMotor.SetHorizontalVelocity(velocity, suppressAirtimeWhenGrounded);
                 return;
             }
 
