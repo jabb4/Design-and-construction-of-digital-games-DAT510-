@@ -608,7 +608,7 @@ GameObject:
   - component: {fileID: 1854238989994023126}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -821,7 +821,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 594920d6044f94a7bb436472a9009726, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
   showDebugInfo: 0
   slowMotionEnabled: 0
   slowMotionScale: 1
@@ -829,6 +828,7 @@ MonoBehaviour:
   unequipDelay: 5
   blockRequestBufferAfterPress: 0.6
   weaponTransitionTimeout: 3
+  attackCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
 --- !u!114 &967580488707547334
 MonoBehaviour:
   m_ObjectHideFlags: 0
