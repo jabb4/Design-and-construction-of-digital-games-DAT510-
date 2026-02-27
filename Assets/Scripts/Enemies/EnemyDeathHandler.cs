@@ -26,6 +26,14 @@ public class EnemyDeathHandler : MonoBehaviour
     [SerializeField] private GameObject deathVfxPrefab;
     [SerializeField] private string vfxBoneName = "spine_03";
 
+    [Header("SFX")]
+    [SerializeField] private AudioSource deathAudioSource;
+    [SerializeField] private AudioClip deathSfx;
+    [SerializeField, Range(0f, 2f)] private float deathSfxVolume = 1f;
+    [SerializeField, Range(0.5f, 2f)] private float deathSfxMinPitch = 0.96f;
+    [SerializeField, Range(0.5f, 2f)] private float deathSfxMaxPitch = 1.04f;
+    [SerializeField] private bool use3dDeathSfx = true;
+
     private HealthComponent health;
     private Enemy enemy;
     private Animator animator;
@@ -84,11 +92,14 @@ public class EnemyDeathHandler : MonoBehaviour
         if (ragdollPrefab != null)
         {
             Transform hips = SpawnRagdoll(out Transform vfxBone);
+            Transform followBone = vfxBone != null ? vfxBone : hips;
+            PlayDeathSfx(followBone);
             SpawnDeathVfx(vfxBone != null ? vfxBone : hips);
             Destroy(gameObject);
         }
         else
         {
+            PlayDeathSfx(null);
             SpawnDeathVfx(null);
 
             if (animator != null)
@@ -220,5 +231,108 @@ public class EnemyDeathHandler : MonoBehaviour
         {
             Destroy(vfxInstance, ragdollDestroyDelay + 1f);
         }
+    }
+
+    private void PlayDeathSfx(Transform followTarget)
+    {
+        if (deathSfx == null)
+        {
+            return;
+        }
+
+        float minPitch = Mathf.Clamp(deathSfxMinPitch, 0.5f, 2f);
+        float maxPitch = Mathf.Clamp(deathSfxMaxPitch, 0.5f, 2f);
+        if (maxPitch < minPitch)
+        {
+            float temp = minPitch;
+            minPitch = maxPitch;
+            maxPitch = temp;
+        }
+
+        float pitch = Random.Range(minPitch, maxPitch);
+        float volume = Mathf.Clamp(deathSfxVolume, 0f, 2f);
+
+        AudioSource sourceToUse = deathAudioSource;
+        bool destroyEmitterAfterPlayback = false;
+
+        // If the configured source lives on this enemy hierarchy, it will be destroyed
+        // with the enemy during ragdoll death and the one-shot gets cut off.
+        if (sourceToUse == null || IsSourceOnThisEnemyHierarchy(sourceToUse))
+        {
+            sourceToUse = CreateTemporaryDeathAudioEmitter(followTarget, deathAudioSource);
+            destroyEmitterAfterPlayback = sourceToUse != null;
+        }
+
+        if (sourceToUse == null)
+        {
+            return;
+        }
+
+        sourceToUse.pitch = pitch;
+        sourceToUse.PlayOneShot(deathSfx, volume);
+
+        float lifeTime = deathSfx.length / Mathf.Max(0.01f, pitch);
+        if (destroyEmitterAfterPlayback)
+        {
+            Destroy(sourceToUse.gameObject, lifeTime + 0.1f);
+        }
+    }
+
+    private bool IsSourceOnThisEnemyHierarchy(AudioSource source)
+    {
+        if (source == null)
+        {
+            return false;
+        }
+
+        Transform sourceTransform = source.transform;
+        return sourceTransform == transform || sourceTransform.IsChildOf(transform);
+    }
+
+    private AudioSource CreateTemporaryDeathAudioEmitter(Transform followTarget, AudioSource template)
+    {
+        Transform anchor = followTarget != null ? followTarget : transform;
+        GameObject emitterObject = new GameObject("EnemyDeathSfx");
+        emitterObject.transform.position = anchor.position;
+        if (followTarget != null)
+        {
+            emitterObject.transform.SetParent(followTarget, true);
+        }
+
+        AudioSource source = emitterObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+
+        if (template != null)
+        {
+            source.outputAudioMixerGroup = template.outputAudioMixerGroup;
+            source.mute = template.mute;
+            source.bypassEffects = template.bypassEffects;
+            source.bypassListenerEffects = template.bypassListenerEffects;
+            source.bypassReverbZones = template.bypassReverbZones;
+            source.priority = template.priority;
+            source.volume = template.volume;
+            source.panStereo = template.panStereo;
+            source.spatialBlend = template.spatialBlend;
+            source.reverbZoneMix = template.reverbZoneMix;
+            source.dopplerLevel = template.dopplerLevel;
+            source.spread = template.spread;
+            source.minDistance = template.minDistance;
+            source.maxDistance = template.maxDistance;
+            source.rolloffMode = template.rolloffMode;
+            source.velocityUpdateMode = template.velocityUpdateMode;
+            source.ignoreListenerPause = template.ignoreListenerPause;
+            source.ignoreListenerVolume = template.ignoreListenerVolume;
+            source.spatialize = template.spatialize;
+            source.spatializePostEffects = template.spatializePostEffects;
+            source.SetCustomCurve(AudioSourceCurveType.CustomRolloff, template.GetCustomCurve(AudioSourceCurveType.CustomRolloff));
+            source.SetCustomCurve(AudioSourceCurveType.Spread, template.GetCustomCurve(AudioSourceCurveType.Spread));
+            source.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, template.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix));
+        }
+        else
+        {
+            source.spatialBlend = use3dDeathSfx ? 1f : 0f;
+        }
+
+        return source;
     }
 }
