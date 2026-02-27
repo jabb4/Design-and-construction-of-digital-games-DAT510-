@@ -6,7 +6,9 @@ public class RaidMapUIController : MonoBehaviour
 {
     public static RaidMapUIController Instance { get; private set; }
 
-    public GameObject vanViewUI;
+    [SerializeField] private GameObject vanViewUI;
+    [SerializeField] private int citySceneNumber = 0;
+    [SerializeField] private int templeSceneNumber = 3;
 
     private void Awake()
     {
@@ -57,11 +59,11 @@ public class RaidMapUIController : MonoBehaviour
 
     public void GoToCity()
     {
-        SceneManager.LoadSceneAsync(0);
+        SceneManager.LoadSceneAsync(citySceneNumber);
     }
 
     public void GoToTemple()
     {
-        SceneManager.LoadSceneAsync(0);
+        SceneManager.LoadSceneAsync(templeSceneNumber);
     }
 }
