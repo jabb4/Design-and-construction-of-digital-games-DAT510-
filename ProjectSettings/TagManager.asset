@@ -18,8 +18,8 @@ TagManager:
   - Terrain
   - Hitbox
   - Hurtbox
-  - 
-  - 
+  - Player
+  - Ragdoll
   - 
   - 
   - 

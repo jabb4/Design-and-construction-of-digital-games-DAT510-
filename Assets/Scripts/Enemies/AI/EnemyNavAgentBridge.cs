@@ -27,9 +27,18 @@ namespace Enemies.AI
         private Transform target;
         private float stoppingDistance = 1.8f;
         private float orbitRadius = 2.75f;
+        private float targetOrbitRadius = 2.75f;
         private float orbitAngleDegrees;
+        private float orbitAngleOffset;
+        private float angularSpeedJitter;
+        private float orbitDirectionSign;
+        private float orbitPathRequestTimer;
         private bool impulsePauseActive;
         private bool restoreUpdatePositionAfterImpulse = true;
+
+        private const float OrbitPathRequestInterval = 0.15f;
+        private const float OrbitRadiusSmoothSpeed = 4f;
+        private const float OffMeshRecoveryMaxDistance = 3f;
 
         public Vector3 CurrentVelocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
         public Vector3 DesiredVelocity => navMeshAgent != null ? navMeshAgent.desiredVelocity : Vector3.zero;
@@ -48,6 +57,13 @@ namespace Enemies.AI
             ResolveReferences();
         }
 
+        private void OnEnable()
+        {
+            orbitAngleOffset = Random.Range(0f, 360f);
+            angularSpeedJitter = Random.Range(0.8f, 1.2f);
+            orbitDirectionSign = Random.value > 0.5f ? 1f : -1f;
+        }
+
         private void OnDisable()
         {
             Stop();
@@ -61,13 +77,14 @@ namespace Enemies.AI
 
         private void Update()
         {
-            if (navMeshAgent == null)
+            if (navMeshAgent == null || !navMeshAgent.isActiveAndEnabled || !navMeshAgent.enabled)
             {
                 return;
             }
 
-            if (!IsAgentReadyForCommands())
+            if (!navMeshAgent.isOnNavMesh)
             {
+                TryRecoverOffMeshAgent();
                 return;
             }
 
@@ -107,7 +124,7 @@ namespace Enemies.AI
         {
             target = orbitTarget;
             mode = target == null ? MoveMode.Stopped : MoveMode.Orbit;
-            orbitRadius = Mathf.Max(0.1f, desiredRadius);
+            targetOrbitRadius = Mathf.Max(0.1f, desiredRadius);
         }
 
         public void Stop()
@@ -135,9 +152,12 @@ namespace Enemies.AI
                 return;
             }
 
+            orbitRadius = Mathf.MoveTowards(orbitRadius, targetOrbitRadius, OrbitRadiusSmoothSpeed * Time.deltaTime);
+
             Vector3 center = target.position;
-            orbitAngleDegrees += orbitAngularSpeedDegrees * Time.deltaTime;
-            float radians = orbitAngleDegrees * Mathf.Deg2Rad;
+            orbitAngleDegrees += orbitDirectionSign * orbitAngularSpeedDegrees * angularSpeedJitter * Time.deltaTime;
+            float effectiveAngle = orbitAngleDegrees + orbitAngleOffset;
+            float radians = effectiveAngle * Mathf.Deg2Rad;
             Vector3 candidate = center + new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians)) * orbitRadius;
 
             float distanceToCandidate = Vector3.Distance(transform.position, candidate);
@@ -145,6 +165,13 @@ namespace Enemies.AI
             {
                 return;
             }
+
+            orbitPathRequestTimer -= Time.deltaTime;
+            if (orbitPathRequestTimer > 0f)
+            {
+                return;
+            }
+            orbitPathRequestTimer = OrbitPathRequestInterval;
 
             navMeshAgent.stoppingDistance = 0.1f;
             navMeshAgent.SetDestination(candidate);
@@ -240,6 +267,19 @@ namespace Enemies.AI
                    navMeshAgent.isOnNavMesh;
         }
 
+        private void TryRecoverOffMeshAgent()
+        {
+            if (navMeshAgent == null || !navMeshAgent.isActiveAndEnabled)
+            {
+                return;
+            }
+
+            if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, OffMeshRecoveryMaxDistance, NavMesh.AllAreas))
+            {
+                navMeshAgent.Warp(hit.position);
+            }
+        }
+
         private void RestoreAgentPositionSyncIfNeeded()
         {
             if (!impulsePauseActive || navMeshAgent == null || !navMeshAgent.enabled)
@@ -249,7 +289,15 @@ namespace Enemies.AI
 
             if (restoreUpdatePositionAfterImpulse)
             {
-                navMeshAgent.nextPosition = transform.position;
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, OffMeshRecoveryMaxDistance, NavMesh.AllAreas))
+                {
+                    navMeshAgent.Warp(hit.position);
+                }
+                else
+                {
+                    navMeshAgent.nextPosition = transform.position;
+                }
+
                 navMeshAgent.updatePosition = true;
             }
 

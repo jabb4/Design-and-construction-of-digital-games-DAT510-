@@ -8,7 +8,6 @@ using Combat;
 public class Enemy : MonoBehaviour, ICombatant
 {
     [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
-    [SerializeField] private bool destroyGameObjectOnDeath = true;
 
     private HealthComponent health;
     private CombatFlagsComponent flags;
@@ -17,7 +16,7 @@ public class Enemy : MonoBehaviour, ICombatant
     private readonly List<global::Combat.ICombatAttackFeedbackHook> attackFeedbackHooks = new List<global::Combat.ICombatAttackFeedbackHook>(4);
     private readonly List<ICombatOutcomeFeedbackHook> outcomeFeedbackHooks = new List<ICombatOutcomeFeedbackHook>(4);
     private bool endParryOutcomeQueued;
-
+    private bool subscribedToDeath;
     public event Action<AttackHitInfo, DamageResolution> OnDamageResolved;
     public event Action<AttackHitInfo> OnParriedAttack;
 
@@ -54,8 +53,9 @@ public class Enemy : MonoBehaviour, ICombatant
         EnsureRigidbody();
         EnsureImpulseDriver();
 
-        if (health != null)
+        if (health != null && GetComponent<EnemyDeathHandler>() == null)
         {
+            subscribedToDeath = true;
             health.OnDied += HandleDied;
         }
 
@@ -131,22 +131,23 @@ public class Enemy : MonoBehaviour, ICombatant
 
     private void OnDestroy()
     {
-        if (health != null)
+        if (subscribedToDeath && health != null)
         {
             health.OnDied -= HandleDied;
         }
     }
 
-    private void HandleDied()
+    public void NotifyDeath()
     {
         CloseParryWindow();
         endParryOutcomeQueued = false;
         SyncCombatFlags();
+    }
 
-        if (destroyGameObjectOnDeath)
-        {
-            Destroy(gameObject);
-        }
+    private void HandleDied()
+    {
+        NotifyDeath();
+        Destroy(gameObject);
     }
 
     private void SyncCombatFlags()
@@ -287,6 +288,7 @@ public class Enemy : MonoBehaviour, ICombatant
             Defender = this,
             DefenderPushDirection = pushDirection,
             HitPoint = hit.HitPoint,
+            HitNormal = hit.HitNormal,
             IsEndParry = isEndParry
         };
 

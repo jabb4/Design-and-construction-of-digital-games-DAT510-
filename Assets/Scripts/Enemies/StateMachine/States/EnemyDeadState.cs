@@ -12,7 +12,6 @@ namespace Enemies.StateMachine.States
             {
                 Owner.NavBridge?.Stop();
                 Owner.ClearCurrentAttack();
-                Owner.TryCrossFadeState("Idle", 0.05f);
             }
         }
 
