@@ -2593,14 +2593,14 @@ MonoBehaviour:
   parriedPushDuration: 0.12
   pushEndSpeedFraction: 0.2
   impulseDriver: {fileID: 5732198460847952312}
-  audioSource: {fileID: 0}
+  audioSource: {fileID: 261203985312538899}
   ignoredVfx: {fileID: 0}
   fullHitVfx: {fileID: 8397621054271278471}
   blockedVfx: {fileID: 3591598124473532696}
   parriedVfx: {fileID: 6332293953056337192}
   endParryVfx: {fileID: 1238031745693490384}
   ignoredSfx: {fileID: 0}
-  fullHitSfx: {fileID: 0}
+  fullHitSfx: {fileID: 8300000, guid: f226bc3bd6c634175b81e1b5dff523b7, type: 3}
   blockedSfx: {fileID: 8300000, guid: 718509c77e016479c90a71a96faf3269, type: 3}
   parriedSfx: {fileID: 8300000, guid: bd9b021633224455aab347a7d529968a, type: 3}
   endParrySfx: {fileID: 8300000, guid: 31aee9988a67d41d19c9d4852cd7abfc, type: 3}

@@ -904,7 +904,7 @@ MonoBehaviour:
   parriedVfx: {fileID: 2630523602544557005}
   endParryVfx: {fileID: 2036151025676333795}
   ignoredSfx: {fileID: 0}
-  fullHitSfx: {fileID: 0}
+  fullHitSfx: {fileID: 8300000, guid: 3ead00d119b0c4d18aa5ce34200d9267, type: 3}
   blockedSfx: {fileID: 8300000, guid: 718509c77e016479c90a71a96faf3269, type: 3}
   parriedSfx: {fileID: 8300000, guid: bd9b021633224455aab347a7d529968a, type: 3}
   endParrySfx: {fileID: 8300000, guid: 31aee9988a67d41d19c9d4852cd7abfc, type: 3}
