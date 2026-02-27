@@ -2,6 +2,8 @@ using Combat;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+//Use this Health Bar by simply attaching the script to the enemy prefab
+
 [DisallowMultipleComponent]
 [RequireComponent(typeof(HealthComponent))]
 public sealed class EnemyHealthBar : MonoBehaviour
