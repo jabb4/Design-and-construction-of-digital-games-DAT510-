@@ -5,8 +5,8 @@ public class VanViewUIController : MonoBehaviour
 {
     public static VanViewUIController Instance { get; private set; }
 
-    public GameObject backMenuUI;
-    public GameObject raidMap;
+    [SerializeField] private GameObject backMenuUI;
+    [SerializeField] private GameObject raidMap;
 
     private void Awake()
     {

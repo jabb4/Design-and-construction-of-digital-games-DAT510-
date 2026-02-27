@@ -10,7 +10,7 @@ public class BackMenuUI : MonoBehaviour
     [SerializeField] private GameObject backMenuConfirmation;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         gameObject.SetActive(false);
     }
@@ -34,7 +34,6 @@ public class BackMenuUI : MonoBehaviour
 
     private void ToggleConfirmation()
     {
-        Debug.Log("Hello?????");
         backMenuBanner.SetActive(false);
         backMenuConfirmation.SetActive(true);
     }
