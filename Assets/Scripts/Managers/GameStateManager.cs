@@ -174,6 +174,9 @@ public class GameStateManager : MonoBehaviour
             currency = SaveManager.Instance.GetCurrency();
             fuelAmount = SaveManager.Instance.GetFuelAmount();
             maxFuelAmount = SaveManager.Instance.GetMaxFuelAmount();
+            OnMaxFuelChanged?.Invoke(maxFuelAmount);
+            OnFuelChanged?.Invoke(fuelAmount);
+            OnCurrencyChanged?.Invoke(currency);
         }
     }
 
