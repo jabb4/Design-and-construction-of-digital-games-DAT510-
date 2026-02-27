@@ -13,18 +13,14 @@ public class FuelSection : MonoBehaviour
     [SerializeField] private int tankUpgradeSize = 10;
     [SerializeField] private int tankUpgradeCost = 100;
 
-    private int currentFuelAmount;
-    private int tankSize;
 
     private void OnEnable()
     {
         GameStateManager.OnFuelChanged += UpdateCurrentFuel;
         GameStateManager.OnMaxFuelChanged += UpdateTankSize;
 
-        currentFuelAmount = GameStateManager.Instance.GetFuelAmount();
-        tankSize = GameStateManager.Instance.GetMaxFuelAmount();
+        UpdateCurrentFuel(GameStateManager.Instance.GetFuelAmount());
 
-        UpdateCurrentFuel(currentFuelAmount);
         reFuelText.text = $"Buy {reFuelAmount}L of fuel for {fuelCost} coins";
         upgradeTankText.text = $"Upgrade you fuel tank to fit more gas! Increase capacity with {tankUpgradeSize}L for {tankUpgradeCost}$";
 
@@ -38,11 +34,45 @@ public class FuelSection : MonoBehaviour
 
     private void UpdateCurrentFuel(int newCurrentFuelAmount)
     {
-        currentFuelText.text = "Current Fuel: " + newCurrentFuelAmount + "/" + tankSize;
+        currentFuelText.text = "Current Fuel: " + newCurrentFuelAmount + "/" + GameStateManager.Instance.GetMaxFuelAmount();
     }
 
     private void UpdateTankSize(int newTankSize)
     {
-        currentFuelText.text = "Current Fuel: " + currentFuelAmount + "/" + newTankSize;
+        currentFuelText.text = "Current Fuel: " + GameStateManager.Instance.GetFuelAmount() + "/" + newTankSize;
+    }
+
+    public void ReFuel()
+    {
+        if (GameStateManager.Instance.GetFuelAmount() >= GameStateManager.Instance.GetMaxFuelAmount())
+        {
+            Debug.LogWarning("Your fuel tank is already full");
+            return;
+        }
+        if (GameStateManager.Instance.GetCurrency() >= fuelCost) 
+        {
+            GameStateManager.Instance.AddCurrency(-fuelCost);
+            GameStateManager.Instance.AddFuel(reFuelAmount);
+            GameStateManager.Instance.SaveGameState();
+        }
+        else
+        {
+            Debug.LogWarning("Not enough currency to upgrade fuel");
+        }
+        
+    }
+
+    public void UpgradeFuelTank()
+    {
+        if (GameStateManager.Instance.GetCurrency() >= tankUpgradeCost) 
+        {
+            GameStateManager.Instance.AddCurrency(-tankUpgradeCost);
+            GameStateManager.Instance.AddMaxFuelAmount(tankUpgradeSize);
+            GameStateManager.Instance.SaveGameState();
+        }
+        else
+        {
+            Debug.LogWarning("Not enough currency to upgrade fuel");
+        }
     }
 }

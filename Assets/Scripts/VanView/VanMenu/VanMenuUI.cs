@@ -1,8 +1,16 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+
 
 public class VanMenuUI : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    [SerializeField] private GameObject vanViewUI;
+
+    private void Awake()
+    {
+        gameObject.SetActive(false);
+    }
+    
     void Start()
     {
         
@@ -11,6 +19,15 @@ public class VanMenuUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            CloseVanMenuUI();
+        }
+    }
+
+    public void CloseVanMenuUI()
+    {
+        vanViewUI.SetActive(true);
+        gameObject.SetActive(false);
     }
 }

@@ -23,7 +23,6 @@ public class MenuController : MonoBehaviour
      
     private void OnEnable()
     {
-        Debug.Log(GameStateManager.Instance.gameSaveExists);
         // Deactivate Load game button if there isn't any saved data
         if (!GameStateManager.Instance.gameSaveExists)
         {
@@ -39,7 +38,8 @@ public class MenuController : MonoBehaviour
 
     public void NewGame()
     {
-        // Needs to impement some logic to create new save files
+        GameStateManager.Instance.SetInitValues();
+        GameStateManager.Instance.SaveGameState();
         SceneManager.LoadSceneAsync(2);
     }
 

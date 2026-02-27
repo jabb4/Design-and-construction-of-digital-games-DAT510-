@@ -13,16 +13,12 @@ public class RaidMapUIController : MonoBehaviour
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
         else
         {
             Instance = this;
         }
-    }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
         gameObject.SetActive(false);
     }
 
@@ -30,7 +26,11 @@ public class RaidMapUIController : MonoBehaviour
     void Update()
     {
         // If we press esc we want to go back to the van view from the raid map.
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) GoToVan();
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            GoToVan();
+        }
+        
     }
 
     // Goes back from 

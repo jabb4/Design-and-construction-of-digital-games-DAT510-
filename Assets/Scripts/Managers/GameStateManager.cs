@@ -25,18 +25,14 @@ public class GameStateManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             gameSaveExists =  SaveManager.Instance.gameDataSaveExists();
+            currency = initCurrency;
+            fuelAmount = initFuelAmount;
+            maxFuelAmount = initMaxFuelAmount;
         }
         else
         {
             Destroy(gameObject);
         }
-    }
-
-    private void Start()
-    {
-        currency = initCurrency;
-        fuelAmount = initFuelAmount;
-        maxFuelAmount = initMaxFuelAmount;
     }
 
     public int GetCurrency()
@@ -132,7 +128,7 @@ public class GameStateManager : MonoBehaviour
     public void SaveGameState()
     {
         if (SaveManager.Instance != null)
-        {
+        {   
             SaveManager.Instance.SetCurrency(currency);
             SaveManager.Instance.SetFuelAmount(fuelAmount);
             SaveManager.Instance.SetMaxFuelAmount(maxFuelAmount);
@@ -151,5 +147,12 @@ public class GameStateManager : MonoBehaviour
             fuelAmount = SaveManager.Instance.GetFuelAmount();
             maxFuelAmount = SaveManager.Instance.GetMaxFuelAmount();
         }
+    }
+
+    public void SetInitValues()
+    {
+        currency = initCurrency;
+        fuelAmount = initFuelAmount;
+        maxFuelAmount = initMaxFuelAmount;
     }
 }

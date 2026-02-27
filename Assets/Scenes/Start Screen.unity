@@ -383,7 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11f9c12029776f6419616183ca670afe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initCurrency: 0
+  initCurrency: 100
   initFuelAmount: 100
   initMaxFuelAmount: 100
   gameSaveExists: 0
