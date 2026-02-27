@@ -316,18 +316,18 @@ Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defe
 
 With this timing-based combat every action must have immediate, clear responses to make it readable and rewarding. Simple, consistent effects that reinforce timing windows and outcomes.
 
-| Event                   | Visual                              | Audio                        |
-| ----------------------- | ----------------------------------- | ---------------------------- |
-| **Player Light Attack** | Sword slash trail                   | Whoosh                       |
-| **Enemy Attack**        | Wind-up animation                   | Whoosh                       |
-| **Block**               | Sparks, no damage flash             | Dull clang, short block      |
-| **Perfect Parry**       | Bright sparks                       | Loud satisfying clang + echo |
-| **End Parry**           | More bright sparks                  | Different clang sound        |
-| **Player Hit**          | Blood splatter                      | Meaty thud                   |
-| **Enemy Hit**           | Metal particles                     | Robot sounds or metal thud   |
-| **Player Death**        | Fade to black, death pose           | Scream??                     |
-| **Enemy Death**         | Collapse animation, dissolve effect | Robot and metal sounds       |
-| **Lock-On**             | Camera rotation, lock-on indicator  | Nothing                      |
+| Event             | Visual                                                                  | Audio                               |
+| ----------------- | ----------------------------------------------------------------------- | ----------------------------------- |
+| **Light Attack**  | Sword slash trail                                                       | Whoosh                              |
+| **Enemy Attack**  | Wind-up animation                                                       | Whoosh                              |
+| **Block**         | Sparks, no damage flash                                                 | Dull clang, short block             |
+| **Perfect Parry** | Bright sparks                                                           | Loud satisfying clang               |
+| **End Parry**     | More bright sparks                                                      | Different distinct satisfying clang |
+| **Player Hit**    | Blood splatter                                                          | Meaty thud                          |
+| **Enemy Hit**     | Metal debris and sparks                                                 | Metal thud                          |
+| **Player Death**  | Radgoll, blood geyser, death overlay, fade to black                     | Scream??                            |
+| **Enemy Death**   | Ragdoll, explosion, debris, electric shockwave, sparks, dissolve effect | Explosion                           |
+| **Lock-On**       | Camera rotation, lock-on indicator                                      | Nothing                             |
 
 ---
 
