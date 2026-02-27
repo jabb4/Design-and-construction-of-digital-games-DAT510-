@@ -8,5 +8,6 @@ namespace Combat
         public ICombatant Attacker;
         public AttackData? Attack;
         public Vector3 HitPoint;
+        public Vector3 HitNormal;
     }
 }

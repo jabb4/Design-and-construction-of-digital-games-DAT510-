@@ -21,6 +21,7 @@ public sealed class CameraOrbitRig
 
     private float currentHorizontalAngle;
     private float currentVerticalAngle;
+    private float lookHeight = PlayerLookHeight;
 
     public CameraOrbitRig(
         Transform cameraTransform,
@@ -144,6 +145,11 @@ public sealed class CameraOrbitRig
         cameraTransform.rotation = Quaternion.Slerp(cameraTransform.rotation, desiredCameraRotation, smoothingFactor);
     }
 
+    public void SetLookHeight(float height)
+    {
+        lookHeight = Mathf.Max(0f, height);
+    }
+
     public void SyncFreeAnglesFromCurrent()
     {
         if (cameraTransform == null)
@@ -163,9 +169,9 @@ public sealed class CameraOrbitRig
         currentVerticalAngle = Mathf.Clamp(currentVerticalAngle, minVerticalAngle, maxVerticalAngle);
     }
 
-    private static Vector3 ResolvePlayerAimPoint(Transform playerTransform)
+    private Vector3 ResolvePlayerAimPoint(Transform playerTransform)
     {
-        return playerTransform.position + Vector3.up * PlayerLookHeight;
+        return playerTransform.position + Vector3.up * lookHeight;
     }
 
     private static Quaternion ResolveLookRotation(Vector3 lookDirection, Quaternion fallbackRotation)

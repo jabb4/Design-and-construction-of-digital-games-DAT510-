@@ -9,6 +9,7 @@ namespace Combat
         public ICombatant Defender;
         public Vector3 DefenderPushDirection;
         public Vector3 HitPoint;
+        public Vector3 HitNormal;
         public bool IsEndParry;
     }
 }

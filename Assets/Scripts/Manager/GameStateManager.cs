@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using Combat;
 
 public class GameStateManager : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class GameStateManager : MonoBehaviour
     private int currency;
     private int fuelAmount;
     private int maxFuelAmount;
+    [SerializeField] private int currencyOnEnemyDeath = 10;
 
     public static event Action<int> OnCurrencyChanged;
     public static event Action<int> OnFuelChanged;
@@ -24,6 +26,22 @@ public class GameStateManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+
+    private void OnEnable()
+    {    
+        HealthComponent.OnHealthComponentCreated += HandleNewHealthComponent;
+    }
+
+    private void OnDisable()
+    {
+        HealthComponent.OnHealthComponentCreated -= HandleNewHealthComponent;
+    }
+
+    private void HandleNewHealthComponent(HealthComponent hc)
+    {
+        hc.OnDied += AddCurrencyOnDeath;
     }
 
     private void Start()
@@ -45,6 +63,11 @@ public class GameStateManager : MonoBehaviour
     public void AddCurrency(int amount)
     {
         currency += amount;
+        OnCurrencyChanged?.Invoke(currency);
+    }
+
+    public void AddCurrencyOnDeath() {
+        currency += currencyOnEnemyDeath;
         OnCurrencyChanged?.Invoke(currency);
     }
 
