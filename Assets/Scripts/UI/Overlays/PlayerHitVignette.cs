@@ -5,7 +5,7 @@ using Combat;
 namespace Player
 {
     /// <summary>
-    /// Adds a screen-space blood vignette whenever the player takes a full hit.
+    /// Adds a screen-space blood vignette whenever the player takes damage.
     /// Drop this on the Player GameObject alongside CombatOutcomeFeedbackHooks —
     /// Player.cs picks it up automatically via GetComponents<ICombatOutcomeFeedbackHook>.
     /// </summary>
@@ -44,7 +44,7 @@ namespace Player
 
         public void OnCombatOutcome(CombatOutcomeFeedbackContext context)
         {
-            if (context.Resolution.Outcome == DamageOutcome.FullHit)
+            if (context.Resolution.AppliedDamage > 0f)
                 Trigger();
         }
 
@@ -62,7 +62,7 @@ namespace Player
         {
             if (!active) return;
 
-            timer += Time.deltaTime;
+            timer += Time.unscaledDeltaTime;
 
             if (timer < fadeInDuration)
             {
