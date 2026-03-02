@@ -1051,7 +1051,7 @@ MonoBehaviour:
   ragdollSpreadFraction: 0.5
   ragdollDestroyDelay: 8
   hipsBoneName: pelvis
-  cameraController: {fileID: 0}
+  cameraController: {fileID: 6464450442925362104, guid: b1ed58cc58a934fc28efafd24ad139c6, type: 3}
   deathVfxPrefab: {fileID: 3631104653736160645, guid: a3f5b99ba235c4f8892597411ff2f930, type: 3}
   vfxBoneName: spine_03
   deathOverlayTexture: {fileID: 2800000, guid: 277d39d6d89c14afba05b072de5ed58a, type: 3}
