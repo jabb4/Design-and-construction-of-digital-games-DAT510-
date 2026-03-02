@@ -7,6 +7,8 @@ namespace Player.StateMachine.States
     public class JumpEndState : PlayerStateBase
     {
         private const float SafetyTimeoutMultiplier = 3f;
+        private const float FullBlendAirborneThreshold = 0.5f;
+        private const float MinBlendFraction = 0.15f;
         private static readonly int JumpEndHash = Animator.StringToHash("Jump End");
         private float landingTimer;
         private float landingDuration;
@@ -16,7 +18,10 @@ namespace Player.StateMachine.States
             CrossFade("Jump End", 0.15f);
             Animator.SetTrigger(LandHash);
 
-            landingDuration = Motor.LandingMoveBlendTime;
+            float fullDuration = Motor.LandingMoveBlendTime;
+            float airborneTime = Owner.GetState<JumpLoopState>().AirborneElapsed;
+            float t = Mathf.Clamp01(airborneTime / FullBlendAirborneThreshold);
+            landingDuration = fullDuration * Mathf.Lerp(MinBlendFraction, 1f, t);
             landingTimer = 0f;
         }
 
