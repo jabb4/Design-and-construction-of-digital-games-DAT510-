@@ -32,7 +32,7 @@ namespace Player.StateMachine
 
         [Header("Ground Check")]
         [SerializeField] private LayerMask groundLayer;
-        [SerializeField] private float groundCheckRadius = 1f;
+        [SerializeField] private float groundCheckRadius = 0.3f;
         [SerializeField] private float groundCheckOffset = 0.05f;
         [SerializeField, Tooltip("(Coyote time).")]
         private float groundedGracePeriod = 0.15f;
