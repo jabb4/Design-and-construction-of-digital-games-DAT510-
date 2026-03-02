@@ -31,7 +31,9 @@
 
 - Enemy hit: [giddster](https://freesound.org/people/giddster/sounds/514396/)
 
-Enemy death effect: Sound Effect by <a href="https://pixabay.com/users/daviddumaisaudio-41768500/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">David Dumais</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">Pixabay</a>
+- Enemy death effect: Sound Effect by <a href="https://pixabay.com/users/daviddumaisaudio-41768500/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">David Dumais</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">Pixabay</a>
+
+- Player death: [F.M.Audio](https://freesound.org/s/695386/)
 
 ### Assets
 
