@@ -2642,6 +2642,12 @@ MonoBehaviour:
   lungeDuration: 0.12
   lungeEndSpeedFraction: 0.2
   impulseDriver: {fileID: 5732198460847952312}
+  audioSource: {fileID: 261203985312538899}
+  slashSfx: {fileID: 8300000, guid: a39459d1f886a423197ff9805aee1db1, type: 3}
+  minVolume: 0.2
+  maxVolume: 0.3
+  minPitch: 0.7
+  maxPitch: 1
 --- !u!114 &5732198460847952312
 MonoBehaviour:
   m_ObjectHideFlags: 0
