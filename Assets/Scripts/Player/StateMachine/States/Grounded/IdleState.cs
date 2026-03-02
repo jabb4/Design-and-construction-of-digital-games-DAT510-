@@ -52,12 +52,6 @@ namespace Player.StateMachine.States
 
         public override TransitionDecision EvaluateTransition()
         {
-            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
-            if (airborneTransition.HasTransition)
-            {
-                return airborneTransition;
-            }
-
             if (TryGetCommonGroundedTransition(out TransitionDecision decision))
             {
                 return decision;
