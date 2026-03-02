@@ -7,8 +7,8 @@ public class RaidMapUIController : MonoBehaviour
     public static RaidMapUIController Instance { get; private set; }
 
     [SerializeField] private GameObject vanViewUI;
-    [SerializeField] private int citySceneNumber = 0;
-    [SerializeField] private int templeSceneNumber = 3;
+    [SerializeField] private int citySceneNumber = 3;
+    [SerializeField] private int templeSceneNumber = 4;
 
     private void Awake()
     {
