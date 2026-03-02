@@ -14,7 +14,7 @@ namespace Player.StateMachine
 
         [SerializeField]
         [Tooltip("Optional fallback timeout (seconds) if transition animation never completes. Set to 0 to disable.")]
-        private float weaponTransitionTimeout = 0f;
+        private float weaponTransitionTimeout = 3f;
 
         public bool IsEquipped { get; private set; }
         public bool IsTransitioningWeapon { get; private set; }
