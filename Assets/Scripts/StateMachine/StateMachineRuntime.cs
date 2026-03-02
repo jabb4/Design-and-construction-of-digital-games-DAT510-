@@ -42,6 +42,26 @@ namespace StateMachine.Core
                 return;
             }
 
+            PerformStateChange(newState);
+        }
+
+        /// <summary>
+        /// Forces a state change even when the target is the same as the current state.
+        /// Use when external systems (e.g., weapon transitions) need to re-initialize
+        /// the current state after temporarily suspending the state machine.
+        /// </summary>
+        public void ForceChangeState(IState newState)
+        {
+            if (newState == null)
+            {
+                return;
+            }
+
+            PerformStateChange(newState);
+        }
+
+        private void PerformStateChange(IState newState)
+        {
             IState previous = CurrentState;
             StateChanging?.Invoke(previous, newState);
 
