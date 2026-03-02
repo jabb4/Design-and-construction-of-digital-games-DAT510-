@@ -6,6 +6,7 @@ namespace Player.StateMachine.States
 
     public class JumpEndState : PlayerStateBase
     {
+        private const float SafetyTimeoutMultiplier = 3f;
         private static readonly int JumpEndHash = Animator.StringToHash("Jump End");
         private float landingTimer;
         private float landingDuration;
@@ -46,7 +47,14 @@ namespace Player.StateMachine.States
             {
                 return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
             }
-            
+
+            // Safety timeout: prevent getting stuck if animation hash never matches
+            // (e.g., CrossFade failed or animator is in an unexpected state).
+            if (landingTimer >= landingDuration * SafetyTimeoutMultiplier)
+            {
+                return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
+            }
+
             return TransitionDecision.None;
         }
     }
