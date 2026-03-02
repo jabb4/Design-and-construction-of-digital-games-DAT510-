@@ -21,6 +21,8 @@
 
 #### Combat
 
+- Sword whoosh: [EminYILDIRIM](https://freesound.org/s/541210/)
+
 - Deflect: Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393837">DRAGON-STUDIO</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393837">Pixabay</a>
 
 - Block: Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393846">DRAGON-STUDIO</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393846">Pixabay</a>
@@ -42,4 +44,3 @@ Enemy death effect: Sound Effect by <a href="https://pixabay.com/users/davidduma
 ### Materials
 
 - [Blury UI material](https://github.com/lukakldiashvili/Unified-Universal-Blur)
-
