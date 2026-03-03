@@ -40,8 +40,6 @@ public class BarUiController : MonoBehaviour
         }
     }
     
-    } 
-
     private void UpdateHealthDisplay(float currentHealth, float maxHealth)
     {
         _barMaterial.SetFloat("_FillAmount", currentHealth / maxHealth);
