@@ -814,6 +814,7 @@ MonoBehaviour:
     m_Bits: 64
   groundCheckRadius: 0.3
   groundCheckOffset: 0.2
+  groundedGracePeriod: 0.15
   cameraTransform: {fileID: 0}
 --- !u!114 &4902239012376648936
 MonoBehaviour:
@@ -827,6 +828,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 594920d6044f94a7bb436472a9009726, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
   showDebugInfo: 0
   slowMotionEnabled: 0
   slowMotionScale: 1
@@ -834,7 +836,6 @@ MonoBehaviour:
   unequipDelay: 5
   blockRequestBufferAfterPress: 0.6
   weaponTransitionTimeout: 3
-  attackCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
 --- !u!114 &967580488707547334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -977,7 +978,7 @@ MonoBehaviour:
   returnCrossFadeDuration: 0.08
   reactionCompleteThreshold: 0.95
   reactionTimeoutSeconds: 1.5
-  attackUnlockDelayAfterDefenseSeconds: 0.5
+  attackUnlockDelayAfterDefenseSeconds: 0.2
   animator: {fileID: 3120460261025740072}
   stateMachine: {fileID: 4902239012376648936}
   input: {fileID: 149019199505688004}
@@ -1050,7 +1051,7 @@ MonoBehaviour:
   ragdollSpreadFraction: 0.5
   ragdollDestroyDelay: 8
   hipsBoneName: pelvis
-  cameraController: {fileID: 0}
+  cameraController: {fileID: 6464450442925362104, guid: b1ed58cc58a934fc28efafd24ad139c6, type: 3}
   deathVfxPrefab: {fileID: 3631104653736160645, guid: a3f5b99ba235c4f8892597411ff2f930, type: 3}
   vfxBoneName: spine_03
   deathOverlayTexture: {fileID: 2800000, guid: 277d39d6d89c14afba05b072de5ed58a, type: 3}

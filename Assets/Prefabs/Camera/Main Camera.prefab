@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e92a0c7b3743646c09b8ec07f60e8014, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 0}
+  playerTransform: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
   offset: {x: 0, y: 3, z: -6}
   rotationSpeed: 1
   freeCameraSmoothing: 30

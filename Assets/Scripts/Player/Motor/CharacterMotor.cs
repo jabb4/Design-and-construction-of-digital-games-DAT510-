@@ -32,8 +32,10 @@ namespace Player.StateMachine
 
         [Header("Ground Check")]
         [SerializeField] private LayerMask groundLayer;
-        [SerializeField] private float groundCheckRadius = 1f;
+        [SerializeField] private float groundCheckRadius = 0.3f;
         [SerializeField] private float groundCheckOffset = 0.05f;
+        [SerializeField, Tooltip("(Coyote time).")]
+        private float groundedGracePeriod = 0.15f;
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
@@ -78,6 +80,7 @@ namespace Player.StateMachine
 
         private Rigidbody rb;
         private CameraController cameraController;
+        private float groundedGraceTimer;
 
         #endregion
 
@@ -275,6 +278,9 @@ namespace Player.StateMachine
             if (!IsGrounded)
                 return;
 
+            groundedGraceTimer = 0f;
+            IsGrounded = false;
+
             // Apply upward force
             Vector3 velocity = rb.linearVelocity;
             velocity.y = jumpForce;
@@ -336,11 +342,23 @@ namespace Player.StateMachine
 
         /// <summary>
         /// Check if the character is grounded using a sphere cast.
+        /// Uses a coyote time to prevent flickering on uneven terrain.
         /// </summary>
         private void CheckGrounded()
         {
             Vector3 spherePosition = transform.position + Vector3.up * groundCheckOffset;
-            IsGrounded = Physics.CheckSphere(spherePosition, groundCheckRadius, groundLayer);
+            bool groundContact = Physics.CheckSphere(spherePosition, groundCheckRadius, groundLayer);
+
+            if (groundContact)
+            {
+                groundedGraceTimer = groundedGracePeriod;
+                IsGrounded = true;
+            }
+            else
+            {
+                groundedGraceTimer -= Time.fixedDeltaTime;
+                IsGrounded = groundedGraceTimer > 0f;
+            }
         }
 
         #endregion

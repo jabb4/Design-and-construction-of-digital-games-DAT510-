@@ -14,7 +14,7 @@ namespace Player.StateMachine
 
         [SerializeField]
         [Tooltip("Optional fallback timeout (seconds) if transition animation never completes. Set to 0 to disable.")]
-        private float weaponTransitionTimeout = 0f;
+        private float weaponTransitionTimeout = 3f;
 
         public bool IsEquipped { get; private set; }
         public bool IsTransitioningWeapon { get; private set; }
@@ -106,15 +106,15 @@ namespace Player.StateMachine
 
             if (WantsGuard() && Motor != null && Motor.IsGrounded)
             {
-                ChangeState(GetState<BlockingState>());
+                ForceChangeState(GetState<BlockingState>());
             }
             else if (HasMoveIntent)
             {
-                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
+                ForceChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
-                ChangeState(GetState<IdleState>());
+                ForceChangeState(GetState<IdleState>());
             }
 
             if (!pendingUnequipRequest)
@@ -143,11 +143,11 @@ namespace Player.StateMachine
 
             if (HasMoveIntent)
             {
-                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
+                ForceChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
-                ChangeState(GetState<IdleState>());
+                ForceChangeState(GetState<IdleState>());
             }
 
             if (!pendingEquipRequest)
