@@ -364,6 +364,7 @@ GameObject:
   m_Component:
   - component: {fileID: 209727614}
   - component: {fileID: 209727613}
+  - component: {fileID: 209727615}
   m_Layer: 0
   m_Name: GameStateManager
   m_TagString: Untagged
@@ -387,6 +388,7 @@ MonoBehaviour:
   initFuelAmount: 100
   initMaxFuelAmount: 100
   gameSaveExists: 0
+  currencyOnEnemyDeath: 10
 --- !u!4 &209727614
 Transform:
   m_ObjectHideFlags: 0
@@ -402,6 +404,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &209727615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 209727612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ba47e83118047408a028d0d58315356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hideCursorInScenes:
+  - Alleyway
+  - Citymap
+  - Street
+  - SampleScene
 --- !u!1 &213903801 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4018050920967077826, guid: a91c75e5d9710442e9dead3d9f687e61, type: 3}

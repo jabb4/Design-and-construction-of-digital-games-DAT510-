@@ -73,12 +73,6 @@ namespace Player.StateMachine.States
                 return decision;
             }
 
-            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
-            if (airborneTransition.HasTransition)
-            {
-                return airborneTransition;
-            }
-
             TransitionDecision walkTransition = GroundedTransitionEvaluator.ToWalkFromSprint(Owner, HasMoveIntent, SprintHeld);
             if (walkTransition.HasTransition)
             {
