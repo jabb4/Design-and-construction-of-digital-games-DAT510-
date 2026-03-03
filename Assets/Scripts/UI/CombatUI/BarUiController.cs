@@ -1,12 +1,20 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Combat;
 
 public class BarUiController : MonoBehaviour
 {
-    [SerializeField] private RectTransform bar;
-    [SerializeField] private HealthComponent playerHealth; 
-    [SerializeField] private float width = 140f;
-    [SerializeField] private float height = 21f;
+    [SerializeField] private Image bar;
+    [SerializeField] private HealthComponent playerHealth;
+
+    private Material _barMaterial;
+
+    private void Awake()
+    {
+        // Create an instance so we don't modify the shared material
+        _barMaterial = new Material(bar.material);
+        bar.material = _barMaterial;
+    }
 
     private void Start() {
         //Called in start instead of awake to let HealthComponent initialize,
@@ -32,9 +40,18 @@ public class BarUiController : MonoBehaviour
         }
     }
 
+    private float test = 1f;
+    private void Update() {
+        if (test > 0.1) {
+            UpdateHealthDisplay(test, 1f);
+            test -= 0.001f;
+        }
+
+    
+    } 
+
     private void UpdateHealthDisplay(float currentHealth, float maxHealth)
     {
-        float newWidth = width * (currentHealth / maxHealth);
-        bar.sizeDelta = new Vector2(newWidth, height);
+        _barMaterial.SetFloat("_FillAmount", currentHealth / maxHealth);
     }
 }
