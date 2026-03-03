@@ -421,6 +421,9 @@ MonoBehaviour:
   - Citymap
   - Street
   - SampleScene
+  showCursorInScenes:
+  - Start Screen
+  - VanView
 --- !u!1 &213903801 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4018050920967077826, guid: a91c75e5d9710442e9dead3d9f687e61, type: 3}

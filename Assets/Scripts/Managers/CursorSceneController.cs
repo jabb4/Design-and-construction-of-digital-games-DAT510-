@@ -19,7 +19,7 @@ public class CursorSceneController : MonoBehaviour
     [SerializeField]
     private List<string> showCursorInScenes = new List<string>()
     {
-        "MainMenu",
+        "Start Screen",
         "VanView"
     };
 
