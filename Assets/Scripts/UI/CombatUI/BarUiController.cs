@@ -39,14 +39,6 @@ public class BarUiController : MonoBehaviour
             playerHealth.OnHealthChanged -= UpdateHealthDisplay;
         }
     }
-
-    private float test = 1f;
-    private void Update() {
-        if (test > 0.1) {
-            UpdateHealthDisplay(test, 1f);
-            test -= 0.001f;
-        }
-
     
     } 
 
