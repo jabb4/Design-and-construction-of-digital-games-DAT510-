@@ -12,7 +12,10 @@ public class RaidManager : MonoBehaviour
 
     private void Awake()
     {
-        backMenuUI.SetActive(false);
+        if (backMenuUI != null)
+            backMenuUI.SetActive(false);
+        else
+            Debug.LogError("backMenuUI is not assigned in RaidManager!", this);
     }
 
     private void Update()
