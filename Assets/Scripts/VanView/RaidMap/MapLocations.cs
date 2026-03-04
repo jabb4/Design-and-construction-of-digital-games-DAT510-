@@ -27,17 +27,18 @@ public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
 
     void OnEnable()
     {
-        if (destination == Destination.Van)
-        {
-            titleText.text = destination.ToString();
-        }
-        else
-        {
-            titleText.text = $"{destination} - {travelDistance}km\n Cost: {travelCost}l";
-        }
 
         if (titleText != null)
         {
+            if (destination == Destination.Van)
+            {
+                titleText.text = destination.ToString();
+            }
+            else
+            {
+                titleText.text = $"{destination} - {travelDistance}km\n Cost: {travelCost}l";
+            }
+
             titleText.transform.localScale = originalScale;
             targetScale = originalScale;
             titleText.color = originalColor;
@@ -62,7 +63,7 @@ public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     {
         bool canAffordTravel = GameStateManager.Instance.GetFuelAmount() >= travelCost;
 
-        if (!canAffordTravel)
+        if (!canAffordTravel && destination != Destination.Van)
         {
             return;
         }
