@@ -7,7 +7,6 @@ public class RaidExtractionZone : MonoBehaviour
 {
     [SerializeField] private float holdTime = 10f;
     [SerializeField] private int targetSceneIndex = 2;
-    [SerializeField] private Key activationKey = Key.E;
     [SerializeField] private RaidExtractionUI extractionUI;
     [SerializeField] private AudioClip extractionSound;
     [SerializeField] private AudioSource audioSource;
@@ -24,7 +23,7 @@ public class RaidExtractionZone : MonoBehaviour
 
         if (isPlayerInZone)
         {
-            if (Keyboard.current != null && Keyboard.current[activationKey].isPressed)
+            if (InputSystem.actions.FindAction("Player/Interact").IsPressed())
             {
                 currentHoldTime += Time.deltaTime;
 
