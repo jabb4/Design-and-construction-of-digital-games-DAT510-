@@ -63,7 +63,7 @@ public class MapLocations : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     {
         bool canAffordTravel = GameStateManager.Instance.GetFuelAmount() >= travelCost;
 
-        if (!canAffordTravel && destination != Destination.Van)
+        if (!canAffordTravel)
         {
             return;
         }
