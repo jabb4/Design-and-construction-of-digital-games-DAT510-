@@ -408,7 +408,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""9f2adb67-a2a4-4e4e-810e-490ce736cd86"",
                     ""path"": ""<Gamepad>/leftShoulder"",
-                    ""interactions"": """",
+                    ""interactions"": ""Press(behavior=2)"",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Block"",
