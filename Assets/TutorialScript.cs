@@ -34,6 +34,10 @@ public class TutorialScript : MonoBehaviour
         {
             gameObject.SetActive(true);
         }
+        foreach(GameObject gameObject in slides)
+        {
+            gameObject.SetActive(false);
+        }
         slide = 0;
         slides[slide].SetActive(true);
     }
@@ -43,6 +47,19 @@ public class TutorialScript : MonoBehaviour
         if(slide < slides.Count -1)
         {
             slide++;
+            slides[slide].SetActive(true);
+        }
+        else
+        {
+            CloseSlides();
+        }
+    }
+    public void PreviousSlide()
+    {
+        slides[slide].SetActive(false);
+        if(slide > 0)
+        {
+            slide--;
             slides[slide].SetActive(true);
         }
         else
