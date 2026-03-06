@@ -40,6 +40,14 @@ namespace Enemies.AI
         [SerializeField, Min(0f)] private float supportDistanceFromPriorityEnemy = 2.25f;
         [SerializeField, Min(0.1f)] private float attackRange = 2.5f;
 
+        [Header("Dash Attack (Boss Only)")]
+        [SerializeField] private bool dashAttackEnabled;
+        [SerializeField, Min(0f)] private float dashAttackMinRange = 4f;
+        [SerializeField, Min(0f)] private float dashAttackMaxRange = 8f;
+        [SerializeField, Min(0f)] private float dashAttackDistance = 4f;
+        [SerializeField, Min(0.01f)] private float dashAttackDuration = 0.3f;
+        [SerializeField, Min(0f)] private float dashAttackCooldown = 3f;
+
         public AttackComboAsset SharedCombo => sharedCombo;
         public int MinAttackChain => minAttackChain;
         public int MaxAttackChain => maxAttackChain;
@@ -62,6 +70,12 @@ namespace Enemies.AI
         public float SupportOrbitExtraRadiusPerEnemy => supportOrbitExtraRadiusPerEnemy;
         public float SupportDistanceFromPriorityEnemy => supportDistanceFromPriorityEnemy;
         public float AttackRange => attackRange;
+        public bool DashAttackEnabled => dashAttackEnabled;
+        public float DashAttackMinRange => dashAttackMinRange;
+        public float DashAttackMaxRange => dashAttackMaxRange;
+        public float DashAttackDistance => dashAttackDistance;
+        public float DashAttackDuration => dashAttackDuration;
+        public float DashAttackCooldown => dashAttackCooldown;
 
         private void OnValidate()
         {
@@ -87,6 +101,11 @@ namespace Enemies.AI
             supportDistanceFromPriorityEnemy = Mathf.Max(0f, supportDistanceFromPriorityEnemy);
             engageRange = Mathf.Max(engageRange, orbitRadius + 0.5f);
             attackRange = Mathf.Max(0.1f, attackRange);
+            dashAttackMinRange = Mathf.Max(0f, dashAttackMinRange);
+            dashAttackMaxRange = Mathf.Max(dashAttackMinRange + 0.1f, dashAttackMaxRange);
+            dashAttackDistance = Mathf.Max(0f, dashAttackDistance);
+            dashAttackDuration = Mathf.Max(0.01f, dashAttackDuration);
+            dashAttackCooldown = Mathf.Max(0f, dashAttackCooldown);
         }
     }
 }
