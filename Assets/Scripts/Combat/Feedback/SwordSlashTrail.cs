@@ -34,6 +34,23 @@ namespace Combat
         [SerializeField, Min(0.1f)]     private float fadeCurve         = 4f;   // higher = tail disappears faster
         [SerializeField, Range(0f, 1f)] private float rootAlphaFraction = 0f;   // guard end relative to tip
 
+        [Header("Color Override")]
+        [SerializeField] private bool useColorOverride;
+        [SerializeField] private Color trailColorTail = new Color(0.85f, 0.85f, 1f);
+        [SerializeField] private Color trailColorHead = new Color(1f, 0.99f, 1f);
+
+        public void SetTrailColors(Color tail, Color head)
+        {
+            trailColorTail = tail;
+            trailColorHead = head;
+            useColorOverride = true;
+        }
+
+        public void SetPeakAlpha(float alpha)
+        {
+            peakAlpha = Mathf.Clamp01(alpha);
+        }
+
         // -----------------------------------------------------------------------
 
         private struct Sample
@@ -178,9 +195,26 @@ namespace Combat
                 float rootAlpha = baseAlpha * rootAlphaFraction;
                 float tipAlpha  = baseAlpha;
 
-                float warm  = Mathf.Lerp(0.85f, 1.00f, t);
-                var   cRoot = new Color(warm, warm * 0.97f + 0.02f, 1.00f, rootAlpha);
-                var   cTip  = new Color(warm, warm * 0.97f + 0.02f, 1.00f, tipAlpha);
+                Color cRoot, cTip;
+                if (useColorOverride)
+                {
+                    cRoot = new Color(
+                        Mathf.Lerp(trailColorTail.r, trailColorHead.r, t),
+                        Mathf.Lerp(trailColorTail.g, trailColorHead.g, t),
+                        Mathf.Lerp(trailColorTail.b, trailColorHead.b, t),
+                        rootAlpha);
+                    cTip = new Color(
+                        Mathf.Lerp(trailColorTail.r, trailColorHead.r, t),
+                        Mathf.Lerp(trailColorTail.g, trailColorHead.g, t),
+                        Mathf.Lerp(trailColorTail.b, trailColorHead.b, t),
+                        tipAlpha);
+                }
+                else
+                {
+                    float warm = Mathf.Lerp(0.85f, 1.00f, t);
+                    cRoot = new Color(warm, warm * 0.97f + 0.02f, 1.00f, rootAlpha);
+                    cTip  = new Color(warm, warm * 0.97f + 0.02f, 1.00f, tipAlpha);
+                }
 
                 verts[i * 2]     = s.Root;
                 verts[i * 2 + 1] = s.Tip;
