@@ -116,6 +116,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: VFX_EyeGlow
       objectReference: {fileID: 0}
+    - target: {fileID: 7628953617156842150, guid: f45aceec1d2ff41fe961927b35568df8, type: 3}
+      propertyPath: m_Intensity
+      value: 0.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -352,6 +356,10 @@ PrefabInstance:
     - target: {fileID: 7566739087748304201, guid: f45aceec1d2ff41fe961927b35568df8, type: 3}
       propertyPath: m_Name
       value: VFX_EyeGlow
+      objectReference: {fileID: 0}
+    - target: {fileID: 7628953617156842150, guid: f45aceec1d2ff41fe961927b35568df8, type: 3}
+      propertyPath: m_Intensity
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
