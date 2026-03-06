@@ -47,6 +47,8 @@ This gives combat a "back and forth" exchange instead of one-sided pressure.
 | Telegraphs | Clear wind-up before each attack                                 |
 | Parry      | Parry-focused defense with end-parry momentum shift, no blocking |
 | Health     | Enemy can die if health reaches zero                             |
+| Tiers      | Normal, MiniBoss (Kensei), Boss (Rōnin) with distinct profiles   |
+| Dash Slash | Boss gap-closer attack in Phase 2+ (dash forward + attack)       |
 
 ---
 
@@ -282,6 +284,51 @@ When the window reaches `0.0s`, guard still blocks but no perfect parry is possi
 - During this short linger, other actions are temporarily hindered, creating the current post-parry lock feel
 - If guard is held longer, releasing block allows attacking almost immediately, which keeps combat responsive
 
+### Enemy Tiers
+
+Enemies are categorised into tiers that determine their combat profile and visual identity. All tiers share the same model and animation set.
+
+| Tier     | Name   | HP  | Role                         |
+| -------- | ------ | --- | ---------------------------- |
+| Normal   | —      | 20  | Standard wave enemy          |
+| MiniBoss | Kensei | 60  | Tougher enemy in later waves |
+| Boss     | Rōnin  | 150 | Solo 1v1 duel                |
+
+#### Kensei (Mini-Boss)
+
+- Appears in wave gameplay alongside normal enemies, replacing normal spawns from a configurable start wave onward
+- Kensei count scales
+- Visually differentiated: large scale, dark chrome material with red emission, glowing red eyes with trails, red weapon slash trail
+- More aggressive combat profile: shorter defense windows, faster counters, higher minimum attack chain
+- Respects the attack token system and does not bypass group pressure rules
+
+#### Rōnin (Boss)
+
+- Solo 1v1 (not spawned by the wave system)
+- Visually differentiated: larger scale, blackened steel material with dark red emission, bright red eyes with trails, red weapon slash trail
+- Three combat phases driven by HP thresholds, managed by `BossPhaseController`:
+
+| Phase | HP Range | Behaviour                                                          |
+| ----- | -------- | ------------------------------------------------------------------ |
+| 1     | 100%–60% | Short combos (2–3), generous parry windows, long defense pauses    |
+| 2     | 60%–30%  | Full combos (3–5), fast counters, introduces dash slash gap-closer |
+| 3     | 30%–0%   | Near-max combos (4–5), instant counters, minimal defense pauses    |
+
+- **Dash Slash:** A gap-closing attack available in Phase 2+. When the player is beyond normal attack range, the boss dashes forward with an attack. Controlled by profile fields (`dashAttackEnabled`, range, distance, duration, cooldown) and implemented as a dedicated state machine state (`EnemyDashAttackState`)
+- Phase transitions swap the combat profile
+
+#### Combat Profiles
+
+Enemy behaviour is data-driven through `EnemyCombatProfile` ScriptableObject assets. Each profile controls:
+
+- Attack chain length (min/max)
+- Parries before counter (min/max)
+- Defense duration (min/max)
+- Counter prep delay
+- Spacing (engage range, orbit radius, attack range)
+- Token cooldowns and reentry delays
+- Dash attack parameters (boss only)
+
 ### Enemy Behaviour
 
 Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defense Turn ...`) with dead-state override.
@@ -309,6 +356,13 @@ Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defe
 - Range is required only to start the combo chain.
 - Once the first attack starts, the combo is committed and enemy finishes the sampled chain even if target distance changes.
 - After chain completion, enemy transitions back to defensive turn.
+
+#### Dash attack (Boss only)
+
+- Available when `dashAttackEnabled` is true in the active combat profile (Rōnin Phase 2+)
+- Evaluated during defensive turn: if the player is between `dashAttackMinRange` and `dashAttackMaxRange`, the boss acquires the attack token and transitions to `EnemyDashAttackState`
+- The boss dashes toward the player using a horizontal impulse, fires an attack animation, then returns to defensive turn
+- Subject to a cooldown between uses (`dashAttackCooldown`)
 
 ---
 
