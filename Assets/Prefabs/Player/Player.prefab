@@ -836,6 +836,16 @@ MonoBehaviour:
   unequipDelay: 5
   blockRequestBufferAfterPress: 0.6
   weaponTransitionTimeout: 3
+  weaponTransitionAudioSource: {fileID: 1980614293448776992}
+  unsheatheSfx: {fileID: 8300000, guid: 824866b563ab944cbbe3317009b11999, type: 3}
+  unsheatheSfxVolume: 1
+  unsheatheSfxMinPitch: 1.1
+  unsheatheSfxMaxPitch: 1.2
+  sheatheSfx: {fileID: 8300000, guid: 42e71cc418cc14189807aebb08ebfe26, type: 3}
+  sheatheSfxVolume: 0.25
+  sheatheSfxMinPitch: 1.3
+  sheatheSfxMaxPitch: 1.5
+  sheatheSfxSecondsBeforeEnd: 1
 --- !u!114 &967580488707547334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -947,6 +957,12 @@ MonoBehaviour:
   lungeDuration: 0.12
   lungeEndSpeedFraction: 0.2
   impulseDriver: {fileID: 6454816486720408189}
+  audioSource: {fileID: 1980614293448776992}
+  slashSfx: {fileID: 8300000, guid: 8edbfe3a86d8541f2bcce386e1e5f130, type: 3}
+  minVolume: 0.4
+  maxVolume: 0.5
+  minPitch: 0.8
+  maxPitch: 1.1
 --- !u!114 &6454816486720408189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1051,12 +1067,17 @@ MonoBehaviour:
   ragdollSpreadFraction: 0.5
   ragdollDestroyDelay: 8
   hipsBoneName: pelvis
-  cameraController: {fileID: 6464450442925362104, guid: b1ed58cc58a934fc28efafd24ad139c6, type: 3}
+  cameraController: {fileID: 0}
   deathVfxPrefab: {fileID: 3631104653736160645, guid: a3f5b99ba235c4f8892597411ff2f930, type: 3}
   vfxBoneName: spine_03
   deathOverlayTexture: {fileID: 2800000, guid: 277d39d6d89c14afba05b072de5ed58a, type: 3}
   deathOverlaySound: {fileID: 8300000, guid: 574d79124b0a0454caa569ae6a3961f0, type: 3}
   overlayDelay: 1
+  deathAudioSource: {fileID: 1980614293448776992}
+  deathSfx: {fileID: 8300000, guid: 26786da33078943ff8b440e53dbd88fe, type: 3}
+  deathSfxVolume: 1
+  deathSfxMinPitch: 0.85
+  deathSfxMaxPitch: 1.05
   fadeDelay: 1
   fadeDuration: 5
   targetScene: VanView

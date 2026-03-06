@@ -21,15 +21,23 @@
 
 #### Combat
 
-- Deflect: Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393837">DRAGON-STUDIO</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393837">Pixabay</a>
+- Sword whoosh: [Sound Dino](https://sounddino.com/en/effects/sword/)
 
-- Block: Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393846">DRAGON-STUDIO</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393846">Pixabay</a>
+- Deflect hit: Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393837">DRAGON-STUDIO</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393837">Pixabay</a>
+
+- Block hit: Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393846">DRAGON-STUDIO</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393846">Pixabay</a>
+
+- Sword unsheathe: Sound Effect by <a href="https://pixabay.com/users/sectionsound-34536612/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=143938">Ryan Lewis</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=143938">Pixabay</a>
+
+- Sword sheathe: Sound Effect by <a href="https://pixabay.com/users/voicebosch-30143949/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=178549">Otto</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=178549">Pixabay</a>
 
 - Player hit: Sound Effect by <a href="https://pixabay.com/users/u_xjrmmgxfru-47169417/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=266309">u_xjrmmgxfru</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=266309">Pixabay</a>
 
 - Enemy hit: [giddster](https://freesound.org/people/giddster/sounds/514396/)
 
-Enemy death effect: Sound Effect by <a href="https://pixabay.com/users/daviddumaisaudio-41768500/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">David Dumais</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">Pixabay</a>
+- Enemy death effect: Sound Effect by <a href="https://pixabay.com/users/daviddumaisaudio-41768500/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">David Dumais</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=190266">Pixabay</a>
+
+- Player death: [F.M.Audio](https://freesound.org/s/695386/)
 
 ### Assets
 
@@ -42,4 +50,3 @@ Enemy death effect: Sound Effect by <a href="https://pixabay.com/users/davidduma
 ### Materials
 
 - [Blury UI material](https://github.com/lukakldiashvili/Unified-Universal-Blur)
-
