@@ -958,11 +958,11 @@ MonoBehaviour:
   lungeEndSpeedFraction: 0.2
   impulseDriver: {fileID: 6454816486720408189}
   audioSource: {fileID: 1980614293448776992}
-  slashSfx: {fileID: 8300000, guid: a39459d1f886a423197ff9805aee1db1, type: 3}
-  minVolume: 0.2
-  maxVolume: 0.3
-  minPitch: 0.7
-  maxPitch: 1
+  slashSfx: {fileID: 8300000, guid: 8edbfe3a86d8541f2bcce386e1e5f130, type: 3}
+  minVolume: 0.4
+  maxVolume: 0.5
+  minPitch: 0.8
+  maxPitch: 1.1
 --- !u!114 &6454816486720408189
 MonoBehaviour:
   m_ObjectHideFlags: 0
