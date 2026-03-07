@@ -9,6 +9,8 @@ namespace Enemies.Boss
     [RequireComponent(typeof(HealthComponent))]
     public sealed class BossPhaseController : MonoBehaviour
     {
+        private const float MinPhaseGap = 0.01f;
+
         [Header("Phase Profiles")]
         [SerializeField] private EnemyCombatProfile phase1Profile;
         [SerializeField] private EnemyCombatProfile phase2Profile;
@@ -31,10 +33,16 @@ namespace Enemies.Boss
 
         private void Awake()
         {
+            NormalizeThresholds();
             stateMachine = GetComponent<EnemyStateMachine>();
             health = GetComponent<HealthComponent>();
             aura = GetComponent<BossPhaseVfxController>();
             audioSource = GetComponent<AudioSource>();
+        }
+
+        private void OnValidate()
+        {
+            NormalizeThresholds();
         }
 
         private void Start()
@@ -99,6 +107,17 @@ namespace Enemies.Boss
             if (audioSource != null && phaseTransitionSound != null)
             {
                 audioSource.PlayOneShot(phaseTransitionSound);
+            }
+        }
+
+        private void NormalizeThresholds()
+        {
+            phase2Threshold = Mathf.Clamp01(phase2Threshold);
+            phase3Threshold = Mathf.Clamp01(phase3Threshold);
+
+            if (phase3Threshold >= phase2Threshold)
+            {
+                phase3Threshold = Mathf.Max(0f, phase2Threshold - MinPhaseGap);
             }
         }
     }
