@@ -10,6 +10,7 @@ namespace Enemies.StateMachine.States
         private bool hasAttackToken;
         private bool dashStarted;
         private bool attackFired;
+        private bool failedToStart;
         private float stateEnteredAt;
         private CombatHorizontalImpulseDriver impulseDriver;
 
@@ -23,6 +24,7 @@ namespace Enemies.StateMachine.States
             hasAttackToken = Owner != null && EnemyAttackTokenService.TryAcquire(Owner);
             dashStarted = false;
             attackFired = false;
+            failedToStart = false;
             stateEnteredAt = Time.time;
 
             impulseDriver = Owner != null
@@ -35,7 +37,7 @@ namespace Enemies.StateMachine.States
             }
 
             FaceTarget(99999f);
-            StartDash();
+            failedToStart = !StartDash();
         }
 
         public override void OnUpdate()
@@ -100,6 +102,13 @@ namespace Enemies.StateMachine.States
                     TransitionReason.StandardFlow);
             }
 
+            if (failedToStart)
+            {
+                return TransitionDecision.To(
+                    Owner.GetState<EnemyDefenseTurnState>(),
+                    TransitionReason.StandardFlow);
+            }
+
             if (attackFired && IsAttackAnimationComplete())
             {
                 return TransitionDecision.To(
@@ -118,21 +127,38 @@ namespace Enemies.StateMachine.States
             return TransitionDecision.None;
         }
 
-        private void StartDash()
+        private bool StartDash()
         {
-            if (Owner == null || Owner.CurrentTarget == null || impulseDriver == null) return;
+            if (Owner == null || Owner.CurrentTarget == null || impulseDriver == null)
+            {
+                return false;
+            }
 
             Vector3 toTarget = Owner.CurrentTarget.position - Owner.transform.position;
             toTarget.y = 0f;
             float distance = toTarget.magnitude;
             float duration = Profile != null ? Profile.DashAttackDuration : 0.3f;
+            if (distance <= 0f || duration <= 0f)
+            {
+                return false;
+            }
 
-            impulseDriver.PlayImpulse(toTarget.normalized, distance, duration, 0.1f);
-            dashStarted = true;
+            if (!Owner.TryPlayAttackStepByIndex(0, 0.06f))
+            {
+                Debug.LogWarning("[EnemyDashAttackState] Failed to start dash attack animation.", Owner);
+                return false;
+            }
+
+            if (!impulseDriver.PlayImpulse(toTarget.normalized, distance, duration, 0.1f))
+            {
+                Owner.ClearCurrentAttack();
+                Debug.LogWarning("[EnemyDashAttackState] Failed to start dash impulse.", Owner);
+                return false;
+            }
 
             Owner.NavBridge?.Stop();
-
-            Owner.TryPlayAttackStepByIndex(0, 0.06f);
+            dashStarted = true;
+            return true;
         }
 
         private void FireAttack()

@@ -363,9 +363,14 @@ namespace Enemies.StateMachine
                 return false;
             }
 
+            if (!TryCrossFadeState(step.AnimationStateName, crossFadeDuration))
+            {
+                return false;
+            }
+
             SetCurrentAttack(step);
             CurrentAttackPhase = AttackPhase.Windup;
-            return TryCrossFadeState(step.AnimationStateName, crossFadeDuration);
+            return true;
         }
 
         public bool IsCurrentAttackAnimationComplete(float normalizedThreshold = 0.98f)
