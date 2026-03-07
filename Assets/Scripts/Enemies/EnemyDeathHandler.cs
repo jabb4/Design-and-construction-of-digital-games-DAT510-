@@ -290,12 +290,14 @@ public class EnemyDeathHandler : MonoBehaviour
     /// ThreadsafeLinearAllocator crashes when the GameObject is destroyed
     /// while threaded subsystems are still processing.
     /// </summary>
-    internal static void StopThreadedComponents(GameObject go)
+    internal static void StopThreadedComponents(GameObject go, bool includeRigidbodies = false)
     {
         foreach (var ps in go.GetComponentsInChildren<ParticleSystem>(true))
         {
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
+
+        if (!includeRigidbodies) return;
 
         foreach (var rb in go.GetComponentsInChildren<Rigidbody>(true))
         {
