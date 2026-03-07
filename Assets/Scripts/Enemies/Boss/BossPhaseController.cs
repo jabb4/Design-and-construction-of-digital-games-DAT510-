@@ -64,7 +64,10 @@ namespace Enemies.Boss
 
         private void HandleDamaged(float damage, float currentHp, float maxHp)
         {
-            if (maxHp <= 0f) return;
+            if (maxHp <= 0f || currentHp <= 0f)
+            {
+                return;
+            }
 
             float ratio = currentHp / maxHp;
             int targetPhase = ratio <= phase3Threshold ? 3
