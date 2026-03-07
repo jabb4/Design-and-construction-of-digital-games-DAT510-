@@ -38,6 +38,7 @@ public class EnemyDeathHandler : MonoBehaviour
     private Enemy enemy;
     private Animator animator;
     private EnemyNavAgentBridge navBridge;
+    private UnityEngine.AI.NavMeshAgent navMeshAgent;
     private Vector3 lastHitFromDirection = Vector3.back;
 
     private void Awake()
@@ -46,6 +47,7 @@ public class EnemyDeathHandler : MonoBehaviour
         enemy = GetComponent<Enemy>();
         animator = GetComponent<Animator>();
         navBridge = GetComponent<EnemyNavAgentBridge>();
+        navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
 
         if (health != null)
         {
@@ -88,6 +90,9 @@ public class EnemyDeathHandler : MonoBehaviour
     {
         enemy?.NotifyDeath();
         navBridge?.Stop();
+
+        if (navMeshAgent != null) navMeshAgent.enabled = false;
+        if (animator != null) animator.enabled = false;
 
         if (ragdollPrefab != null)
         {
