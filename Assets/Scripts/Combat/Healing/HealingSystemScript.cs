@@ -16,6 +16,7 @@ namespace Combat
         public int AmountBandages => amountBandages; 
 
         public static event System.Action<int> OnBandagesChanged;
+        public static event System.Action<float> OnBandagesUsed;
 
         [SerializeField]
         private int healAmount;
@@ -48,6 +49,7 @@ namespace Combat
 
             playerHealth.Heal(healAmount);
 
+            OnBandagesUsed?.Invoke(healDelay);
         }
         void OnTriggerEnter(Collider other)
         {
