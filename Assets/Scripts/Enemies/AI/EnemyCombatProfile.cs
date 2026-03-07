@@ -44,7 +44,6 @@ namespace Enemies.AI
         [SerializeField] private bool dashAttackEnabled;
         [SerializeField, Min(0f)] private float dashAttackMinRange = 4f;
         [SerializeField, Min(0f)] private float dashAttackMaxRange = 8f;
-        [SerializeField, Min(0f)] private float dashAttackDistance = 4f;
         [SerializeField, Min(0.01f)] private float dashAttackDuration = 0.3f;
         [SerializeField, Min(0f)] private float dashAttackCooldown = 3f;
 
@@ -73,7 +72,6 @@ namespace Enemies.AI
         public bool DashAttackEnabled => dashAttackEnabled;
         public float DashAttackMinRange => dashAttackMinRange;
         public float DashAttackMaxRange => dashAttackMaxRange;
-        public float DashAttackDistance => dashAttackDistance;
         public float DashAttackDuration => dashAttackDuration;
         public float DashAttackCooldown => dashAttackCooldown;
 
@@ -103,7 +101,6 @@ namespace Enemies.AI
             attackRange = Mathf.Max(0.1f, attackRange);
             dashAttackMinRange = Mathf.Max(0f, dashAttackMinRange);
             dashAttackMaxRange = Mathf.Max(dashAttackMinRange + 0.1f, dashAttackMaxRange);
-            dashAttackDistance = Mathf.Max(0f, dashAttackDistance);
             dashAttackDuration = Mathf.Max(0.01f, dashAttackDuration);
             dashAttackCooldown = Mathf.Max(0f, dashAttackCooldown);
         }

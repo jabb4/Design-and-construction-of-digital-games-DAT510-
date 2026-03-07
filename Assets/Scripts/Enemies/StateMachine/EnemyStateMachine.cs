@@ -72,7 +72,19 @@ namespace Enemies.StateMachine
         }
 
         public float AttackRange => combatProfile != null ? combatProfile.AttackRange : 2.5f;
-        public float EngageRange => combatProfile != null ? combatProfile.EngageRange : 7f;
+        public float EngageRange
+        {
+            get
+            {
+                if (combatProfile == null) return 7f;
+                float range = combatProfile.EngageRange;
+                if (combatProfile.DashAttackEnabled)
+                {
+                    range = Mathf.Max(range, combatProfile.DashAttackMaxRange);
+                }
+                return range;
+            }
+        }
 
         public void SetCombatProfile(EnemyCombatProfile newProfile)
         {
