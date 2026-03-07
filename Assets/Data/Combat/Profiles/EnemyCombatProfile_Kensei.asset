@@ -37,6 +37,5 @@ MonoBehaviour:
   dashAttackEnabled: 0
   dashAttackMinRange: 4
   dashAttackMaxRange: 8
-  dashAttackDistance: 4
   dashAttackDuration: 0.3
   dashAttackCooldown: 3
