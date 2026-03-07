@@ -33,7 +33,7 @@ MonoBehaviour:
   supportOrbitExtraRadius: 1
   supportOrbitExtraRadiusPerEnemy: 0.25
   supportDistanceFromPriorityEnemy: 2.25
-  attackRange: 2.25
+  attackRange: 2
   dashAttackEnabled: 0
   dashAttackMinRange: 4
   dashAttackMaxRange: 8
