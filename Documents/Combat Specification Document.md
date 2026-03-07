@@ -305,15 +305,17 @@ Enemies are categorised into tiers that determine their combat profile and visua
 #### Rōnin (Boss)
 
 - Solo 1v1 (not spawned by the wave system)
-- Visually differentiated: larger scale, blackened steel material with dark red emission, bright red eyes with trails, red weapon slash trail
+- Visually differentiated: larger scale, blackened steel material with dark red emission, glowing red eyes with trails, always-on red weapon slash trail
+- **Always-on VFX:** Ground scorch glow with rising embers beneath the boss (active in all phases)
 - Three combat phases driven by HP thresholds, managed by `BossPhaseController`:
 
-| Phase | HP Range | Behaviour                                                          |
-| ----- | -------- | ------------------------------------------------------------------ |
-| 1     | 100%–60% | Short combos (2–3), generous parry windows, long defense pauses    |
-| 2     | 60%–30%  | Full combos (3–5), fast counters, introduces dash slash gap-closer |
-| 3     | 30%–0%   | Near-max combos (4–5), instant counters, minimal defense pauses    |
+| Phase | HP Range | Behaviour                                                          | VFX                                        |
+| ----- | -------- | ------------------------------------------------------------------ | ------------------------------------------- |
+| 1     | 100%–60% | Short combos (2–3), generous parry windows, long defense pauses    | Ground scorch + embers only                 |
+| 2     | 60%–30%  | Full combos (3–5), fast counters, introduces dash slash gap-closer | + Red sparks emitting from body             |
+| 3     | 30%–0%   | Near-max combos (4–5), instant counters, minimal defense pauses    | + Massive electric sparks emitting from body |
 
+- **Phase Transitions:** Each phase shift triggers a burst VFX (sparks, electric burst, flash) spawned at the boss spine, managed by `BossPhaseVfxController`
 - **Dash Slash:** A gap-closing attack available in Phase 2+. When the player is beyond normal attack range, the boss dashes forward with an attack. Controlled by profile fields (`dashAttackEnabled`, range, distance, duration, cooldown) and implemented as a dedicated state machine state (`EnemyDashAttackState`)
 - Phase transitions swap the combat profile
 
