@@ -26,6 +26,14 @@ This gives combat a "back and forth" exchange instead of one-sided pressure.
 
 ---
 
+## Design inspiration videos
+
+- [State machine](https://www.youtube.com/watch?v=RmdtA7G7cAE)
+- [Combat](https://www.youtube.com/watch?v=OLPJdg6Y9Yo)
+- [Enemy AI](https://www.youtube.com/watch?v=2UjeZFzzfB0&t=876s)
+
+---
+
 ## Core Feature Set
 
 ### Player Mechanics
@@ -134,11 +142,6 @@ Attack windows and eligibility checks are tied to animation events configured in
 - Trigger hitboxes during specific active frames.
 - Signal transitions between states like idle, wind-up, and recovery.
   Implementation relies on Animator parameters and conditions, which should align with the state machine hierarchy to maintain timing consistency.
-
-#### Free assets
-
-- Mixamo
-- Unity Starter Assets (humanoid animations)
 
 ### Enemy Specification
 
@@ -309,10 +312,10 @@ Enemies are categorised into tiers that determine their combat profile and visua
 - **Always-on VFX:** Ground scorch glow with rising embers beneath the boss (active in all phases)
 - Three combat phases driven by HP thresholds, managed by `BossPhaseController`:
 
-| Phase | HP Range | Behaviour                                                          | VFX                                        |
-| ----- | -------- | ------------------------------------------------------------------ | ------------------------------------------- |
-| 1     | 100%–60% | Short combos (2–3), generous parry windows, long defense pauses    | Ground scorch + embers only                 |
-| 2     | 60%–30%  | Full combos (3–5), fast counters, introduces dash slash gap-closer | + Red sparks emitting from body             |
+| Phase | HP Range | Behaviour                                                          | VFX                                          |
+| ----- | -------- | ------------------------------------------------------------------ | -------------------------------------------- |
+| 1     | 100%–60% | Short combos (2–3), generous parry windows, long defense pauses    | Ground scorch + embers only                  |
+| 2     | 60%–30%  | Full combos (3–5), fast counters, introduces dash slash gap-closer | + Red sparks emitting from body              |
 | 3     | 30%–0%   | Near-max combos (4–5), instant counters, minimal defense pauses    | + Massive electric sparks emitting from body |
 
 - **Phase Transitions:** Each phase shift triggers a burst VFX (sparks, electric burst, flash) spawned at the boss spine, managed by `BossPhaseVfxController`
