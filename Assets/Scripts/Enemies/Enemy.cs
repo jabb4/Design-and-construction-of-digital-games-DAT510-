@@ -147,6 +147,11 @@ public class Enemy : MonoBehaviour, ICombatant
     private void HandleDied()
     {
         NotifyDeath();
+        var nav = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (nav != null) nav.enabled = false;
+        var anim = GetComponent<Animator>();
+        if (anim != null) anim.enabled = false;
+        EnemyDeathHandler.StopThreadedComponents(gameObject);
         Destroy(gameObject);
     }
 

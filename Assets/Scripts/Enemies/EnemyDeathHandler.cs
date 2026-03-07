@@ -93,6 +93,7 @@ public class EnemyDeathHandler : MonoBehaviour
 
         if (navMeshAgent != null) navMeshAgent.enabled = false;
         if (animator != null) animator.enabled = false;
+        StopThreadedComponents(gameObject);
 
         if (ragdollPrefab != null)
         {
@@ -109,6 +110,7 @@ public class EnemyDeathHandler : MonoBehaviour
 
             if (animator != null)
             {
+                animator.enabled = true;
                 animator.CrossFadeInFixedTime("Death", 0.1f);
             }
 
@@ -280,6 +282,24 @@ public class EnemyDeathHandler : MonoBehaviour
         if (destroyEmitterAfterPlayback)
         {
             Destroy(sourceToUse.gameObject, lifeTime + 0.1f);
+        }
+    }
+
+    /// <summary>
+    /// Stops ParticleSystems and sets Rigidbodies kinematic to prevent
+    /// ThreadsafeLinearAllocator crashes when the GameObject is destroyed
+    /// while threaded subsystems are still processing.
+    /// </summary>
+    internal static void StopThreadedComponents(GameObject go)
+    {
+        foreach (var ps in go.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        foreach (var rb in go.GetComponentsInChildren<Rigidbody>(true))
+        {
+            rb.isKinematic = true;
         }
     }
 
