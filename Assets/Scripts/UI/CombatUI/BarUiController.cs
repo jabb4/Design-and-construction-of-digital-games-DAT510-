@@ -50,7 +50,7 @@ public class BarUiController : MonoBehaviour
         if (_barMaterial != null)
             Destroy(_barMaterial);
     }
-    
+
     private void UpdateHealthDisplay(float currentHealth, float maxHealth)
     {
         if (maxHealth != 0 && _barMaterial != null)

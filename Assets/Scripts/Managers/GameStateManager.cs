@@ -16,7 +16,7 @@ public class GameStateManager : MonoBehaviour
     private int maxFuelAmount;
     [SerializeField] private int currencyOnEnemyDeath = 10;
 
-    public static event Action<int> OnCurrencyChanged;
+    public static event Action<int, int> OnCurrencyChanged;
     public static event Action<int> OnFuelChanged;
     public static event Action<int> OnMaxFuelChanged;
 
@@ -65,25 +65,26 @@ public class GameStateManager : MonoBehaviour
 
     public void SetCurrency(int value)
     {
+        int delta = currency - value;
         currency = value;
-        OnCurrencyChanged?.Invoke(currency);
+        OnCurrencyChanged?.Invoke(currency, delta);
     }
 
     public void AddCurrency(int amount)
     {
         currency += amount;
-        OnCurrencyChanged?.Invoke(currency);
+        OnCurrencyChanged?.Invoke(currency, amount);
     }
 
     public void AddCurrencyOnDeath() {
         currency += currencyOnEnemyDeath;
-        OnCurrencyChanged?.Invoke(currency);
+        OnCurrencyChanged?.Invoke(currency, currencyOnEnemyDeath);
     }
 
     public void RemoveCurrency(int amount)
     {
         currency = Mathf.Max(0, currency - amount);
-        OnCurrencyChanged?.Invoke(currency);
+        OnCurrencyChanged?.Invoke(currency, amount);
     }
 
     public int GetFuelAmount()
@@ -176,7 +177,7 @@ public class GameStateManager : MonoBehaviour
             maxFuelAmount = SaveManager.Instance.GetMaxFuelAmount();
             OnMaxFuelChanged?.Invoke(maxFuelAmount);
             OnFuelChanged?.Invoke(fuelAmount);
-            OnCurrencyChanged?.Invoke(currency);
+            OnCurrencyChanged?.Invoke(currency, 0);
         }
     }
 
