@@ -15,3 +15,4 @@ MonoBehaviour:
   title: Patch and Push
   body: "Use bandages to heal mid-combat, but there\u2019s a cooldown between uses
     \u2014 you can\u2019t spam heals under pressure."
+  clip: {fileID: 32900000, guid: 42bdddb346cec46909608863212f11d5, type: 3}

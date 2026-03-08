@@ -16,3 +16,4 @@ MonoBehaviour:
   body: "Hold block to enter a defensive stance. Blocked attacks deal half damage
     \u2014 painful, but survivable.\n\nBlocking lingers briefly after you release
     the button, giving you a window to transition into a counter-attack."
+  clip: {fileID: 32900000, guid: ad034873288ca4bc1b4a39499e7a5cb4, type: 3}

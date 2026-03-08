@@ -19,3 +19,4 @@ MonoBehaviour:
 
     Your only goal: get in, fight, and get out
     alive.'
+  clip: {fileID: 32900000, guid: 7b7db13e48259416e9c5dbb4d01f161a, type: 3}

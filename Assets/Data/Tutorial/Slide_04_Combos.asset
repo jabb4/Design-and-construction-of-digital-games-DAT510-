@@ -16,3 +16,4 @@ MonoBehaviour:
   body: "Chain your attacks into combos by pressing attack during the recovery of
     your previous strike. \n\nYou can\u2019t move freely mid-attack. Every swing
     is a commitment. Make it count."
+  clip: {fileID: 32900000, guid: 74ed91fe36b334b92953a3bc84995d06, type: 3}

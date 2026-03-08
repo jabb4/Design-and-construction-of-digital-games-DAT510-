@@ -16,3 +16,4 @@ MonoBehaviour:
   body: "Every enemy you kill drops money. But that money isn\u2019t yours until
     you extract.\n\nGo to the extraction zone to secure your loot. If you die before
     extracting, you lose everything earned that raid. No exceptions."
+  clip: {fileID: 32900000, guid: cab44aa04b73b438dad642e01f789ac7, type: 3}
