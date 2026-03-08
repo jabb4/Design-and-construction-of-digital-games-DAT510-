@@ -268,6 +268,7 @@ MonoBehaviour:
   slides:
   - {fileID: 11400000, guid: 45d321ea30020412da77763498d0a1cc, type: 2}
   - {fileID: 11400000, guid: c9b35f1079df047298f824f2042feb8f, type: 2}
+  - {fileID: 11400000, guid: 5217298839b7f40f5b84d3010d9d8cbf, type: 2}
   - {fileID: 11400000, guid: 1628d5e4e25874fc28dca737196e63ed, type: 2}
   - {fileID: 11400000, guid: ef25c1441a3914d3cb6348fce28cd0dd, type: 2}
   - {fileID: 11400000, guid: 660c8a2f1a48b4633bbde10311740404, type: 2}
@@ -655,7 +656,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: heljdwakldjklwajdklwajkldwjakldddddddddddddd
+  m_text: body
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

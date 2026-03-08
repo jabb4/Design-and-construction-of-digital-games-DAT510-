@@ -10,8 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
-  m_Name: Slide_07_Healing
+  m_Name: Slide_04_Combos
   m_EditorClassIdentifier: 
-  title: Patch and Push
-  body: "Use bandages to heal mid-combat, but there\u2019s a cooldown between uses
-    \u2014 you can\u2019t spam heals under pressure."
+  title: The Way of the Blade
+  body: "Chain your attacks into combos by pressing attack during the recovery of
+    your previous strike. \n\nYou can\u2019t move freely mid-attack. Every swing
+    is a commitment. Make it count."

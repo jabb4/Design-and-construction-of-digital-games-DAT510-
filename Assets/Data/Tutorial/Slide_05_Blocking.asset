@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
-  m_Name: Slide_03_Combos
+  m_Name: Slide_05_Blocking
   m_EditorClassIdentifier: 
-  title: The Way of the Blade
-  body: "Chain your attacks into combos by pressing attack during the recovery of
-    your previous strike. \n\nYou can\u2019t move freely mid-attack. Every swing
-    is a commitment. Make it count."
+  title: Steel Meets Steel
+  body: "Hold block to enter a defensive stance. Blocked attacks deal half damage
+    \u2014 painful, but survivable.\n\nBlocking lingers briefly after you release
+    the button, giving you a window to transition into a counter-attack."

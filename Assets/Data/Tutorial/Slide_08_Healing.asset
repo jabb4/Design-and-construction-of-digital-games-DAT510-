@@ -10,10 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
-  m_Name: Slide_08_TheCycle
+  m_Name: Slide_08_Healing
   m_EditorClassIdentifier: 
-  title: The Cycle
-  body: "Raid. Kill. Survive. Extract. Die, and you lose it all. Every swing, every
-    parry, every decision matters. There are no second chances on the battlefield.
-    \n\nGather fuel, navigate to the Temple and defeat the AI overlord. Now draw
-    your blade."
+  title: Patch and Push
+  body: "Use bandages to heal mid-combat, but there\u2019s a cooldown between uses
+    \u2014 you can\u2019t spam heals under pressure."
