@@ -14,6 +14,16 @@ namespace Combat
 
         [Header("Optional References")]
         [SerializeField] private CombatHorizontalImpulseDriver impulseDriver;
+        [SerializeField] private AudioSource audioSource;
+
+        [Header("Optional SFX")]
+        [SerializeField] private AudioClip slashSfx;
+
+        [Header("SFX Variation")]
+        [SerializeField, Range(0f, 2f)] private float minVolume = 0.92f;
+        [SerializeField, Range(0f, 2f)] private float maxVolume = 1f;
+        [SerializeField, Range(0.5f, 2f)] private float minPitch = 0.94f;
+        [SerializeField, Range(0.5f, 2f)] private float maxPitch = 1.08f;
 
         public event Action<CombatAttackFeedbackContext> OnWindup;
         public event Action<CombatAttackFeedbackContext> OnSlash;
@@ -29,6 +39,7 @@ namespace Combat
             lungeEndSpeedFraction = Mathf.Clamp(lungeEndSpeedFraction, 0.05f, 0.95f);
             lungeDistance = Mathf.Max(0f, lungeDistance);
             lungeDuration = Mathf.Max(0.01f, lungeDuration);
+            ClampSfxFields();
             ResolveOptionalReferences(allowRuntimeCreate: false);
         }
 
@@ -37,6 +48,11 @@ namespace Combat
             if (impulseDriver != null)
             {
                 impulseDriver.StopActiveImpulse();
+            }
+
+            if (audioSource != null)
+            {
+                audioSource.Stop();
             }
         }
 
@@ -50,6 +66,7 @@ namespace Combat
                 case CombatAttackPhase.Slash:
                     OnSlash?.Invoke(context);
                     StartLunge(context);
+                    PlaySlashSfx();
                     break;
                 case CombatAttackPhase.Recovery:
                     OnRecovery?.Invoke(context);
@@ -76,6 +93,17 @@ namespace Combat
             impulseDriver.PlayImpulse(context.AttackDirection, lungeDistance, lungeDuration, lungeEndSpeedFraction);
         }
 
+        private void PlaySlashSfx()
+        {
+            if (slashSfx == null || audioSource == null)
+            {
+                return;
+            }
+
+            audioSource.pitch = UnityEngine.Random.Range(minPitch, maxPitch);
+            audioSource.PlayOneShot(slashSfx, UnityEngine.Random.Range(minVolume, maxVolume));
+        }
+
         private void ResolveOptionalReferences(bool allowRuntimeCreate)
         {
             if (impulseDriver == null)
@@ -86,6 +114,34 @@ namespace Combat
             if (impulseDriver == null && allowRuntimeCreate)
             {
                 impulseDriver = gameObject.AddComponent<CombatHorizontalImpulseDriver>();
+            }
+
+            if (audioSource == null)
+            {
+                audioSource = GetComponent<AudioSource>();
+            }
+
+            if (audioSource == null && allowRuntimeCreate)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
+
+        private void ClampSfxFields()
+        {
+            minVolume = Mathf.Clamp(minVolume, 0f, 2f);
+            maxVolume = Mathf.Clamp(maxVolume, 0f, 2f);
+            minPitch = Mathf.Clamp(minPitch, 0.5f, 2f);
+            maxPitch = Mathf.Clamp(maxPitch, 0.5f, 2f);
+
+            if (maxVolume < minVolume)
+            {
+                (minVolume, maxVolume) = (maxVolume, minVolume);
+            }
+
+            if (maxPitch < minPitch)
+            {
+                (minPitch, maxPitch) = (maxPitch, minPitch);
             }
         }
     }

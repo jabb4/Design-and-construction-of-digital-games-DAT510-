@@ -98,6 +98,21 @@ namespace Player.StateMachine
             runtime?.ChangeState(newState);
         }
 
+        /// <summary>
+        /// Forces a state change, allowing re-entry into the current state.
+        /// Used after weapon transitions to reinitialize the active state.
+        /// </summary>
+        public void ForceChangeState(IState newState)
+        {
+            if (newState == null)
+            {
+                Debug.LogError("[PlayerStateMachine] Attempted to force-change to null state!");
+                return;
+            }
+
+            runtime?.ForceChangeState(newState);
+        }
+
         public T GetState<T>() where T : PlayerStateBase, new()
         {
             Type stateType = typeof(T);

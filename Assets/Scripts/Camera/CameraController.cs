@@ -81,6 +81,12 @@ public class CameraController : MonoBehaviour
 
     public bool IsLockedOn => lockOnSession != null && lockOnSession.IsLockedOn;
 
+    /// <summary>
+    /// When true, mouse/look input is ignored and the camera only follows
+    /// the player's position. Use this during the pause menu.
+    /// </summary>
+    public bool IsRotationBlocked { get; set; }
+
     public Transform GetLockedTarget() => lockOnSession != null ? lockOnSession.LockedTarget : null;
 
     /// <summary>
@@ -164,13 +170,19 @@ public class CameraController : MonoBehaviour
     {
         if (playerTransform == null)
         {
+            if (lockOnSession != null && lockOnSession.IsLockedOn)
+            {
+                lockOnSession.UnlockManual();
+            }
+
+            lockOnIndicatorPresenter?.Hide();
             return;
         }
 
         InitializeLockOnGraph();
 
         lockOnInputRouter.Tick(Time.deltaTime);
-        Vector2 lookInput = lockOnInputRouter.ReadLookInput();
+        Vector2 lookInput = IsRotationBlocked ? Vector2.zero : lockOnInputRouter.ReadLookInput();
 
         if (lockOnSession != null)
         {

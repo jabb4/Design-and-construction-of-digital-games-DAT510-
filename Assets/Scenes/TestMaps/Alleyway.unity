@@ -1790,21 +1790,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 1616043764315128934, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
-      propertyPath: m_TagString
-      value: Player
-      objectReference: {fileID: 0}
     - target: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0000019073486
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 13.1
+      value: 13.29
       objectReference: {fileID: 0}
     - target: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1832,6 +1828,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4284151670019353469, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4902239012376648936, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      propertyPath: showDebugInfo
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -2450,7 +2450,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8313163537620617186, guid: b1ed58cc58a934fc28efafd24ad139c6, type: 3}
       propertyPath: m_Name
-      value: Main Camera (1)
+      value: Main Camera
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

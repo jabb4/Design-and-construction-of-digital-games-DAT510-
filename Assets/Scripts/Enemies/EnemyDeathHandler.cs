@@ -38,6 +38,7 @@ public class EnemyDeathHandler : MonoBehaviour
     private Enemy enemy;
     private Animator animator;
     private EnemyNavAgentBridge navBridge;
+    private UnityEngine.AI.NavMeshAgent navMeshAgent;
     private Vector3 lastHitFromDirection = Vector3.back;
 
     private void Awake()
@@ -46,6 +47,7 @@ public class EnemyDeathHandler : MonoBehaviour
         enemy = GetComponent<Enemy>();
         animator = GetComponent<Animator>();
         navBridge = GetComponent<EnemyNavAgentBridge>();
+        navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
 
         if (health != null)
         {
@@ -89,6 +91,10 @@ public class EnemyDeathHandler : MonoBehaviour
         enemy?.NotifyDeath();
         navBridge?.Stop();
 
+        if (navMeshAgent != null) navMeshAgent.enabled = false;
+        if (animator != null) animator.enabled = false;
+        StopThreadedComponents(gameObject);
+
         if (ragdollPrefab != null)
         {
             Transform hips = SpawnRagdoll(out Transform vfxBone);
@@ -104,6 +110,7 @@ public class EnemyDeathHandler : MonoBehaviour
 
             if (animator != null)
             {
+                animator.enabled = true;
                 animator.CrossFadeInFixedTime("Death", 0.1f);
             }
 
@@ -275,6 +282,26 @@ public class EnemyDeathHandler : MonoBehaviour
         if (destroyEmitterAfterPlayback)
         {
             Destroy(sourceToUse.gameObject, lifeTime + 0.1f);
+        }
+    }
+
+    /// <summary>
+    /// Stops ParticleSystems and sets Rigidbodies kinematic to prevent
+    /// ThreadsafeLinearAllocator crashes when the GameObject is destroyed
+    /// while threaded subsystems are still processing.
+    /// </summary>
+    internal static void StopThreadedComponents(GameObject go, bool includeRigidbodies = false)
+    {
+        foreach (var ps in go.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        if (!includeRigidbodies) return;
+
+        foreach (var rb in go.GetComponentsInChildren<Rigidbody>(true))
+        {
+            rb.isKinematic = true;
         }
     }
 

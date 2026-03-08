@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class RaidMapUIController : MonoBehaviour
 {
     public static RaidMapUIController Instance { get; private set; }
 
+    [SerializeField] private TMP_Text fuelCounterText;
     [SerializeField] private GameObject vanViewUI;
     [SerializeField] private int citySceneNumber = 3;
     [SerializeField] private int templeSceneNumber = 4;
@@ -22,6 +24,11 @@ public class RaidMapUIController : MonoBehaviour
             Instance = this;
         }
         gameObject.SetActive(false);
+    }
+
+    private void OnEnable()
+    {
+        fuelCounterText.text = $"Fuel: {GameStateManager.Instance.GetFuelAmount()}/{GameStateManager.Instance.GetMaxFuelAmount()}";
     }
 
     // Update is called once per frame

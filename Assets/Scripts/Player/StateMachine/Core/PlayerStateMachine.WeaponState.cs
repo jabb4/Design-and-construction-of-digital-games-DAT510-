@@ -14,7 +14,25 @@ namespace Player.StateMachine
 
         [SerializeField]
         [Tooltip("Optional fallback timeout (seconds) if transition animation never completes. Set to 0 to disable.")]
-        private float weaponTransitionTimeout = 0f;
+        private float weaponTransitionTimeout = 3f;
+
+        [Header("Weapon Transition SFX")]
+        [SerializeField] private AudioSource weaponTransitionAudioSource;
+
+        [Header("Unsheathe SFX")]
+        [SerializeField] private AudioClip unsheatheSfx;
+        [SerializeField, Range(0f, 2f)] private float unsheatheSfxVolume = 1f;
+        [SerializeField, Range(0.5f, 2f)] private float unsheatheSfxMinPitch = 0.96f;
+        [SerializeField, Range(0.5f, 2f)] private float unsheatheSfxMaxPitch = 1.04f;
+
+        [Header("Sheathe SFX")]
+        [SerializeField] private AudioClip sheatheSfx;
+        [SerializeField, Range(0f, 2f)] private float sheatheSfxVolume = 1f;
+        [SerializeField, Range(0.5f, 2f)] private float sheatheSfxMinPitch = 0.96f;
+        [SerializeField, Range(0.5f, 2f)] private float sheatheSfxMaxPitch = 1.04f;
+
+        [Tooltip("Seconds before the end of the sheathe animation to play the sheathe sound.")]
+        [SerializeField, Range(0.1f, 2f)] private float sheatheSfxSecondsBeforeEnd = 0.4f;
 
         public bool IsEquipped { get; private set; }
         public bool IsTransitioningWeapon { get; private set; }
@@ -27,6 +45,7 @@ namespace Player.StateMachine
         private bool pendingUnequipRequest;
         private WeaponTransitionType currentWeaponTransition = WeaponTransitionType.None;
         private float weaponTransitionStartTime = -1f;
+        private bool sheatheSfxPlayed;
 
         private static readonly int EquipToUnequip01Hash = Animator.StringToHash("Equip To Unequip 01");
         private static readonly int EquipToUnequip02Hash = Animator.StringToHash("Equip To Unequip 02");
@@ -106,15 +125,15 @@ namespace Player.StateMachine
 
             if (WantsGuard() && Motor != null && Motor.IsGrounded)
             {
-                ChangeState(GetState<BlockingState>());
+                ForceChangeState(GetState<BlockingState>());
             }
             else if (HasMoveIntent)
             {
-                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
+                ForceChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
-                ChangeState(GetState<IdleState>());
+                ForceChangeState(GetState<IdleState>());
             }
 
             if (!pendingUnequipRequest)
@@ -143,11 +162,11 @@ namespace Player.StateMachine
 
             if (HasMoveIntent)
             {
-                ChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
+                ForceChangeState(SprintHeld ? GetState<SprintState>() : GetState<WalkingState>());
             }
             else
             {
-                ChangeState(GetState<IdleState>());
+                ForceChangeState(GetState<IdleState>());
             }
 
             if (!pendingEquipRequest)
@@ -246,6 +265,7 @@ namespace Player.StateMachine
             weaponTransitionStartTime = Time.time;
             Animator?.SetTrigger("Equip");
             Animator?.SetBool(IsTransitioningWeaponHash, true);
+            PlayWeaponTransitionSfx(unsheatheSfx, unsheatheSfxVolume, unsheatheSfxMinPitch, unsheatheSfxMaxPitch);
         }
 
         private void BeginUnequipTransition()
@@ -258,6 +278,7 @@ namespace Player.StateMachine
             IsTransitioningWeapon = true;
             currentWeaponTransition = WeaponTransitionType.Unequipping;
             weaponTransitionStartTime = Time.time;
+            sheatheSfxPlayed = false;
             SetUnequipVariant();
             Animator?.SetTrigger("Unequip");
             Animator?.SetBool(IsTransitioningWeaponHash, true);
@@ -296,11 +317,25 @@ namespace Player.StateMachine
                 return;
             }
 
-            if (currentWeaponTransition == WeaponTransitionType.Unequipping && isUnequipTransitionState &&
-                stateInfo.normalizedTime >= 0.95f)
+            if (currentWeaponTransition == WeaponTransitionType.Unequipping && isUnequipTransitionState)
             {
-                NotifyUnequipAnimationComplete();
-                return;
+                if (!sheatheSfxPlayed)
+                {
+                    float clipLength = stateInfo.length;
+                    float elapsed = stateInfo.normalizedTime * clipLength;
+                    float remaining = clipLength - elapsed;
+                    if (remaining <= sheatheSfxSecondsBeforeEnd)
+                    {
+                        sheatheSfxPlayed = true;
+                        PlayWeaponTransitionSfx(sheatheSfx, sheatheSfxVolume, sheatheSfxMinPitch, sheatheSfxMaxPitch);
+                    }
+                }
+
+                if (stateInfo.normalizedTime >= 0.95f)
+                {
+                    NotifyUnequipAnimationComplete();
+                    return;
+                }
             }
 
             if (weaponTransitionTimeout > 0f && weaponTransitionStartTime > 0f &&
@@ -315,6 +350,21 @@ namespace Player.StateMachine
                     NotifyUnequipAnimationComplete();
                 }
             }
+        }
+
+        private void PlayWeaponTransitionSfx(AudioClip clip, float volume, float minPitch, float maxPitch)
+        {
+            if (clip == null || weaponTransitionAudioSource == null)
+            {
+                return;
+            }
+
+            float pitch = Random.Range(
+                Mathf.Clamp(minPitch, 0.5f, 2f),
+                Mathf.Clamp(maxPitch, 0.5f, 2f));
+
+            weaponTransitionAudioSource.pitch = pitch;
+            weaponTransitionAudioSource.PlayOneShot(clip, Mathf.Clamp(volume, 0f, 2f));
         }
 
         private enum WeaponTransitionType

@@ -113,6 +113,14 @@ namespace Player.StateMachine
                     CrossFade(Owner.GetDefenseExitStateName(activeGuardSide), 0.1f);
                 }
 
+                // Allow attack to interrupt the block-to-idle exit animation.
+                if (isExiting && AttackPressed && Motor.IsGrounded)
+                {
+                    States.AttackState attackState = Owner.GetState<States.AttackState>();
+                    attackState.SetComboIndex(0);
+                    return TransitionDecision.To(attackState, TransitionReason.RecoveryInterrupt, priority: TransitionPriorities.RecoveryInterrupt);
+                }
+
                 return TransitionDecision.None;
             }
 

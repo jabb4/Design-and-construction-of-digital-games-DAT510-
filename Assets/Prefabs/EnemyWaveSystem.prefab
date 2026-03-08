@@ -47,6 +47,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 6880349450255457242, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
   spawnPoints: []
+  miniBossPrefab: {fileID: 5064490933553561576, guid: 0084bcc33f5144201a4b54cb751b38c8, type: 3}
+  miniBossStartWave: 3
+  miniBossEveryNWaves: 3
+  miniBossInitialCount: 1
+  miniBossIncreaseAmount: 1
   initialEnemies: 1
   enemyIncreaseAmount: 1
   timeBetweenWaves: 30

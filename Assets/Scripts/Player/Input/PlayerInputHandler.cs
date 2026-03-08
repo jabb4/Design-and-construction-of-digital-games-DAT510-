@@ -16,37 +16,44 @@ namespace Player.StateMachine
         #region Input Properties
 
         /// <summary>
+        /// When true, all input is suppressed and zero/false values are returned.
+        /// Use this to freeze the player cleanly (e.g. pause menu) without
+        /// disabling the state machine mid-state.
+        /// </summary>
+        public bool IsBlocked { get; set; }
+
+        /// <summary>
         /// The current movement input from the player.
         /// X = horizontal (A/D or Left/Right), Y = vertical (W/S or Up/Down).
         /// </summary>
-        public Vector2 MoveInput { get; private set; }
+        public Vector2 MoveInput => IsBlocked ? Vector2.zero : rawMoveInput;
 
         /// <summary>
         /// Whether the player is currently holding the sprint button.
         /// </summary>
-        public bool IsSprinting { get; private set; }
+        public bool IsSprinting => !IsBlocked && rawIsSprinting;
 
         /// <summary>
         /// Whether the player is currently holding the block button.
         /// </summary>
-        public bool IsBlocking { get; private set; }
+        public bool IsBlocking => !IsBlocked && rawIsBlocking;
 
         /// <summary>
         /// True only on the frame when block was pressed.
         /// </summary>
-        public bool IsBlockPressed => blockIntent.IsPressedThisFrame;
+        public bool IsBlockPressed => !IsBlocked && blockIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True only on the frame when jump was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
-        public bool IsJumpPressed => jumpIntent.IsPressedThisFrame;
+        public bool IsJumpPressed => !IsBlocked && jumpIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True only on the frame when attack was pressed.
         /// This is reset to false in LateUpdate.
         /// </summary>
-        public bool IsAttackPressed => attackIntent.IsPressedThisFrame;
+        public bool IsAttackPressed => !IsBlocked && attackIntent.IsPressedThisFrame;
 
         /// <summary>
         /// True while jump input is buffered.
@@ -86,7 +93,7 @@ namespace Player.StateMachine
 
         [SerializeField]
         [Tooltip("Time window to buffer attack input (seconds)")]
-        private float attackBufferDuration = 0f;
+        private float attackBufferDuration = 0.2f;
 
         /// <summary>
         /// Public accessor for the movement threshold.
@@ -128,7 +135,7 @@ namespace Player.StateMachine
         /// <param name="value">The input value from the Input System</param>
         private void OnMove(InputValue value)
         {
-            MoveInput = value.Get<Vector2>();
+            rawMoveInput = value.Get<Vector2>();
         }
 
         /// <summary>
@@ -138,8 +145,8 @@ namespace Player.StateMachine
         /// <param name="value">The input value from the Input System</param>
         private void OnSprint(InputValue value)
         {
-            bool wasSprintingBefore = IsSprinting;
-            IsSprinting = value.isPressed;
+            bool wasSprintingBefore = rawIsSprinting;
+            rawIsSprinting = value.isPressed;
 
             // Fire events based on state change
             if (IsSprinting && !wasSprintingBefore)
@@ -172,9 +179,9 @@ namespace Player.StateMachine
         /// <param name="value">The input value from the Input System</param>
         private void OnBlock(InputValue value)
         {
-            bool wasBlocking = IsBlocking;
-            IsBlocking = value.isPressed;
-            if (IsBlocking && !wasBlocking)
+            bool wasBlocking = rawIsBlocking;
+            rawIsBlocking = value.isPressed;
+            if (rawIsBlocking && !wasBlocking)
             {
                 blockIntent.RecordPress();
             }
@@ -216,6 +223,10 @@ namespace Player.StateMachine
         #endregion
 
         #region Private Fields
+
+        private Vector2 rawMoveInput;
+        private bool rawIsSprinting;
+        private bool rawIsBlocking;
 
         private readonly IntentBuffer jumpIntent = new IntentBuffer();
         private readonly IntentBuffer blockIntent = new IntentBuffer();

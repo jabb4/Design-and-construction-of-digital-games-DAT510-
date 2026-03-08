@@ -14,8 +14,6 @@ public class GameStateManager : MonoBehaviour
     private int currency;
     private int fuelAmount;
     private int maxFuelAmount;
-    [SerializeField] private int currencyOnEnemyDeath = 10;
-
     public static event Action<int, int> OnCurrencyChanged;
     public static event Action<int> OnFuelChanged;
     public static event Action<int> OnMaxFuelChanged;
@@ -50,7 +48,11 @@ public class GameStateManager : MonoBehaviour
 
     private void HandleNewHealthComponent(HealthComponent hc)
     {
-        hc.OnDied += AddCurrencyOnDeath;
+        var enemy = hc.GetComponent<Enemy>();
+        if (enemy != null)
+        {
+            hc.OnDied += () => AddCurrency(enemy.KillReward);
+        }
     }
 
     private void Start()
@@ -74,11 +76,6 @@ public class GameStateManager : MonoBehaviour
     {
         currency += amount;
         OnCurrencyChanged?.Invoke(currency, amount);
-    }
-
-    public void AddCurrencyOnDeath() {
-        currency += currencyOnEnemyDeath;
-        OnCurrencyChanged?.Invoke(currency, currencyOnEnemyDeath);
     }
 
     public void RemoveCurrency(int amount)

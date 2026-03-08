@@ -1,16 +1,24 @@
 namespace Player.StateMachine.States
 {
     using Player.StateMachine;
+    using Player.StateMachine.Transitions;
     using global::StateMachine.Core;
 
     public abstract class GroundedStateBase : PlayerStateBase
     {
         /// <summary>
-        /// Handles shared grounded transition checks for attack, block and jump.
+        /// Handles shared grounded transition checks: airborne, attack, block and jump.
         /// Returns true when a decision has been made (including "stay in current state").
         /// </summary>
         protected bool TryGetCommonGroundedTransition(out TransitionDecision decision)
         {
+            TransitionDecision airborneTransition = GroundedTransitionEvaluator.ToAirborneLoop(Owner, Motor.IsGrounded);
+            if (airborneTransition.HasTransition)
+            {
+                decision = airborneTransition;
+                return true;
+            }
+
             if (AttackPressed && Motor.IsGrounded)
             {
                 if (!Owner.IsEquipped)
