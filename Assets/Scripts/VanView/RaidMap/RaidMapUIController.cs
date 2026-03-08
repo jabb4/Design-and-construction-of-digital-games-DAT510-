@@ -9,8 +9,8 @@ public class RaidMapUIController : MonoBehaviour
 
     [SerializeField] private TMP_Text fuelCounterText;
     [SerializeField] private GameObject vanViewUI;
-    [SerializeField] private int citySceneNumber = 3;
-    [SerializeField] private int templeSceneNumber = 4;
+    [SerializeField] private int citySceneNumber = 2;
+    [SerializeField] private int templeSceneNumber = 3;
 
     private void Awake()
     {

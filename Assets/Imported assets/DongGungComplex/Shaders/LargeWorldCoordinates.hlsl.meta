@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 53dac237db7c81e40803480bd6a98ef5
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304769
+  packageName: KHS -Donggung
+  packageVersion: 1.0
+  assetPath: Assets/DongGungComplex/Shaders/LargeWorldCoordinates.hlsl
+  uploadId: 715580

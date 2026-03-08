@@ -45,6 +45,12 @@ namespace Player.StateMachine.States
                 return TransitionDecision.To(Owner.GetState<JumpStartState>(), TransitionReason.InputJump, priority: TransitionPriorities.InputPrimary);
             }
 
+            // Transition to locomotion early if moving and landing blend is done
+            if (HasMoveIntent && landingTimer >= landingDuration)
+            {
+                return GroundedTransitionEvaluator.ToLocomotionOrIdle(Owner, HasMoveIntent, SprintHeld);
+            }
+
             AnimatorStateInfo stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
             bool inJumpEnd = stateInfo.shortNameHash == JumpEndHash;
 

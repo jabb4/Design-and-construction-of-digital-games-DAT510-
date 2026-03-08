@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4847327fe770bed4c96bc5c20d1ebd63
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304769
+  packageName: KHS -Donggung
+  packageVersion: 1.0
+  assetPath: Assets/DongGungComplex/Shaders/UnrealCommon.cginc
+  uploadId: 715580

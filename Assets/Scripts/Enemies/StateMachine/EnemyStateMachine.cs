@@ -7,6 +7,7 @@ namespace Enemies.StateMachine
     using global::StateMachine.Core;
     using Player.StateMachine;
     using UnityEngine;
+    using UnityEngine.AI;
 
     [RequireComponent(typeof(Enemy))]
     [RequireComponent(typeof(Animator))]
@@ -72,6 +73,21 @@ namespace Enemies.StateMachine
         }
 
         public float AttackRange => combatProfile != null ? combatProfile.AttackRange : 2.5f;
+        public bool HasClearDashPath
+        {
+            get
+            {
+                if (currentTarget == null) return false;
+
+                Vector3 from = transform.position;
+                Vector3 to = currentTarget.position;
+
+                if (Mathf.Abs(from.y - to.y) > 1.5f) return false;
+
+                return !NavMesh.Raycast(from, to, out _, NavMesh.AllAreas);
+            }
+        }
+
         public float EngageRange
         {
             get
