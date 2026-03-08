@@ -223,7 +223,9 @@ namespace Player.StateMachine
                 Vector3 currentForward = desiredDirection * currentForwardSpeed;
                 Vector3 currentLateral = currentHorizontal - currentForward;
 
-                float rate = targetForwardSpeed > currentForwardSpeed ? acceleration : deceleration;
+                float baseRate = targetForwardSpeed > currentForwardSpeed ? acceleration : deceleration;
+                // Use acceleration rate when landing so speed scales down responsively
+                float rate = clampedScale < 1f ? acceleration : baseRate;
                 float forwardT = rate <= 0f ? 1f : 1f - Mathf.Exp(-rate * Time.fixedDeltaTime);
                 float newForwardSpeed = Mathf.Lerp(currentForwardSpeed, targetForwardSpeed, forwardT);
                 Vector3 newForward = desiredDirection * newForwardSpeed;
