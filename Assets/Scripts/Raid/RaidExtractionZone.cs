@@ -6,11 +6,12 @@ using UnityEngine.InputSystem;
 public class RaidExtractionZone : MonoBehaviour
 {
     [SerializeField] private float holdTime = 10f;
-    [SerializeField] private int targetSceneIndex = 2;
+    [SerializeField] private int targetSceneIndex = 1;
     [SerializeField] private Key activationKey = Key.E;
     [SerializeField] private RaidExtractionUI extractionUI;
     [SerializeField] private AudioClip extractionSound;
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private GameObject backMenuUI;
 
 
     private bool isPlayerInZone = false;
@@ -21,6 +22,7 @@ public class RaidExtractionZone : MonoBehaviour
     void Update()
     {
         if (isExtracting) return;
+        if (backMenuUI != null && backMenuUI.activeSelf) return;
 
         if (isPlayerInZone)
         {

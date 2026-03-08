@@ -40,7 +40,7 @@ public class BackMenuUI : MonoBehaviour
 
     public void ConfirmExit()
     {
-        SceneManager.LoadSceneAsync(1);
+        SceneManager.LoadSceneAsync(0);
     }
 
     public void ExitToMainMenu()
@@ -50,7 +50,7 @@ public class BackMenuUI : MonoBehaviour
             ToggleConfirmation();
             return;
         }
-        SceneManager.LoadSceneAsync(1);
+        SceneManager.LoadSceneAsync(0);
     }
 
 
