@@ -4754,7 +4754,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fuelCounterText: {fileID: 860384671}
   vanViewUI: {fileID: 1391118313}
-  citySceneNumber: 3
+  citySceneNumber: 5
   templeSceneNumber: 4
 --- !u!1 &1178170012
 GameObject:
@@ -7860,6 +7860,11 @@ MonoBehaviour:
   m_LightUnit: 0
   m_LuxAtDistance: 1
   m_Intensity: 0
+  m_Version: 13
+  m_ObsoleteShadowResolutionTier: 1
+  m_ObsoleteUseShadowQualitySettings: 0
+  m_ObsoleteCustomShadowResolution: 512
+  m_ObsoleteContactShadows: 0
   m_InnerSpotPercent: 0
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
@@ -7978,11 +7983,6 @@ MonoBehaviour:
   m_AreaLightEmissiveMeshShadowCastingMode: 0
   m_AreaLightEmissiveMeshMotionVectorGenerationMode: 0
   m_AreaLightEmissiveMeshLayer: -1
-  m_Version: 13
-  m_ObsoleteShadowResolutionTier: 1
-  m_ObsoleteUseShadowQualitySettings: 0
-  m_ObsoleteCustomShadowResolution: 512
-  m_ObsoleteContactShadows: 0
 --- !u!108 &2117182402
 Light:
   m_ObjectHideFlags: 0

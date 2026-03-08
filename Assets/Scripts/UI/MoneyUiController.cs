@@ -13,7 +13,7 @@ public class MoneyUiController : MonoBehaviour
         GameStateManager.OnCurrencyChanged += UpdateCurrencyDisplay;
 
         if (GameStateManager.Instance != null) {
-            UpdateCurrencyDisplay(GameStateManager.Instance.GetCurrency());
+            UpdateCurrencyDisplay(GameStateManager.Instance.GetCurrency(), 0);
         }
     }
 
@@ -22,7 +22,7 @@ public class MoneyUiController : MonoBehaviour
         GameStateManager.OnCurrencyChanged -= UpdateCurrencyDisplay;
     }
 
-    public void UpdateCurrencyDisplay(int newAmount)
+    public void UpdateCurrencyDisplay(int newAmount, int delta)
     {
         moneyText.text = (newAmount.ToString());
     }
