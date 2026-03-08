@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using UnityEngine.Video;
 using TMPro;
 
 public class TutorialScript : MonoBehaviour
@@ -15,6 +17,10 @@ public class TutorialScript : MonoBehaviour
     [SerializeField] private TextMeshProUGUI bodyText;
     [SerializeField] private TextMeshProUGUI pageIndicator;
     [SerializeField] private List<GameObject> buttons;
+
+    [Header("Video")]
+    [SerializeField] private VideoPlayer videoPlayer;
+    [SerializeField] private RawImage videoImage;
 
     [Header("Input")]
     [SerializeField] private InputActionAsset inputActions;
@@ -106,6 +112,9 @@ public class TutorialScript : MonoBehaviour
     {
         IsOpen = false;
 
+        if (videoPlayer != null) videoPlayer.Stop();
+        if (videoImage != null) videoImage.gameObject.SetActive(false);
+
         slidePanel.SetActive(false);
         foreach (GameObject go in buttons)
             go.SetActive(false);
@@ -151,5 +160,21 @@ public class TutorialScript : MonoBehaviour
 
         if (pageIndicator != null)
             pageIndicator.text = $"{currentSlide + 1} / {slides.Length}";
+
+        if (videoPlayer != null && videoImage != null)
+        {
+            if (data.clip != null)
+            {
+                videoPlayer.clip = data.clip;
+                videoPlayer.isLooping = true;
+                videoPlayer.Play();
+                videoImage.gameObject.SetActive(true);
+            }
+            else
+            {
+                videoPlayer.Stop();
+                videoImage.gameObject.SetActive(false);
+            }
+        }
     }
 }
