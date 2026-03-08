@@ -201,7 +201,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -5.9, y: -77.1}
+  m_AnchoredPosition: {x: -5.9, y: -116.23}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8025747042977339967
@@ -259,8 +259,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 52
+  m_fontSizeBase: 52
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1116,6 +1116,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 780747601822204312, guid: 729c3ce050740476b89ac621a8c5649d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3105851535862984157}
+    - targetCorrespondingSourceObject: {fileID: 780747601822204312, guid: 729c3ce050740476b89ac621a8c5649d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1953163852301654086}
   m_SourcePrefab: {fileID: 100100000, guid: 729c3ce050740476b89ac621a8c5649d, type: 3}
 --- !u!1 &4531104454205177230 stripped
 GameObject:
@@ -1135,6 +1138,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moneyText: {fileID: 6004492852551630052}
+--- !u!114 &1953163852301654086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4531104454205177230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edfcd707fe4131240896ad332e07c452, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popupText: {fileID: 603109028406361146}
+  displayDuration: 1
+  floatDistance: 40
+  fadeDelay: 0.4
 --- !u!224 &5376089778371015237 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 9128734439590235731, guid: 729c3ce050740476b89ac621a8c5649d, type: 3}
