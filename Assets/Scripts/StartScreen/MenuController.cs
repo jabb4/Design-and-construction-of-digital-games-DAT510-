@@ -1,5 +1,5 @@
-using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
@@ -9,15 +9,20 @@ public class MenuController : MonoBehaviour
     [SerializeField] private GameObject newGameButton;
     [SerializeField] private GameObject quitGameButton;
 
+    [SerializeField] private GameObject skipIntroButton;
     [SerializeField] private GameObject videoPlayer;
     [SerializeField] private GameObject screen;
     [SerializeField] private AudioSource menuAudioSource;
+    [SerializeField] private float introCursorHideDelay = 2f;
 
     private Vector3 originalNewGameButtonLocalPosition;
     private Vector3 originalLoadGameButtonLocalPosition;
     private Vector3 originalQuitGameButtonLocalPosition;
     private VideoPlayer cachedVideoPlayer;
     private bool isStartingNewGame;
+    private bool isPlayingIntro;
+    private Vector2 lastMousePosition;
+    private float lastMouseMoveTime;
 
     private void Awake()
     {
@@ -35,6 +40,8 @@ public class MenuController : MonoBehaviour
     private void OnEnable()
     {
         screen.gameObject.SetActive(false);
+        skipIntroButton.gameObject.SetActive(false);
+        SetIntroCursorVisible(true);
 
         if (cachedVideoPlayer != null)
         {
@@ -42,6 +49,9 @@ public class MenuController : MonoBehaviour
         }
 
         isStartingNewGame = false;
+        isPlayingIntro = false;
+        lastMousePosition = GetMousePosition();
+        lastMouseMoveTime = Time.unscaledTime;
 
         // Deactivate Load game button if there isn't any saved data
         if (!GameStateManager.Instance.gameSaveExists)
@@ -58,12 +68,38 @@ public class MenuController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (!isPlayingIntro)
+        {
+            return;
+        }
+
+        Vector2 currentMousePosition = GetMousePosition();
+        if (currentMousePosition != lastMousePosition)
+        {
+            lastMousePosition = currentMousePosition;
+            lastMouseMoveTime = Time.unscaledTime;
+            SetIntroCursorVisible(true);
+            skipIntroButton.gameObject.SetActive(true);
+            return;
+        }
+
+        if (Time.unscaledTime - lastMouseMoveTime >= introCursorHideDelay)
+        {
+            SetIntroCursorVisible(false);
+            skipIntroButton.gameObject.SetActive(false);
+        }
+    }
+
     private void OnDisable()
     {
         if (cachedVideoPlayer != null)
         {
             cachedVideoPlayer.loopPointReached -= OnNewGameVideoFinished;
         }
+
+        SetIntroCursorVisible(true);
     }
 
     public void NewGame()
@@ -86,17 +122,34 @@ public class MenuController : MonoBehaviour
             return;
         }
 
+        isPlayingIntro = true;
+        lastMousePosition = GetMousePosition();
+        lastMouseMoveTime = Time.unscaledTime;
+        skipIntroButton.gameObject.SetActive(false);
+        SetIntroCursorVisible(false);
+
         cachedVideoPlayer.loopPointReached -= OnNewGameVideoFinished;
         cachedVideoPlayer.loopPointReached += OnNewGameVideoFinished;
         cachedVideoPlayer.Stop();
-        cachedVideoPlayer.Play();
         screen.gameObject.SetActive(true);
+        cachedVideoPlayer.Play();
     }
 
     public void LoadGame()
     {
         GameStateManager.Instance.LoadGameState();
         SceneManager.LoadSceneAsync(1);
+    }
+
+    public void SkipIntro()
+    {
+        if (cachedVideoPlayer != null)
+        {
+            cachedVideoPlayer.loopPointReached -= OnNewGameVideoFinished;
+            cachedVideoPlayer.Stop();
+        }
+
+        CompleteNewGame();
     }
 
     private void OnNewGameVideoFinished(VideoPlayer source)
@@ -107,9 +160,29 @@ public class MenuController : MonoBehaviour
 
     private void CompleteNewGame()
     {
+        isPlayingIntro = false;
+        SetIntroCursorVisible(true);
+        skipIntroButton.gameObject.SetActive(false);
+
         GameStateManager.Instance.SetInitValues();
         GameStateManager.Instance.SaveGameState();
         SceneManager.LoadSceneAsync(1);
+    }
+
+    private Vector2 GetMousePosition()
+    {
+        if (Mouse.current == null)
+        {
+            return lastMousePosition;
+        }
+
+        return Mouse.current.position.ReadValue();
+    }
+
+    private void SetIntroCursorVisible(bool isVisible)
+    {
+        Cursor.visible = isVisible;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void QuitGame()
