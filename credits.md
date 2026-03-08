@@ -8,6 +8,7 @@
 - Banners - ChatGPT
 - Maps button - ChatGPT
 - Currency bar - ChatGPT
+- Intro video images - ChatGPT
 - Map - refined by ChatGPT
 
 ### Sound effects
@@ -18,6 +19,7 @@
 - Car motor - [enric592](https://freesound.org/people/enric592/sounds/185743/)
 - Gong Gong - [juskiddink](https://freesound.org/people/juskiddink/sounds/122681/)
 - Car starting - [giddster](https://freesound.org/people/giddster/sounds/437352/)
+- Intro video voice and sound effects - ElevenLabs
 
 #### Combat
 
