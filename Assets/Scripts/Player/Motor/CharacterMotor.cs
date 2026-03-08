@@ -81,6 +81,8 @@ namespace Player.StateMachine
         private Rigidbody rb;
         private CameraController cameraController;
         private float groundedGraceTimer;
+        private float jumpCooldown;
+        private float prePhysicsY;
 
         #endregion
 
@@ -122,7 +124,43 @@ namespace Player.StateMachine
 
         private void FixedUpdate()
         {
+            if (jumpCooldown > 0f)
+                jumpCooldown -= Time.fixedDeltaTime;
+
             CheckGrounded();
+
+            // Record Y before physics step so we can snap back if a collision pushes us up
+            if (IsGrounded && jumpCooldown <= 0f)
+            {
+                prePhysicsY = transform.position.y;
+            }
+        }
+
+        /// <summary>
+        /// Runs after physics collision resolution.
+        /// Prevents capsule-on-capsule collisions from pushing the player upward.
+        /// </summary>
+        private void OnCollisionStay(Collision collision)
+        {
+            if (!IsGrounded || jumpCooldown > 0f) return;
+            if (transform.position.y <= prePhysicsY + 0.005f) return;
+
+            // Only counteract side collisions (horizontal normals = character pushing),
+            // not ground collisions (vertical normals)
+            for (int i = 0; i < collision.contactCount; i++)
+            {
+                if (Mathf.Abs(collision.GetContact(i).normal.y) < 0.3f)
+                {
+                    Vector3 pos = transform.position;
+                    pos.y = prePhysicsY;
+                    transform.position = pos;
+
+                    Vector3 vel = rb.linearVelocity;
+                    if (vel.y > 0f) vel.y = 0f;
+                    rb.linearVelocity = vel;
+                    return;
+                }
+            }
         }
 
         #endregion
@@ -280,6 +318,7 @@ namespace Player.StateMachine
 
             groundedGraceTimer = 0f;
             IsGrounded = false;
+            jumpCooldown = 0.15f;
 
             // Apply upward force
             Vector3 velocity = rb.linearVelocity;
@@ -346,6 +385,12 @@ namespace Player.StateMachine
         /// </summary>
         private void CheckGrounded()
         {
+            if (jumpCooldown > 0f)
+            {
+                IsGrounded = false;
+                return;
+            }
+
             Vector3 spherePosition = transform.position + Vector3.up * groundCheckOffset;
             bool groundContact = Physics.CheckSphere(spherePosition, groundCheckRadius, groundLayer);
 
