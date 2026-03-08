@@ -366,6 +366,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ronin
       objectReference: {fileID: 0}
+    - target: {fileID: 1014710810721523540, guid: 4ca058b50a9ae4d3d9123e895f1e3fbc, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4690503459935425287, guid: 4ca058b50a9ae4d3d9123e895f1e3fbc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.4178486

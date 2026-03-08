@@ -435,6 +435,10 @@ PrefabInstance:
       propertyPath: ragdollPrefab
       value: 
       objectReference: {fileID: 1512479730136006977, guid: c7e1346bb86d440979d9cd5dc5945df7, type: 3}
+    - target: {fileID: 5832811830406196893, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
+      propertyPath: killReward
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5908862388057485691, guid: 2e752a3377b224a078863c3dab99cdf6, type: 3}
       propertyPath: maxHealth
       value: 200
