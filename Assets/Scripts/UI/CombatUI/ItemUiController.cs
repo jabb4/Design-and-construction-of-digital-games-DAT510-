@@ -12,6 +12,8 @@ public class ItemUiController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI visibleAmount;
 
     [SerializeField] private TextMeshProUGUI visibleKeybind;
+    [SerializeField] private Image greyout;
+    [SerializeField] private TextMeshProUGUI cooldownText;
 
     private void Start() 
     {
@@ -22,24 +24,33 @@ public class ItemUiController : MonoBehaviour
         }
         else
         {
-        SetKeybind("?");  
-        Debug.LogWarning("Heal action not found in Input System!");
+            SetKeybind("?");  
+            Debug.LogWarning("Heal action not found in Input System!");
         }
     }
 
     private void OnEnable()
     {
         HealingSystemScript.OnBandagesChanged += SetItemAmount;
+        HealingSystemScript.OnBandagesUsed += TriggerItemCooldown;
         
         if (healingSystem != null)
         {
             SetItemAmount(healingSystem.AmountBandages);
         }
+
+        if (cooldownText != null)
+            cooldownText.gameObject.SetActive(false);
+
+        if (greyout != null)
+            greyout.gameObject.SetActive(false);
     }
 
     private void OnDisable()
     {
         HealingSystemScript.OnBandagesChanged -= SetItemAmount;
+        HealingSystemScript.OnBandagesUsed -= TriggerItemCooldown;
+
     }
 
     public void SetKeybind(string keybind)
@@ -47,7 +58,7 @@ public class ItemUiController : MonoBehaviour
         if (visibleKeybind != null)
             visibleKeybind.text = keybind;
         else
-            visibleKeybind.text = "missing keybind error";
+            Debug.LogWarning("missing keybind error");
 
     }
 
@@ -56,7 +67,37 @@ public class ItemUiController : MonoBehaviour
         if (visibleAmount != null)
             visibleAmount.text = itemAmount.ToString();
         else
-            visibleAmount.text = "missing amount error";
+            Debug.LogWarning("missing amount error");
     }
 
+    public void TriggerItemCooldown(float cooldown) 
+    {
+        StopAllCoroutines();
+        StartCoroutine(CooldownCoroutine(cooldown));
+    }
+
+    private IEnumerator CooldownCoroutine(float cooldown)
+    {
+        if (greyout != null)
+            greyout.gameObject.SetActive(true);
+        if (cooldownText != null)
+            cooldownText.gameObject.SetActive(true);
+
+        float remaining = cooldown;
+        while (remaining > 0f)
+        {
+            if (cooldownText != null)
+                cooldownText.text = Mathf.CeilToInt(remaining).ToString();
+            yield return null;
+            remaining -= Time.deltaTime;
+        }
+
+        if (greyout != null)
+            greyout.gameObject.SetActive(false);
+        if (cooldownText != null)
+        {
+            cooldownText.gameObject.SetActive(false);
+            cooldownText.text = "";
+        }
+    }
 }
