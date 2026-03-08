@@ -2265,7 +2265,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   titleText: {fileID: 858547499}
   destination: 2
-  travelCost: 200
+  travelCost: 0
   travelDistance: 2000
   affordHoverColor: {r: 0.2168537, g: 0.49803922, b: 0.090196066, a: 1}
   cantAffordHoverColor: {r: 0.49803922, g: 0.11122774, b: 0.090196066, a: 1}
@@ -3139,7 +3139,6 @@ MonoBehaviour:
   initFuelAmount: 100
   initMaxFuelAmount: 100
   gameSaveExists: 0
-  currencyOnEnemyDeath: 10
 --- !u!4 &680412341
 Transform:
   m_ObjectHideFlags: 0
@@ -4754,8 +4753,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fuelCounterText: {fileID: 860384671}
   vanViewUI: {fileID: 1391118313}
-  citySceneNumber: 3
-  templeSceneNumber: 4
+  citySceneNumber: 2
+  templeSceneNumber: 3
 --- !u!1 &1178170012
 GameObject:
   m_ObjectHideFlags: 0
