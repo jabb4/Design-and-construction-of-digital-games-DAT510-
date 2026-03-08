@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using TMPro;
 
@@ -50,8 +51,14 @@ public class TutorialScript : MonoBehaviour
 
         if (submitAction.WasPressedThisFrame())
         {
-            NextSlide();
-            return;
+            var selected = EventSystem.current != null
+                ? EventSystem.current.currentSelectedGameObject
+                : null;
+            if (selected == null || !buttons.Contains(selected))
+            {
+                NextSlide();
+                return;
+            }
         }
 
         var nav = navigateAction.ReadValue<Vector2>();
@@ -81,6 +88,8 @@ public class TutorialScript : MonoBehaviour
     {
         currentSlide = 0;
         IsOpen = true;
+
+        transform.SetAsLastSibling();
 
         slidePanel.SetActive(true);
         foreach (GameObject go in buttons)
