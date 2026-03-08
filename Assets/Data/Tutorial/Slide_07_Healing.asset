@@ -11,9 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
   m_Name: Slide_07_Healing
-  m_EditorClassIdentifier:
-  title: "Patch and Push"
-  body: "Pick up bandages from fallen enemies. Use them to heal mid-combat, but there\u2019s
-    a cooldown between uses \u2014 you can\u2019t spam heals under pressure.\n\nManage
-    your bandages carefully. There\u2019s a carry limit, and extraction is the only
-    safe moment."
+  m_EditorClassIdentifier: 
+  title: Patch and Push
+  body: "Use bandages to heal mid-combat, but there\u2019s a cooldown between uses
+    \u2014 you can\u2019t spam heals under pressure."

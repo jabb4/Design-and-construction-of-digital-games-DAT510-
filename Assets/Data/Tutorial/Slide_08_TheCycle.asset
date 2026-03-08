@@ -11,8 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
   m_Name: Slide_08_TheCycle
-  m_EditorClassIdentifier:
-  title: "The Cycle"
-  body: "Raid. Kill. Survive. Extract.\n\nDie, and you lose it all. Extract, and
-    you grow stronger. Every swing, every parry, every decision matters. There are
-    no second chances on the battlefield.\n\nNow draw your blade."
+  m_EditorClassIdentifier: 
+  title: The Cycle
+  body: "Raid. Kill. Survive. Extract. Die, and you lose it all. Every swing, every
+    parry, every decision matters. There are no second chances on the battlefield.
+    \n\nGather fuel, navigate to the Temple and defeat the AI overlord. Now draw
+    your blade."

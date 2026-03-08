@@ -11,9 +11,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
   m_Name: Slide_01_TheRaid
-  m_EditorClassIdentifier:
-  title: "Survive. Extract. Profit."
-  body: "Every raid costs fuel. Choose your location from the van\u2019s raid map
-    and drop in. Enemies come in waves \u2014 each wave brings more fighters, and
-    every few waves, a mini-boss joins the fray.\n\nYour only goal: get in, fight,
-    and get out alive."
+  m_EditorClassIdentifier: 
+  title: Survive. Extract. Profit.
+  body: 'Enemies come in waves, each wave brings more fighters, and every few waves,
+    a mini-boss joins the fray.
+
+
+    Your only goal: get in, fight, and get out
+    alive.'

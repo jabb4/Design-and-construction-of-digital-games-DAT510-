@@ -11,9 +11,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
   m_Name: Slide_02_Currency
-  m_EditorClassIdentifier:
-  title: "Dead Samurai Carry No Coin"
-  body: "Every enemy you kill drops currency. But that money isn\u2019t yours until
-    you extract.\n\nReach the extraction zone and hold E for 10 seconds to secure
-    your loot. If you die before extracting, you lose everything earned that raid.
-    No exceptions.\n\nExtract often. Greed kills."
+  m_EditorClassIdentifier: 
+  title: Money
+  body: "Every enemy you kill drops money. But that money isn\u2019t yours until
+    you extract.\n\nGo to the extraction zone to secure your loot. If you die before
+    extracting, you lose everything earned that raid. No exceptions."

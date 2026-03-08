@@ -11,9 +11,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
   m_Name: Slide_04_Blocking
-  m_EditorClassIdentifier:
-  title: "Steel Meets Steel"
+  m_EditorClassIdentifier: 
+  title: Steel Meets Steel
   body: "Hold block to enter a defensive stance. Blocked attacks deal half damage
     \u2014 painful, but survivable.\n\nBlocking lingers briefly after you release
-    the button, giving you a window to transition into a counter-attack. You can\u2019t
-    sprint while blocking."
+    the button, giving you a window to transition into a counter-attack."

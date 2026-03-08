@@ -11,9 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
   m_Name: Slide_06_EndParries
-  m_EditorClassIdentifier:
-  title: "They Learn Too"
+  m_EditorClassIdentifier: 
+  title: They Learn Too
   body: "Enemies can parry your attacks. After deflecting enough strikes, they\u2019ll
-    launch a counter-attack \u2014 signaled by the end-parry.\n\nWatch for the tell.
-    When an enemy parries your combo, be ready to switch to defense immediately.
-    Reckless aggression gets punished."
+    launch a counter-attack \u2014 signaled by the end-parry sparks and sound effect.\n\nWatch
+    and listen carefully for the tell. When an enemy parries your combo, be ready
+    to switch to defense immediately. Reckless aggression gets punished."
