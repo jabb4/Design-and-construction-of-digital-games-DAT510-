@@ -16,5 +16,5 @@ MonoBehaviour:
   body: "Press block at the moment of impact to parry. A successful parry negates
     all damage and gives you an opportunity to counter the attacker after their combo.\n\nYour
     parry window is tight \u2014 you have a fraction of a second. Miss it, and you\u2019ll
-    block instead.\n\nRapid presses shrink your parry window, and after too many,
-    you lose it entirely until you pause. Stay calm and time it."
+    block instead. Rapid presses shrink your parry window. Stay calm and time it."
+  clip: {fileID: 0}
