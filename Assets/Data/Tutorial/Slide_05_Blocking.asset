@@ -13,7 +13,10 @@ MonoBehaviour:
   m_Name: Slide_05_Blocking
   m_EditorClassIdentifier: 
   title: Steel Meets Steel
-  body: "Hold block to enter a defensive stance. Blocked attacks deal half damage
-    \u2014 painful, but survivable.\n\nBlocking lingers briefly after you release
-    the button, giving you a window to transition into a counter-attack."
+  body: 'Hold block to enter a defensive stance. Blocked attacks deal half damage.
+    Painful, but survivable.
+
+
+    Blocking lingers briefly after you release the
+    button, giving you a window to transition into a counter-attack.'
   clip: {fileID: 32900000, guid: ad034873288ca4bc1b4a39499e7a5cb4, type: 3}

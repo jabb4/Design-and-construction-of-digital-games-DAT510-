@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   title: They Learn Too
   body: "Enemies can parry your attacks. After deflecting enough strikes, they\u2019ll
-    launch a counter-attack \u2014 signaled by the end-parry sparks and sound effect.\n\nWatch
+    launch a counter-attack signaled by the end-parry sparks and sound effect.\n\nWatch
     and listen carefully for the tell. When an enemy parries your combo, be ready
     to switch to defense immediately. Reckless aggression gets punished."
   clip: {fileID: 32900000, guid: a63a6515fe93b4c0bb9487cf7df82e88, type: 3}
