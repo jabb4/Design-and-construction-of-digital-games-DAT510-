@@ -9,6 +9,8 @@
 - Maps button - ChatGPT
 - Currency bar - ChatGPT
 - Map - refined by ChatGPT
+- Healthbars - ChatGPT
+- Healing Item Icon - ChatGPT
 
 ### Music
 
