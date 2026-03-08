@@ -83,6 +83,9 @@ namespace Player.StateMachine
         private float groundedGraceTimer;
         private float jumpCooldown;
         private float prePhysicsY;
+        private Vector3 sideContactNormal;
+        private int sideContactPhysFrame;
+        private int physFrame;
 
         #endregion
 
@@ -124,6 +127,8 @@ namespace Player.StateMachine
 
         private void FixedUpdate()
         {
+            physFrame++;
+
             if (jumpCooldown > 0f)
                 jumpCooldown -= Time.fixedDeltaTime;
 
@@ -138,18 +143,26 @@ namespace Player.StateMachine
 
         /// <summary>
         /// Runs after physics collision resolution.
-        /// Prevents capsule-on-capsule collisions from pushing the player upward.
+        /// Stores side contact normal for Move() to use next frame,
+        /// and snaps grounded Y position back if pushed up.
         /// </summary>
         private void OnCollisionStay(Collision collision)
         {
-            if (!IsGrounded || jumpCooldown > 0f) return;
-            if (transform.position.y <= prePhysicsY + 0.005f) return;
+            if (jumpCooldown > 0f) return;
 
-            // Only counteract side collisions (horizontal normals = character pushing),
-            // not ground collisions (vertical normals)
             for (int i = 0; i < collision.contactCount; i++)
             {
-                if (Mathf.Abs(collision.GetContact(i).normal.y) < 0.3f)
+                ContactPoint contact = collision.GetContact(i);
+
+                // Only handle side collisions (horizontal normals), not ground
+                if (Mathf.Abs(contact.normal.y) >= 0.3f) continue;
+
+                // Store for Move() to project velocity next frame
+                sideContactNormal = contact.normal;
+                sideContactPhysFrame = physFrame;
+
+                // Grounded: snap Y position back (prevents capsule-on-capsule floating)
+                if (IsGrounded && transform.position.y > prePhysicsY + 0.005f)
                 {
                     Vector3 pos = transform.position;
                     pos.y = prePhysicsY;
@@ -158,8 +171,9 @@ namespace Player.StateMachine
                     Vector3 vel = rb.linearVelocity;
                     if (vel.y > 0f) vel.y = 0f;
                     rb.linearVelocity = vel;
-                    return;
                 }
+
+                return;
             }
         }
 
@@ -225,6 +239,19 @@ namespace Player.StateMachine
                 float rate = targetSpeed > currentSpeed ? acceleration : deceleration;
                 float t = rate <= 0f ? 1f : 1f - Mathf.Exp(-rate * Time.fixedDeltaTime);
                 smoothed = Vector3.Lerp(currentHorizontal, desiredHorizontal, t);
+            }
+
+            // If touching a wall/character, remove velocity pushing into the surface.
+            // sideContactNormal is set by OnCollisionStay (runs after physics),
+            // so this uses last frame's contact to prevent pushing in this frame.
+            if (physFrame - sideContactPhysFrame <= 1)
+            {
+                Vector3 horizontalNormal = new Vector3(sideContactNormal.x, 0f, sideContactNormal.z).normalized;
+                float into = Vector3.Dot(smoothed, -horizontalNormal);
+                if (into > 0f)
+                {
+                    smoothed += horizontalNormal * into;
+                }
             }
 
             // Apply final velocity (preserve vertical velocity)
