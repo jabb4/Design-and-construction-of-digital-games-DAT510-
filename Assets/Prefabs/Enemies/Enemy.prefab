@@ -1624,9 +1624,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.06
-  m_Height: 1.25
+  m_Height: 1.5
   m_Direction: 1
-  m_Center: {x: 0, y: -0.45, z: 0}
+  m_Center: {x: 0, y: -0.3, z: 0}
 --- !u!114 &8327949807240639356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2519,7 +2519,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 6880349450255457242}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.35
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -2528,7 +2528,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 1.75
   m_BaseOffset: -0.075
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
@@ -2688,6 +2688,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c09e50da581584a7192a69b4fe7470e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tier: 0
   combatProfile: {fileID: 11400000, guid: 57cf64c5cada4398900d238f05d68c32, type: 2}
   targetRefreshIntervalSeconds: 0.2
   locomotionSmoothingSeconds: 0.08
@@ -2795,9 +2796,13 @@ MonoBehaviour:
   trailMaterial: {fileID: 2100000, guid: ad779cf2e0d624a9d8d4ced30948e786, type: 2}
   maxSamples: 40
   fadeOutDuration: 0.2
+  alwaysVisible: 0
   peakAlpha: 0.15
   fadeCurve: 4
   rootAlphaFraction: 0
+  useColorOverride: 0
+  trailColorTail: {r: 0.85, g: 0.85, b: 1, a: 1}
+  trailColorHead: {r: 1, g: 0.99, b: 1, a: 1}
 --- !u!114 &4024047644555340815
 MonoBehaviour:
   m_ObjectHideFlags: 0

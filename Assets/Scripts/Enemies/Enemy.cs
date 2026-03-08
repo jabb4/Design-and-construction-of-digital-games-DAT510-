@@ -7,7 +7,9 @@ using Combat;
 [RequireComponent(typeof(CombatFlagsComponent))]
 public class Enemy : MonoBehaviour, ICombatant
 {
-    [SerializeField, Range(0f, 1f)] private float blockDamageMultiplier = 0.5f;
+    [SerializeField, Min(0)] private int killReward = 10;
+
+    public int KillReward => killReward;
 
     private HealthComponent health;
     private CombatFlagsComponent flags;
@@ -78,13 +80,7 @@ public class Enemy : MonoBehaviour, ICombatant
             return;
         }
 
-        // Enemy defense is parry-only; blocking is never valid.
-        if (flags != null)
-        {
-            flags.IsBlocking = false;
-        }
-
-        DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags, blockDamageMultiplier);
+        DamageResolution resolution = DamageResolver.ResolveDamage(hit.Damage, flags);
         OnDamageResolved?.Invoke(hit, resolution);
         bool isEndParry = false;
         if (resolution.Outcome == DamageOutcome.Parried)
@@ -147,6 +143,11 @@ public class Enemy : MonoBehaviour, ICombatant
     private void HandleDied()
     {
         NotifyDeath();
+        var nav = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (nav != null) nav.enabled = false;
+        var anim = GetComponent<Animator>();
+        if (anim != null) anim.enabled = false;
+        EnemyDeathHandler.StopThreadedComponents(gameObject);
         Destroy(gameObject);
     }
 

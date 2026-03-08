@@ -57,6 +57,7 @@ public class RagdollDissolveEffect : MonoBehaviour
 
         if (t >= 1f)
         {
+            EnemyDeathHandler.StopThreadedComponents(gameObject, includeRigidbodies: true);
             Destroy(gameObject);
         }
     }

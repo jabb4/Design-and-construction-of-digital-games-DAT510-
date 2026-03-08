@@ -29,6 +29,7 @@ namespace Enemies.StateMachine
         private static float nextPlayerTargetResolveAt = float.NegativeInfinity;
 
         [Header("Combat")]
+        [SerializeField] private EnemyTier tier = EnemyTier.Normal;
         [SerializeField] private EnemyCombatProfile combatProfile;
         [SerializeField, Min(0.05f)] private float targetRefreshIntervalSeconds = 0.2f;
         [Header("Animation")]
@@ -41,6 +42,7 @@ namespace Enemies.StateMachine
         public Animator Animator { get; private set; }
         public EnemyIntentSource IntentSource { get; private set; }
         public EnemyNavAgentBridge NavBridge { get; private set; }
+        public EnemyTier Tier => tier;
         public EnemyCombatProfile CombatProfile => combatProfile;
         public AttackStep? CurrentAttackStep { get; private set; }
         public AttackPhase CurrentAttackPhase { get; private set; } = AttackPhase.Recovery;
@@ -70,7 +72,27 @@ namespace Enemies.StateMachine
         }
 
         public float AttackRange => combatProfile != null ? combatProfile.AttackRange : 2.5f;
-        public float EngageRange => combatProfile != null ? combatProfile.EngageRange : 7f;
+        public float EngageRange
+        {
+            get
+            {
+                if (combatProfile == null) return 7f;
+                float range = combatProfile.EngageRange;
+                if (combatProfile.DashAttackEnabled)
+                {
+                    range = Mathf.Max(range, combatProfile.DashAttackMaxRange);
+                }
+                return range;
+            }
+        }
+
+        public void SetCombatProfile(EnemyCombatProfile newProfile)
+        {
+            if (newProfile != null)
+            {
+                combatProfile = newProfile;
+            }
+        }
 
         private readonly Dictionary<Type, EnemyStateBase> stateCache = new Dictionary<Type, EnemyStateBase>(8);
         private StateMachineRuntime runtime;
@@ -341,9 +363,14 @@ namespace Enemies.StateMachine
                 return false;
             }
 
+            if (!TryCrossFadeState(step.AnimationStateName, crossFadeDuration))
+            {
+                return false;
+            }
+
             SetCurrentAttack(step);
             CurrentAttackPhase = AttackPhase.Windup;
-            return TryCrossFadeState(step.AnimationStateName, crossFadeDuration);
+            return true;
         }
 
         public bool IsCurrentAttackAnimationComplete(float normalizedThreshold = 0.98f)

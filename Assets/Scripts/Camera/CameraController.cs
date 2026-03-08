@@ -170,6 +170,12 @@ public class CameraController : MonoBehaviour
     {
         if (playerTransform == null)
         {
+            if (lockOnSession != null && lockOnSession.IsLockedOn)
+            {
+                lockOnSession.UnlockManual();
+            }
+
+            lockOnIndicatorPresenter?.Hide();
             return;
         }
 

@@ -68,7 +68,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   holdTime: 9.9
-  targetSceneIndex: 2
+  targetSceneIndex: 1
   activationKey: 19
   extractionUI: {fileID: 0}
   extractionSound: {fileID: 8300000, guid: c868a1b2cf368427e8afbdbfc53c31a3, type: 3}
