@@ -22,6 +22,8 @@ public class RaidManager : MonoBehaviour
 
     private void Start()
     {
+        Time.timeScale = 1f;
+
         if (tutorial != null && tutorial.ShouldShow())
         {
             tutorialActive = true;

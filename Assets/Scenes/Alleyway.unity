@@ -7928,6 +7928,10 @@ PrefabInstance:
       propertyPath: showDebugInfo
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7229739942821558323, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      propertyPath: cameraController
+      value: 
+      objectReference: {fileID: 1056494350}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

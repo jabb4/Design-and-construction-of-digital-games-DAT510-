@@ -43,6 +43,7 @@ public class TutorialScript : MonoBehaviour
         slidePanel.SetActive(false);
         foreach (GameObject go in buttons)
             go.SetActive(false);
+        if (videoImage != null) videoImage.gameObject.SetActive(false);
     }
 
     void Update()
