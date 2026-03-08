@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
+  m_Name: Slide_03_Combos
+  m_EditorClassIdentifier:
+  title: "The Way of the Blade"
+  body: "Chain your attacks into combos by pressing attack during the recovery of
+    your previous strike. Timing matters \u2014 each swing commits you to a windup,
+    slash, and recovery phase.\n\nYou can\u2019t move freely mid-attack. Every swing
+    is a commitment. Make it count."

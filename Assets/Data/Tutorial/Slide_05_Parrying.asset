@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
+  m_Name: Slide_05_Parrying
+  m_EditorClassIdentifier:
+  title: "The Perfect Read"
+  body: "Press block at the moment of impact to parry. A successful parry negates
+    all damage and staggers the attacker, opening them for a counter.\n\nYour parry
+    window is tight \u2014 you have a fraction of a second. Miss it, and you\u2019ll
+    block instead.\n\nMashing block won\u2019t help. Rapid presses shrink your parry
+    window, and after too many, you lose it entirely until you pause. Stay calm and
+    time it."
