@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: abc00000000001591749865381307036
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304769
+  packageName: KHS -Donggung
+  packageVersion: 1.0
+  assetPath: Assets/DongGungComplex/Shaders/MI_DG_HG_StoneWall01A.shader
+  uploadId: 715580

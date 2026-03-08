@@ -81,6 +81,11 @@ namespace Player.StateMachine
         private Rigidbody rb;
         private CameraController cameraController;
         private float groundedGraceTimer;
+        private float jumpCooldown;
+        private float prePhysicsY;
+        private Vector3 sideContactNormal;
+        private int sideContactPhysFrame;
+        private int physFrame;
 
         #endregion
 
@@ -122,7 +127,54 @@ namespace Player.StateMachine
 
         private void FixedUpdate()
         {
+            physFrame++;
+
+            if (jumpCooldown > 0f)
+                jumpCooldown -= Time.fixedDeltaTime;
+
             CheckGrounded();
+
+            // Record Y before physics step so we can snap back if a collision pushes us up
+            if (IsGrounded && jumpCooldown <= 0f)
+            {
+                prePhysicsY = transform.position.y;
+            }
+        }
+
+        /// <summary>
+        /// Runs after physics collision resolution.
+        /// Stores side contact normal for Move() to use next frame,
+        /// and snaps grounded Y position back if pushed up.
+        /// </summary>
+        private void OnCollisionStay(Collision collision)
+        {
+            if (jumpCooldown > 0f) return;
+
+            for (int i = 0; i < collision.contactCount; i++)
+            {
+                ContactPoint contact = collision.GetContact(i);
+
+                // Only handle side collisions (horizontal normals), not ground
+                if (Mathf.Abs(contact.normal.y) >= 0.3f) continue;
+
+                // Store for Move() to project velocity next frame
+                sideContactNormal = contact.normal;
+                sideContactPhysFrame = physFrame;
+
+                // Grounded: snap Y position back (prevents capsule-on-capsule floating)
+                if (IsGrounded && transform.position.y > prePhysicsY + 0.005f)
+                {
+                    Vector3 pos = transform.position;
+                    pos.y = prePhysicsY;
+                    transform.position = pos;
+
+                    Vector3 vel = rb.linearVelocity;
+                    if (vel.y > 0f) vel.y = 0f;
+                    rb.linearVelocity = vel;
+                }
+
+                return;
+            }
         }
 
         #endregion
@@ -171,7 +223,9 @@ namespace Player.StateMachine
                 Vector3 currentForward = desiredDirection * currentForwardSpeed;
                 Vector3 currentLateral = currentHorizontal - currentForward;
 
-                float rate = targetForwardSpeed > currentForwardSpeed ? acceleration : deceleration;
+                float baseRate = targetForwardSpeed > currentForwardSpeed ? acceleration : deceleration;
+                // Use acceleration rate when landing so speed scales down responsively
+                float rate = clampedScale < 1f ? acceleration : baseRate;
                 float forwardT = rate <= 0f ? 1f : 1f - Mathf.Exp(-rate * Time.fixedDeltaTime);
                 float newForwardSpeed = Mathf.Lerp(currentForwardSpeed, targetForwardSpeed, forwardT);
                 Vector3 newForward = desiredDirection * newForwardSpeed;
@@ -187,6 +241,19 @@ namespace Player.StateMachine
                 float rate = targetSpeed > currentSpeed ? acceleration : deceleration;
                 float t = rate <= 0f ? 1f : 1f - Mathf.Exp(-rate * Time.fixedDeltaTime);
                 smoothed = Vector3.Lerp(currentHorizontal, desiredHorizontal, t);
+            }
+
+            // If touching a wall/character, remove velocity pushing into the surface.
+            // sideContactNormal is set by OnCollisionStay (runs after physics),
+            // so this uses last frame's contact to prevent pushing in this frame.
+            if (physFrame - sideContactPhysFrame <= 1)
+            {
+                Vector3 horizontalNormal = new Vector3(sideContactNormal.x, 0f, sideContactNormal.z).normalized;
+                float into = Vector3.Dot(smoothed, -horizontalNormal);
+                if (into > 0f)
+                {
+                    smoothed += horizontalNormal * into;
+                }
             }
 
             // Apply final velocity (preserve vertical velocity)
@@ -280,6 +347,7 @@ namespace Player.StateMachine
 
             groundedGraceTimer = 0f;
             IsGrounded = false;
+            jumpCooldown = 0.15f;
 
             // Apply upward force
             Vector3 velocity = rb.linearVelocity;
@@ -346,6 +414,12 @@ namespace Player.StateMachine
         /// </summary>
         private void CheckGrounded()
         {
+            if (jumpCooldown > 0f)
+            {
+                IsGrounded = false;
+                return;
+            }
+
             Vector3 spherePosition = transform.position + Vector3.up * groundCheckOffset;
             bool groundContact = Physics.CheckSphere(spherePosition, groundCheckRadius, groundLayer);
 

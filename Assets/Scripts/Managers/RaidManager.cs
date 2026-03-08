@@ -14,6 +14,7 @@ public class RaidManager : MonoBehaviour
 
     private void Awake()
     {
+        Cursor.visible = false;
         if (backMenuUI != null)
             backMenuUI.SetActive(false);
         else

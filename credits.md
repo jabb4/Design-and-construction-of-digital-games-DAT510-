@@ -12,6 +12,10 @@
 - Healthbars - ChatGPT
 - Healing Item Icon - ChatGPT
 
+### Music
+
+- Main menu and boss fight music - [Kike Gutz](https://www.freepik.com/audio/tune/taiko-flame-call)
+
 ### Sound effects
 
 - Button hover click - [SmallConfusion](https://freesound.org/people/SmallConfusion/sounds/751084/)
@@ -41,14 +45,18 @@
 
 - Player death: [F.M.Audio](https://freesound.org/s/695386/)
 
-### Assets
+### 3D Assets
 
 - low poly street pack - [Dynamic Art](https://assetstore.unity.com/packages/3d/environments/urban/low-poly-street-pack-67475)
+- KHS -Donggung (Tempel walls) - [Korea Heritage Service](https://assetstore.unity.com/packages/3d/props/khs-donggung-304769)
+- Pagoda Architecture (Tempel) - [Tanuki Digital](https://assetstore.unity.com/packages/3d/environments/historic/pagoda-architecture-113177)
+- Fantasy Skybox FREE - [Render Knight](https://assetstore.unity.com/packages/2d/textures-materials/sky/fantasy-skybox-free-18353)
+- Northern Mountain FREE - [Superior Worlds](https://assetstore.unity.com/packages/3d/environments/landscapes/northern-mountain-free-258730)
+- Van - [Ozgur Saral](https://assetstore.unity.com/packages/3d/vehicles/van-22061)
+- Japanese Garden 2 Free - [Waldermarst](https://assetstore.unity.com/packages/3d/vegetation/japanese-garden-2-free-327670)
 
-### Music
-
-- Main menu music - [Kike Gutz](https://www.freepik.com/audio/tune/taiko-flame-call)
-
-### Materials
+### Materials & Shaders
 
 - [Blury UI material](https://github.com/lukakldiashvili/Unified-Universal-Blur)
+- Quick Outline - [Chris Nolet](https://assetstore.unity.com/packages/tools/particles-effects/quick-outline-115488)
+

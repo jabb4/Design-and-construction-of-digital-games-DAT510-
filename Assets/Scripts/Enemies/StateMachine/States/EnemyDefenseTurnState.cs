@@ -410,7 +410,9 @@ namespace Enemies.StateMachine.States
             if (!EnemyAttackTokenService.CanAcquire(Owner)) return false;
 
             float distance = Owner.DistanceToTarget;
-            return distance >= Profile.DashAttackMinRange && distance <= Profile.DashAttackMaxRange;
+            if (distance < Profile.DashAttackMinRange || distance > Profile.DashAttackMaxRange) return false;
+
+            return Owner.HasClearDashPath;
         }
 
         private bool TryGetCurrentFrontliner(out EnemyStateMachine frontliner)

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0090b0ff3ce2ce5469a19b5319e34856
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 304769
+  packageName: KHS -Donggung
+  packageVersion: 1.0
+  assetPath: Assets/DongGungComplex/Shaders/LWCOperations.hlsl
+  uploadId: 715580
