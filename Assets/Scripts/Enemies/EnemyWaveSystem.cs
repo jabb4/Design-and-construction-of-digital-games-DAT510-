@@ -17,6 +17,18 @@ public class EnemyWaveSystem : MonoBehaviour
     [Tooltip("List of transform positions where enemies can spawn. Drag the empty GameObjects that act as spawn location in to here.")]
     [SerializeField] private List<Transform> spawnPoints;
 
+    [Header("Mini-Boss Settings")]
+    [Tooltip("The mini-boss prefab to spawn on qualifying waves. Leave empty to disable.")]
+    [SerializeField] private GameObject miniBossPrefab;
+    [Tooltip("First wave that can spawn a mini-boss.")]
+    [SerializeField, Min(1)] private int miniBossStartWave = 3;
+    [Tooltip("Spawn a mini-boss every N waves after the start wave.")]
+    [SerializeField, Min(1)] private int miniBossEveryNWaves = 3;
+    [Tooltip("Number of mini-bosses on the first qualifying wave.")]
+    [SerializeField, Min(1)] private int miniBossInitialCount = 1;
+    [Tooltip("Additional mini-bosses per subsequent qualifying wave.")]
+    [SerializeField, Min(0)] private int miniBossIncreaseAmount = 1;
+
     [Header("Wave Settings")]
     [Tooltip("Number of enemies in the first wave.")]
     [SerializeField] private int initialEnemies = 1;
@@ -88,14 +100,37 @@ public class EnemyWaveSystem : MonoBehaviour
             indices[rnd] = temp;
         }
 
-        for (int i = 0; i < actualSpawnCount; i++)
+        bool isMiniBossWave = miniBossPrefab != null
+                              && currentWave >= miniBossStartWave
+                              && (currentWave - miniBossStartWave) % miniBossEveryNWaves == 0;
+        int miniBossOccurrence = isMiniBossWave
+            ? (currentWave - miniBossStartWave) / miniBossEveryNWaves
+            : 0;
+        int bossCount = isMiniBossWave
+            ? Mathf.Min(miniBossInitialCount + (miniBossIncreaseAmount * miniBossOccurrence), actualSpawnCount)
+            : 0;
+        int normalCount = actualSpawnCount - bossCount;
+
+        int spawnIndex = 0;
+        for (int i = 0; i < normalCount; i++, spawnIndex++)
         {
-            Transform point = spawnPoints[indices[i]];
+            Transform point = spawnPoints[indices[spawnIndex]];
             if (point != null)
             {
                 GameObject enemy = Instantiate(enemyPrefab, point.position, point.rotation);
-                enemy.name = $"Enemy_Wave{currentWave}_{i + 1}";
+                enemy.name = $"Enemy_Wave{currentWave}_{spawnIndex + 1}";
                 activeEnemies.Add(enemy);
+            }
+        }
+
+        for (int i = 0; i < bossCount; i++, spawnIndex++)
+        {
+            Transform point = spawnPoints[indices[spawnIndex]];
+            if (point != null)
+            {
+                GameObject boss = Instantiate(miniBossPrefab, point.position, point.rotation);
+                boss.name = $"Kensei_Wave{currentWave}_{i + 1}";
+                activeEnemies.Add(boss);
             }
         }
         

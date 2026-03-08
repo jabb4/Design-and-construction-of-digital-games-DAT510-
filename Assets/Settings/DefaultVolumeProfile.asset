@@ -33,7 +33,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70afe9e12c7a7ed47911bb608a23a8ff, type: 3}
   m_Name: SplitToning
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   shadows:
     m_OverrideState: 1
@@ -157,7 +157,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66f335fb1ffd8684294ad653bf1c7564, type: 3}
   m_Name: ColorAdjustments
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   postExposure:
     m_OverrideState: 1
@@ -403,7 +403,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 221518ef91623a7438a71fef23660601, type: 3}
   m_Name: WhiteBalance
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   temperature:
     m_OverrideState: 1

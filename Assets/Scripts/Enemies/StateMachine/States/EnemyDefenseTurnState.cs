@@ -48,7 +48,6 @@ namespace Enemies.StateMachine.States
             latchedSupportRing = false;
             supportRingLatchUntil = float.NegativeInfinity;
             orbitRadiusJitter = Random.Range(-0.35f, 0.35f);
-
             if (Enemy != null)
             {
                 Enemy.OnParriedAttack += HandleParriedAttack;
@@ -133,6 +132,15 @@ namespace Enemies.StateMachine.States
             if (IsParrySequenceInProgress() || IsDefenseReactionActive())
             {
                 return TransitionDecision.None;
+            }
+
+            if (ShouldDashAttack())
+            {
+                handoffTokenToAttackTurn = true;
+                return TransitionDecision.To(
+                    Owner.GetState<EnemyDashAttackState>(),
+                    TransitionReason.AttackCombo,
+                    priority: TransitionPriorities.ComboContinuation);
             }
 
             if (Time.time >= defenseUntilAt)
@@ -390,6 +398,19 @@ namespace Enemies.StateMachine.States
             }
 
             hasPriorityToken = false;
+        }
+
+        private bool ShouldDashAttack()
+        {
+            if (Owner == null || Profile == null || !Owner.HasTarget) return false;
+            if (Owner.Tier != EnemyTier.Boss) return false;
+            if (!Profile.DashAttackEnabled) return false;
+            EnemyDashAttackState dashState = Owner.GetState<EnemyDashAttackState>();
+            if (dashState != null && Time.time < dashState.NextAllowedAt) return false;
+            if (!EnemyAttackTokenService.CanAcquire(Owner)) return false;
+
+            float distance = Owner.DistanceToTarget;
+            return distance >= Profile.DashAttackMinRange && distance <= Profile.DashAttackMaxRange;
         }
 
         private bool TryGetCurrentFrontliner(out EnemyStateMachine frontliner)

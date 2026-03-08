@@ -18,6 +18,7 @@ namespace Enemies.StateMachine.States
         private bool chainComplete;
         private bool comboCommitted;
         private bool waitingForFinalAttackCompletion;
+        private bool handoffTokenToDashAttack;
         private int observedRecoveryVersion;
         private float nextAttackStartAt;
 
@@ -47,6 +48,7 @@ namespace Enemies.StateMachine.States
             chainComplete = !hasAttackToken || plannedChainLength <= 0;
             comboCommitted = false;
             waitingForFinalAttackCompletion = false;
+            handoffTokenToDashAttack = false;
             observedRecoveryVersion = Owner != null ? Owner.AttackRecoveryVersion : 0;
             nextAttackStartAt = Time.time;
 
@@ -141,19 +143,20 @@ namespace Enemies.StateMachine.States
             {
                 Owner.NavBridge?.Stop();
                 Owner.ClearCurrentAttack();
-                if (hasAttackToken)
+                if (hasAttackToken && !handoffTokenToDashAttack)
                 {
                     float cooldown = Owner.ComputeAttackTokenReleaseCooldownForCurrentGroup();
                     float reentryDelay = Owner.CombatProfile != null ? Owner.CombatProfile.SameAttackerReentryDelay : 0f;
                     EnemyAttackTokenService.Release(Owner, cooldown, reentryDelay);
                 }
-                else
+                else if (!hasAttackToken)
                 {
                     EnemyAttackTokenService.Release(Owner);
                 }
             }
 
             hasAttackToken = false;
+            handoffTokenToDashAttack = false;
         }
 
         public override TransitionDecision EvaluateTransition()
@@ -166,6 +169,15 @@ namespace Enemies.StateMachine.States
             if (!Owner.TryRefreshTarget())
             {
                 return TransitionDecision.To(Owner.GetState<EnemyIdleState>(), TransitionReason.StandardFlow);
+            }
+
+            if (!comboCommitted && ShouldDashAttack())
+            {
+                handoffTokenToDashAttack = true;
+                return TransitionDecision.To(
+                    Owner.GetState<EnemyDashAttackState>(),
+                    TransitionReason.AttackCombo,
+                    priority: TransitionPriorities.ComboContinuation);
             }
 
             if (chainComplete && !attackInProgress)
@@ -305,6 +317,18 @@ namespace Enemies.StateMachine.States
             }
 
             return Owner.HasTarget;
+        }
+
+        private bool ShouldDashAttack()
+        {
+            if (Owner == null || Profile == null || !Owner.HasTarget) return false;
+            if (Owner.Tier != EnemyTier.Boss) return false;
+            if (!Profile.DashAttackEnabled) return false;
+            EnemyDashAttackState dashState = Owner.GetState<EnemyDashAttackState>();
+            if (dashState != null && Time.time < dashState.NextAllowedAt) return false;
+
+            float distance = Owner.DistanceToTarget;
+            return distance >= Profile.DashAttackMinRange && distance <= Profile.DashAttackMaxRange;
         }
     }
 }
