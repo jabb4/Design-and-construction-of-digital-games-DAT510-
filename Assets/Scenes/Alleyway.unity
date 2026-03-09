@@ -7860,6 +7860,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 149019199505688004, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
+      propertyPath: attackBufferDuration
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 1616043764315128934, guid: 5de69471422774652ad22cfe84d625f9, type: 3}
       propertyPath: m_Name
       value: Player
