@@ -49,6 +49,10 @@
 
 - Player death: [F.M.Audio](https://freesound.org/s/695386/)
 
+- Boss death effect:
+  - Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=416170">DRAGON-STUDIO</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=416170">Pixabay</a>
+  - Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393845">DRAGON-STUDIO</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393845">Pixabay</a>
+
 ### 3D Assets
 
 - low poly street pack - [Dynamic Art](https://assetstore.unity.com/packages/3d/environments/urban/low-poly-street-pack-67475)
