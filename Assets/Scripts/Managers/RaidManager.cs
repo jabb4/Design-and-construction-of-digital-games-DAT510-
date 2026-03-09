@@ -8,24 +8,23 @@ public class RaidManager : MonoBehaviour
     [SerializeField] private PlayerInputHandler playerInput;
     [SerializeField] private CameraController cameraController;
     [SerializeField] private TutorialScript tutorial;
+    [SerializeField] private EnemyWaveSystem enemyWaveSystem;
 
     private bool isPaused = false;
     private bool tutorialActive = false;
 
-    private void Awake()
+    private void Start()
     {
         Cursor.visible = false;
         if (backMenuUI != null)
             backMenuUI.SetActive(false);
         else
             Debug.LogError("backMenuUI is not assigned in RaidManager!", this);
-    }
 
-    private void Start()
-    {
         if (tutorial != null && tutorial.ShouldShow())
         {
             tutorialActive = true;
+            enemyWaveSystem.gameObject.SetActive(false);
             tutorial.OpenSlide();
             SetPaused(true);
         }
@@ -39,6 +38,7 @@ public class RaidManager : MonoBehaviour
             if (tutorial == null || !tutorial.IsOpen)
             {
                 tutorialActive = false;
+                enemyWaveSystem.gameObject.SetActive(true);
                 SetPaused(false);
             }
             return;
@@ -60,9 +60,10 @@ public class RaidManager : MonoBehaviour
     public void SetPaused(bool paused)
     {
         isPaused = paused;
-
         backMenuUI.SetActive(paused);
 
+        if (paused) playerInput.attackBufferDuration = 0f;
+        else playerInput.attackBufferDuration = 0.2f;
         if (playerInput != null) playerInput.IsBlocked = paused;
         if (cameraController != null) cameraController.IsRotationBlocked = paused;
 

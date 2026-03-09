@@ -88,9 +88,9 @@ public class TutorialScript : MonoBehaviour
     }
 
     public bool ShouldShow()
-    {
-        return SaveManager.Instance != null
-            && !SaveManager.Instance.GetHasSeenTutorial();
+    {   
+        return GameStateManager.Instance != null
+            && !GameStateManager.Instance.GetHasSeenTutorial();
     }
 
     public void OpenSlide()
@@ -129,10 +129,10 @@ public class TutorialScript : MonoBehaviour
 
         ShowCanvasSiblings();
 
-        if (SaveManager.Instance != null)
+        if (GameStateManager.Instance != null)
         {
-            SaveManager.Instance.SetHasSeenTutorial(true);
-            SaveManager.Instance.SaveGameData();
+            GameStateManager.Instance.SetHasSeenTutorial(true);
+            GameStateManager.Instance.SaveGameState();
         }
     }
 

@@ -99,7 +99,7 @@ namespace Player.StateMachine
 
         [SerializeField]
         [Tooltip("Time window to buffer attack input (seconds)")]
-        private float attackBufferDuration = 0.2f;
+        public float attackBufferDuration = 0.2f;
 
         /// <summary>
         /// Public accessor for the movement threshold.

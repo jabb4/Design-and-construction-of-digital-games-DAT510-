@@ -43,7 +43,7 @@ public class EnemyWaveSystem : MonoBehaviour
     private int currentWave = 0;
     private AudioSource audioSource;
 
-    private void Start()
+    private void OnEnable()
     {
         audioSource = GetComponent<AudioSource>();
         StartCoroutine(WaveRoutine());
