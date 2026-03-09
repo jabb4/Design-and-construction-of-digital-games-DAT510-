@@ -14,9 +14,9 @@
 - Healing Item Icon - ChatGPT
 - Death overlay - ChatGPT
 - Boss defeated overlay - ChatGPT
-- Building facade texture [VictoriaShirokaya]https://se.pinterest.com/pin/328551735310699324/
-- building tile texture [FreePik]https://www.freepik.com/premium-photo/marble-facing-tile-texture-natural-building-material_19244300.htm
-- wood texture [herstockart]https://www.istockphoto.com/se/foto/bamboo-wood-texture-background-gm1423614623-468563387
+- Building facade texture [VictoriaShirokaya](https://se.pinterest.com/pin/328551735310699324/)
+- building tile texture [FreePik](https://www.freepik.com/premium-photo/marble-facing-tile-texture-natural-building-material_19244300.htm)
+- wood texture [herstockart](https://www.istockphoto.com/se/foto/bamboo-wood-texture-background-gm1423614623-468563387)
 ### Music
 
 - Main menu and boss fight music - [Kike Gutz](https://www.freepik.com/audio/tune/taiko-flame-call)
