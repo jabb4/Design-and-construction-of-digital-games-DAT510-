@@ -659,7 +659,7 @@ namespace Enemies.StateMachine
                 Debug.LogWarning("[EnemyStateMachine] EnemyCombatProfile has no shared combo assigned.", combatProfile);
             }
 
-            if (combatProfile.MinAttackChain < 2 || combatProfile.MaxAttackChain > 5)
+            if (combatProfile.MinAttackChain < 1 || combatProfile.MaxAttackChain > 5)
             {
                 Debug.LogWarning(
                     $"[EnemyStateMachine] Attack chain range should stay within [2..5]. Current: [{combatProfile.MinAttackChain}..{combatProfile.MaxAttackChain}]",
