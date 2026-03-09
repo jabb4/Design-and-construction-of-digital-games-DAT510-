@@ -23,8 +23,6 @@ public class RaidManager : MonoBehaviour
 
     private void Start()
     {
-        Time.timeScale = 1f;
-
         if (tutorial != null && tutorial.ShouldShow())
         {
             tutorialActive = true;
@@ -70,7 +68,5 @@ public class RaidManager : MonoBehaviour
 
         Cursor.visible = paused;
         Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
-
-        Time.timeScale = paused ? 0f : 1f;
     }
 }
