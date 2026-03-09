@@ -22,14 +22,18 @@ public class DeathOverlay : MonoBehaviour
     private const float ShakeIntensity = 25f;
 
     private float shakeTimer;
+    private float textureAspect;
     private AudioClip slamSound;
 
     private enum Phase { Waiting, Slam, Bounce, Settle, Idle }
     private Phase phase = Phase.Waiting;
 
+    private Color bloomColor = new Color(1f, 0f, 0f, 1f);
+
     public static DeathOverlay Create(Texture texture, float delay,
         AudioClip slamSound = null, float baseIntensity = 4f,
-        float peakIntensity = 60f, float glowPulseDuration = 2.5f)
+        float peakIntensity = 60f, float glowPulseDuration = 2.5f,
+        Color? bloomColor = null)
     {
         var go = new GameObject("DeathOverlay");
 
@@ -39,6 +43,7 @@ public class DeathOverlay : MonoBehaviour
         instance.peakIntensity = peakIntensity;
         instance.glowPulseDuration = glowPulseDuration;
         instance.slamSound = slamSound;
+        instance.bloomColor = bloomColor ?? new Color(1f, 0f, 0f, 1f);
         instance.BuildUI(texture);
         return instance;
     }
@@ -71,17 +76,13 @@ public class DeathOverlay : MonoBehaviour
         overlayRT.pivot = new Vector2(0.5f, 0.5f);
         overlayRT.anchoredPosition = Vector2.zero;
         overlayRT.localScale = Vector3.one * SlamStartScale;
-        overlayRT.sizeDelta = new Vector2(Screen.width, Screen.height);
 
         overlay = imageGO.AddComponent<RawImage>();
         overlay.texture = texture;
         overlay.color = new Color(1f, 1f, 1f, 0f);
         overlay.raycastTarget = false;
 
-        var fitter = imageGO.AddComponent<AspectRatioFitter>();
-        fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        fitter.aspectRatio = (float)texture.width / texture.height;
-
+        textureAspect = (float)texture.width / texture.height;
         ConfigureMaterial();
     }
 
@@ -95,7 +96,7 @@ public class DeathOverlay : MonoBehaviour
         }
 
         overlayMaterial = new Material(shader) { name = "DeathOverlay_Material" };
-        overlayMaterial.SetColor("_BloomColor", new Color(1f, 0f, 0f, 1f));
+        overlayMaterial.SetColor("_BloomColor", bloomColor);
         overlay.material = overlayMaterial;
         SetIntensity(baseIntensity);
     }
@@ -117,8 +118,31 @@ public class DeathOverlay : MonoBehaviour
         }
     }
 
+    private void FitToCanvas()
+    {
+        float canvasW = canvasRT.rect.width;
+        float canvasH = canvasRT.rect.height;
+        if (canvasW <= 0f || canvasH <= 0f) return;
+
+        float canvasAspect = canvasW / canvasH;
+        float fitW, fitH;
+        if (textureAspect > canvasAspect)
+        {
+            fitW = canvasW;
+            fitH = canvasW / textureAspect;
+        }
+        else
+        {
+            fitH = canvasH;
+            fitW = canvasH * textureAspect;
+        }
+
+        overlayRT.sizeDelta = new Vector2(fitW, fitH);
+    }
+
     private void Update()
     {
+        FitToCanvas();
         timer += Time.unscaledDeltaTime;
 
         switch (phase)

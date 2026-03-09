@@ -12,6 +12,8 @@
 - Map - refined by ChatGPT
 - Healthbars - ChatGPT
 - Healing Item Icon - ChatGPT
+- Death overlay - ChatGPT
+- Boss defeated overlay - ChatGPT
 
 ### Music
 
@@ -61,4 +63,3 @@
 
 - [Blury UI material](https://github.com/lukakldiashvili/Unified-Universal-Blur)
 - Quick Outline - [Chris Nolet](https://assetstore.unity.com/packages/tools/particles-effects/quick-outline-115488)
-
