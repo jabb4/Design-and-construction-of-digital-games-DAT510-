@@ -6,7 +6,7 @@ public class MoneyUiPopupController : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI popupText;
     [SerializeField] private float displayDuration = 1f;
-    [SerializeField] private float floatDistance = 40f;   // pixels to float upward
+    [SerializeField] private float floatDistance = 0f;   // pixels to float upward
     [SerializeField] private float fadeDelay = 0.4f;      // how long before fading begins
 
     private Coroutine _animCoroutine;
