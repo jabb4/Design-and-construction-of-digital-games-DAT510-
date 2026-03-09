@@ -38,25 +38,27 @@ This gives combat a "back and forth" exchange instead of one-sided pressure.
 
 ### Player Mechanics
 
-| Feature       | Description                           |
-| ------------- | ------------------------------------- |
-| Movement      | WASD + SHIFT to sprint                |
-| Camera        | Third-person camera with lock-on      |
-| Light Attack  | Sword slash                           |
-| Block         | Guard input (tap or hold)             |
-| Perfect Parry | Timed deflect during parry window     |
-| Health        | Player can die if health reaches zero |
+| Feature       | Description                                                           |
+| ------------- | --------------------------------------------------------------------- |
+| Movement      | WASD + SHIFT to sprint, SPACE to jump                                 |
+| Camera        | Third-person camera with lock-on, target switching, and auto-retarget |
+| Light Attack  | Shared 5-step sword combo chain                                       |
+| Block         | Guard input (tap or hold)                                             |
+| Perfect Parry | Timed deflect during parry window                                     |
+| Healing       | Limited bandages with cooldown                                        |
+| Health        | Player can die if health reaches zero                                 |
 
 ### Enemy Mechanics
 
-| Feature    | Description                                                      |
-| ---------- | ---------------------------------------------------------------- |
-| Attacks    | Shared 5-step melee combo (same combo data source as the player) |
-| Telegraphs | Clear wind-up before each attack                                 |
-| Parry      | Parry-focused defense with end-parry momentum shift, no blocking |
-| Health     | Enemy can die if health reaches zero                             |
-| Tiers      | Normal, MiniBoss (Kensei), Boss (Rōnin) with distinct profiles   |
-| Dash Slash | Boss gap-closer attack in Phase 2+ (dash forward + attack)       |
+| Feature      | Description                                                               |
+| ------------ | ------------------------------------------------------------------------- |
+| Attacks      | Shared 5-step melee combo (same combo data source as the player)          |
+| Telegraphs   | Wind-up -> slash -> recovery attack phases driven by animation events     |
+| Parry        | Parry-focused defense with end-parry momentum shift, no gameplay blocking |
+| Coordination | Attack-token system limits simultaneous attackers                         |
+| Health       | Enemy can die if health reaches zero                                      |
+| Tiers        | Normal, MiniBoss (Kensei), Boss (Ronin) with distinct combat profiles     |
+| Dash Slash   | Boss gap-closer attack in Phase 2+ (forward dash)                         |
 
 ---
 
@@ -66,7 +68,9 @@ This gives combat a "back and forth" exchange instead of one-sided pressure.
 
 - Health is a simple numeric value
 - Health is reduced when attacks are not blocked or parried
-- Health does **not regenerate**
+- Health does **not passively regenerate**
+- The player can restore health with limited bandages
+- Bandages use a cooldown between heals and can be replenished through pickups
 
 ### Blocking & Parry System
 
@@ -151,11 +155,12 @@ Attack windows and eligibility checks are tied to animation events configured in
 - **Defensive Turn:**
   - **Pursuit:** Move toward target until engagement distance
   - **Orbit:** Circle target at orbit radius while maintaining facing
+  - **Threat-Driven Parry Window:** Opens while the target is attacking within parry trigger range, with short threat memory
   - **Parry Reactions:** Directional parry reaction clips
 - **Attack Turn:**
   - Plays a sampled length of the shared combo attack chain
   - Uses wind-up -> slash -> recovery attack phases from animation events
-- **Dead:** Combat flags close and the enemy object is disabled
+- **Dead:** Combat flags close, AI/nav stop, ragdoll/VFX/SFX play, and the root enemy object is destroyed
 
 ### Player Specification
 
@@ -164,6 +169,7 @@ Attack windows and eligibility checks are tied to animation events configured in
 - **Idle:** Reset to idle stance
 - **Walking:** Slow movement
 - **Sprinting:** Fast movement
+- **Jumping / Airborne:** Jump start -> air loop -> landing
 - **Attacking:** (attack combos with phases)
   - **Slash 1:** Wind-Up → Slash → Slow-down
   - **Slash 2:** Wind-Up → Slash → Slow-down
@@ -203,7 +209,7 @@ This is great for creating custom behaviours that only occur in given states, fo
 
 Each state should contain its own logic that dictates whether it should switch to a new state or stay on the current one. This switch logic may need to be checked each tick, switching the active state where applicable before finally executing any state specific code.
 
-Interaction triggers like hit, block, and parry are controlled by state transitions. Unity's Animation system ensures that reaction states (e.g., Parry or Block State) activate during specified animation frames. For example, a hitbox/hurtbox interaction triggers `react_on_hit()` only if the state conditions align with the animation event.
+Interaction triggers like hit, block, and parry are coordinated through animation events, combat flags, and state changes. For example, a hitbox/hurtbox interaction only becomes valid while the relevant attack phase has opened the hitbox and the combat flags allow damage resolution.
 
 Example Integration with Combat Logic:
 
@@ -213,9 +219,15 @@ Example Integration with Combat Logic:
 
 ### Camera Locking System
 
-When toggling the camera lock, it should check the camera's view for any lock-on components that are on screen. It should first check the top section of the view (over the player's standing point), and if no targets are found, we check the bottom section. Upon identifying targets, those closest to the center of the screen are considered, with a weighting system to favor targets closer to the player. With an optimal target selected, the camera rig is then rotated to face the target.
+When toggling the camera lock, the system searches for enemies inside `lockOnRange`, filters to visible on-screen targets with line of sight, then scores them using:
 
-To switch between targets, we take the input vector of the mouse and draw a line from the target in that direction in the view space. The view space is the coordinate system where the x and y axis are parallel to the screen, with the z axis corresponding to depth into the scene. We can use the x and y coordinates of objects in the view space to identify where they are on screen. We will calculate the difference in the angle between the input vector and each other target on screen. With consideration to distance, the target with the smallest angle is selected as the new camera target.
+- A top-of-screen priority above the player
+- Distance to the player
+- Distance from the screen center
+
+The best-scoring valid target becomes the lock target and the camera rig rotates toward that target point.
+
+To switch between targets, the system reads the current look input vector and compares it against other visible targets in view space. The target with the best directional match is selected. Active locks can break on death, excessive distance, or sustained occlusion, and can auto-retarget to another valid enemy.
 
 > Initially planned to use Cinemachine Target Group for lock-on, but the package signature was invalid so it could not be used.
 
@@ -246,20 +258,23 @@ When locked on, the full 2D input vector drives directional blending (strafe + f
 
 #### Hit Detection
 
-When a hitbox intersects with a hurtbox, we trigger the owner of the hurtbox to react on hit: `hurtbox.owner.react_on_hit()`. The eligibility checks we need to do when the hitbox and hurtboxes collide are:
+When a hitbox intersects with a hurtbox, the hitbox builds an `AttackHitInfo` payload and calls `ReceiveHit()` on the hurtbox owner. A hit is only valid if:
 
+- The hitbox is currently active
+- The hitbox owner is currently attacking
 - The intersecting hitbox and hurtbox do not share the same owner
-- Is the hurtbox owner currently vulnerable? `is_vulnerable == true`
-- Is the hitbox owner currently attacking? `is_attacking == true`
-- The hurtbox is not on the hitbox ignore list: `not hitbox_ignore_list.has(hurtbox)` (to stop multiple hits registering from the same attack. Upon registering the initial hit, we append the hurtbox to the hitbox ignore list, so that it is not detected again until the next attack, where the ignore list is refreshed)
-  To check these conditions we use a back-end animation database that stores information about the characters for the duration of each animation.
+- The hurtbox owner is currently vulnerable
+- The hurtbox has not already been hit during the current attack
 
-Attack windows for hitbox and hurtbox checks rely heavily on Unity's Animator system's animation events. Animation events are used to enable and disable hit detection only during active attack frames. Within these attack frames:
+Attack start/stop is still driven by animation events. Wind-up begins the attack, slash frames enable hit detection, and recovery ends the attack and clears the hit ignore set.
 
-- `is_attacking` and `is_vulnerable` are animation-driven flags updated dynamically by the state machine.
-- These variables should be synchronized with Unity Animator triggers, ensuring behavior aligns with visual timing.
+Damage outcomes are resolved through `CombatFlagsComponent` and `DamageResolver`:
 
-After verifying the eligibility of a hit, we then check the receiver's current state to decide between three outcomes. Parry state that triggers the parry logic, Block state that triggers the block logic, and anything else (other states) triggers the hit logic. For each of these states, we call a react function that adjusts the health (and posture if implemented) based on the attack's hit data. We then force the state machine to transition the respective reactionary state. Each outcome has its own particles, lighting and sound effects that are triggered upon activation.
+- Parry window active -> `Parried`
+- Blocking active -> `Blocked`
+- Otherwise -> `FullHit`
+
+Outcome feedback hooks then drive VFX, SFX, pushback, and defense reaction animations for both player and enemy combatants.
 
 #### Spam Prevention
 
@@ -281,11 +296,11 @@ When the window reaches `0.0s`, guard still blocks but no perfect parry is possi
 - No rapid presses for ~0.5 seconds
 - Successful perfect parry
 
-**Post-parry / post-block-release behaviour:**
+**Post-defense / block-release behaviour:**
 
-- On a quick tap parry, the player can remain in `BlockingState` briefly even after releasing guard
-- During this short linger, other actions are temporarily hindered, creating the current post-parry lock feel
-- If guard is held longer, releasing block allows attacking almost immediately, which keeps combat responsive
+- Gameplay blocking can linger briefly after guard release even while the block exit animation starts
+- The block-to-idle exit animation can be interrupted by attacking
+- After a successful defense reaction, movement remains constrained until the reaction ends, while attacking unlocks after a short delay
 
 ### Enemy Tiers
 
@@ -295,7 +310,7 @@ Enemies are categorised into tiers that determine their combat profile and visua
 | -------- | ------ | --- | ---------------------------- |
 | Normal   | —      | 20  | Standard wave enemy          |
 | MiniBoss | Kensei | 60  | Tougher enemy in later waves |
-| Boss     | Rōnin  | 150 | Solo 1v1 duel                |
+| Boss     | Ronin  | 400 | Solo 1v1 duel                |
 
 #### Kensei (Mini-Boss)
 
@@ -305,7 +320,7 @@ Enemies are categorised into tiers that determine their combat profile and visua
 - More aggressive combat profile: shorter defense windows, faster counters, higher minimum attack chain
 - Respects the attack token system and does not bypass group pressure rules
 
-#### Rōnin (Boss)
+#### Ronin (Boss)
 
 - Solo 1v1 (not spawned by the wave system)
 - Visually differentiated: larger scale, blackened steel material with dark red emission, glowing red eyes with trails, always-on red weapon slash trail
@@ -319,7 +334,7 @@ Enemies are categorised into tiers that determine their combat profile and visua
 | 3     | 30%–0%   | Near-max combos (4–5), instant counters, minimal defense pauses    | + Massive electric sparks emitting from body |
 
 - **Phase Transitions:** Each phase shift triggers a burst VFX (sparks, electric burst, flash) spawned at the boss spine, managed by `BossPhaseVfxController`
-- **Dash Slash:** A gap-closing attack available in Phase 2+. When the player is beyond normal attack range, the boss dashes forward with an attack. Controlled by profile fields (`dashAttackEnabled`, range, distance, duration, cooldown) and implemented as a dedicated state machine state (`EnemyDashAttackState`)
+- **Dash Slash:** A gap-closing attack available in Phase 2+. When the player is beyond normal attack range, the boss dashes forward with an attack. Controlled by profile fields (`dashAttackEnabled`, min/max range, duration, cooldown`) and implemented as a dedicated state machine state (`EnemyDashAttackState`). Travel distance is derived from current target spacing when the dash begins
 - Phase transitions swap the combat profile
 
 #### Combat Profiles
@@ -330,8 +345,8 @@ Enemy behaviour is data-driven through `EnemyCombatProfile` ScriptableObject ass
 - Parries before counter (min/max)
 - Defense duration (min/max)
 - Counter prep delay
-- Spacing (engage range, orbit radius, attack range)
-- Token cooldowns and reentry delays
+- Spacing and support movement (engage range, orbit radius, attack range, support orbit tuning)
+- Token cooldowns, priority handoff support, and same-attacker reentry delays
 - Dash attack parameters (boss only)
 
 ### Enemy Behaviour
@@ -346,7 +361,10 @@ Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defe
 - During defense, enemy movement mode is distance-based:
   - Pursue while outside engage range
   - Orbit while inside engage range
-- Defensive turn keeps the enemy continuously parry-ready while it has a valid target.
+- Defensive turn keeps the enemy conditionally parry-ready while threat conditions are met:
+  - The target is actively attacking
+  - The target is within `parryTriggerRange`
+  - The recent threat memory window is still active
 - Enemy defense is parry-only, no blocking.
 - Each successful parry increments a counter. On the final required parry:
   - End-parry feedback is queued (distinct SFX/VFX variant)
@@ -355,7 +373,7 @@ Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defe
 
 #### Attack turn
 
-- On entering attack turn, enemy closes parry window and remains does not parry for the whole attack turn.
+- On entering attack turn, enemy closes the parry window and does not parry for the whole attack turn.
 - Enemy acquires a global attack token before starting attacks so group pressure stays controlled (one active attacker at a time).
 - Enemy samples a combo chain length from profile min/max.
 - Range is required only to start the combo chain.
@@ -364,7 +382,7 @@ Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defe
 
 #### Dash attack (Boss only)
 
-- Available when `dashAttackEnabled` is true in the active combat profile (Rōnin Phase 2+)
+- Available when `dashAttackEnabled` is true in the active combat profile (Ronin Phase 2+)
 - Evaluated during defensive turn: if the player is between `dashAttackMinRange` and `dashAttackMaxRange`, the boss acquires the attack token and transitions to `EnemyDashAttackState`
 - The boss dashes toward the player using a horizontal impulse, fires an attack animation, then returns to defensive turn
 - Subject to a cooldown between uses (`dashAttackCooldown`)
@@ -375,18 +393,19 @@ Enemy AI uses explicit turn states (`Idle -> Defense Turn -> Attack Turn -> Defe
 
 With this timing-based combat every action must have immediate, clear responses to make it readable and rewarding. Simple, consistent effects that reinforce timing windows and outcomes.
 
-| Event             | Visual                                                                  | Audio                               |
-| ----------------- | ----------------------------------------------------------------------- | ----------------------------------- |
-| **Light Attack**  | Sword slash trail                                                       | Whoosh                              |
-| **Enemy Attack**  | Wind-up animation                                                       | Whoosh                              |
-| **Block**         | Sparks, no damage flash                                                 | Dull clang, short block             |
-| **Perfect Parry** | Bright sparks                                                           | Loud satisfying clang               |
-| **End Parry**     | More bright sparks                                                      | Different distinct satisfying clang |
-| **Player Hit**    | Blood splatter                                                          | Meaty thud                          |
-| **Enemy Hit**     | Metal debris and sparks                                                 | Metal thud                          |
-| **Player Death**  | Radgoll, blood geyser, death overlay, fade to black                     | Scream??                            |
-| **Enemy Death**   | Ragdoll, explosion, debris, electric shockwave, sparks, dissolve effect | Explosion                           |
-| **Lock-On**       | Camera rotation, lock-on indicator                                      | Nothing                             |
+| Event             | Visual                                           | Audio                    |
+| ----------------- | ------------------------------------------------ | ------------------------ |
+| **Light Attack**  | Sword slash trail, short forward lunge           | Whoosh                   |
+| **Enemy Attack**  | Wind-up animation, short forward lunge           | Whoosh                   |
+| **Block**         | Sparks, pushback                                 | Dull clang / block       |
+| **Perfect Parry** | Bright sparks, pushback                          | Loud satisfying clang    |
+| **End Parry**     | Distinct parry sparks, pushback                  | Distinct end-parry clang |
+| **Player Hit**    | Hit VFX, damage vignette                         | Hit impact               |
+| **Enemy Hit**     | Hit VFX, health bar response                     | Hit impact               |
+| **Player Death**  | Ragdoll, death VFX, death overlay, fade to black | Death SFX                |
+| **Enemy Death**   | Ragdoll, death VFX, optional dissolve            | Death SFX                |
+| **Boss Death**    | Kill overlay, screen fade                        | Defeat SFX               |
+| **Lock-On**       | Camera rotation, lock-on indicator               | Nothing                  |
 
 ---
 
