@@ -2265,7 +2265,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   titleText: {fileID: 858547499}
   destination: 2
-  travelCost: 150
+  travelCost: 0
   travelDistance: 2000
   affordHoverColor: {r: 0.2168537, g: 0.49803922, b: 0.090196066, a: 1}
   cantAffordHoverColor: {r: 0.49803922, g: 0.11122774, b: 0.090196066, a: 1}
