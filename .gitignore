@@ -102,3 +102,7 @@ InitTestScene*.unity*
 
 # Mac developers
 .DS_Store
+
+# Intro video (too big)
+Assets/Videos/Katan.mp4
+Assets/Videos/Katan.mp4.meta
