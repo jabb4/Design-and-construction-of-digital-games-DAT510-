@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   title: Eyes on the Enemy
   body: "Look around freely with the camera. When you\u2019re ready to fight, lock
-    on to a target to keep them centered.\n\nWhile locked on, flick the camera to
-    switch between targets. Lock breaks if your target dies, moves too far, or loses
-    line of sight."
+    on to a target with T to keep them centered.\n\nWhile locked on, flick the camera
+    to switch between targets. Lock breaks if your target dies, moves too far, or
+    loses line of sight."
   clip: {fileID: 32900000, guid: e0723defd547446e29c472614770c343, type: 3}
