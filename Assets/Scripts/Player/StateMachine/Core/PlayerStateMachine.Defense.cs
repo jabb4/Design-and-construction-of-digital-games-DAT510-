@@ -6,6 +6,22 @@ namespace Player.StateMachine
     {
         public GuardSide CurrentGuardSide { get; private set; } = GuardSide.Left;
         public bool IsDefenseReactionActive { get; private set; }
+
+        /// <summary>
+        /// True unless the player is in an attack commitment phase (windup or slash).
+        /// During attack recovery, defense is allowed so block can interrupt.
+        /// </summary>
+        public bool CanDefend
+        {
+            get
+            {
+                if (CurrentState is States.AttackState attackState)
+                {
+                    return attackState.CurrentPhase == AttackPhase.Recovery;
+                }
+                return true;
+            }
+        }
         public bool IsDefenseAttackUnlocked =>
             !IsDefenseReactionActive || Time.time >= defenseAttackUnlockTime;
 

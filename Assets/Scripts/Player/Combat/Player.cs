@@ -134,6 +134,7 @@ namespace Player.Combat
             return input != null &&
                    stateMachine != null &&
                    stateMachine.IsEquipped &&
+                   stateMachine.CanDefend &&
                    motor != null &&
                    motor.IsGrounded &&
                    isAlive;
