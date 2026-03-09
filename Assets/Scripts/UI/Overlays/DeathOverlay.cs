@@ -23,6 +23,9 @@ public class DeathOverlay : MonoBehaviour
 
     private float shakeTimer;
     private float textureAspect;
+    private float slamSoundLeadTime;
+    private float slamSoundVolume;
+    private bool slamSoundPlayed;
     private AudioClip slamSound;
 
     private enum Phase { Waiting, Slam, Bounce, Settle, Idle }
@@ -33,7 +36,8 @@ public class DeathOverlay : MonoBehaviour
     public static DeathOverlay Create(Texture texture, float delay,
         AudioClip slamSound = null, float baseIntensity = 4f,
         float peakIntensity = 60f, float glowPulseDuration = 2.5f,
-        Color? bloomColor = null)
+        Color? bloomColor = null, float slamSoundLeadTime = 0f,
+        float slamSoundVolume = 1f)
     {
         var go = new GameObject("DeathOverlay");
 
@@ -43,6 +47,8 @@ public class DeathOverlay : MonoBehaviour
         instance.peakIntensity = peakIntensity;
         instance.glowPulseDuration = glowPulseDuration;
         instance.slamSound = slamSound;
+        instance.slamSoundLeadTime = Mathf.Max(0f, slamSoundLeadTime);
+        instance.slamSoundVolume = Mathf.Clamp01(slamSoundVolume);
         instance.bloomColor = bloomColor ?? new Color(1f, 0f, 0f, 1f);
         instance.BuildUI(texture);
         return instance;
@@ -148,17 +154,19 @@ public class DeathOverlay : MonoBehaviour
         switch (phase)
         {
             case Phase.Waiting:
+                if (!slamSoundPlayed && slamSound != null &&
+                    timer >= delay - slamSoundLeadTime)
+                {
+                    slamSoundPlayed = true;
+                    var audioSource = gameObject.AddComponent<AudioSource>();
+                    audioSource.spatialBlend = 0f;
+                    audioSource.PlayOneShot(slamSound, slamSoundVolume);
+                }
                 if (timer >= delay)
                 {
                     timer = 0f;
                     overlay.color = Color.white;
                     SetIntensity(peakIntensity);
-                    if (slamSound != null)
-                    {
-                        var audioSource = gameObject.AddComponent<AudioSource>();
-                        audioSource.spatialBlend = 0f;
-                        audioSource.PlayOneShot(slamSound);
-                    }
                     phase = Phase.Slam;
                 }
                 break;

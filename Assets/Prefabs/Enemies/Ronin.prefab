@@ -548,8 +548,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   killOverlayTexture: {fileID: 2800000, guid: 5ba77813b7c82488ba772aefbdef2506, type: 3}
-  killOverlaySlamSound: {fileID: 0}
+  killOverlaySlamSound: {fileID: 8300000, guid: d04052c5cb4f34ca184c357388e1bbdb, type: 3}
   overlayDelay: 2
+  slamSoundLeadTime: 0.2
+  slamSoundVolume: 0.35
   fadeDelay: 8
   fadeDuration: 5
   targetScene: Start Screen

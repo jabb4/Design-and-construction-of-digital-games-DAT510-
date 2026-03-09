@@ -10,6 +10,9 @@ namespace Enemies.Boss
         [SerializeField] private Texture killOverlayTexture;
         [SerializeField] private AudioClip killOverlaySlamSound;
         [SerializeField, Min(0f)] private float overlayDelay = 0.5f;
+        [Tooltip("How many seconds before the visual slam to start the sound (to sync the impact hit with the visual).")]
+        [SerializeField, Min(0f)] private float slamSoundLeadTime = 0f;
+        [SerializeField, Range(0f, 1f)] private float slamSoundVolume = 1f;
 
         [Header("Screen Fade")]
         [SerializeField, Min(0f)] private float fadeDelay = 3f;
@@ -49,7 +52,9 @@ namespace Enemies.Boss
                     overlayDelay,
                     killOverlaySlamSound,
                     peakIntensity: 15f,
-                    bloomColor: Color.white
+                    bloomColor: Color.white,
+                    slamSoundLeadTime: slamSoundLeadTime,
+                    slamSoundVolume: slamSoundVolume
                 );
             }
 
