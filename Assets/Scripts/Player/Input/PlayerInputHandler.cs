@@ -58,12 +58,12 @@ namespace Player.StateMachine
         /// <summary>
         /// True while jump input is buffered.
         /// </summary>
-        public bool IsJumpBuffered => jumpIntent.IsBuffered;
+        public bool IsJumpBuffered => !IsBlocked && jumpIntent.IsBuffered;
 
         /// <summary>
         /// True while attack input is buffered.
         /// </summary>
-        public bool IsAttackBuffered => attackIntent.IsBuffered;
+        public bool IsAttackBuffered => !IsBlocked && attackIntent.IsBuffered;
 
         /// <summary>
         /// Returns true if the player has significant movement input (above threshold).
