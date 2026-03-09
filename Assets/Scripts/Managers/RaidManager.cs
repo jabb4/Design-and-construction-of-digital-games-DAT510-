@@ -30,8 +30,6 @@ public class RaidManager : MonoBehaviour
             tutorialActive = true;
             tutorial.OpenSlide();
             SetPaused(true);
-            // Hide the back menu since SetPaused shows it
-            backMenuUI.SetActive(false);
         }
     }
 

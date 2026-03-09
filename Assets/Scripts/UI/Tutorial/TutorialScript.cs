@@ -33,6 +33,8 @@ public class TutorialScript : MonoBehaviour
     private InputAction cancelAction;
     private bool navigatedThisFrame;
 
+    private readonly List<GameObject> hiddenSiblings = new List<GameObject>();
+
     void Awake()
     {
         var uiMap = inputActions.FindActionMap("UI");
@@ -96,6 +98,7 @@ public class TutorialScript : MonoBehaviour
         currentSlide = 0;
         IsOpen = true;
 
+        HideCanvasSiblings();
         transform.SetAsLastSibling();
 
         slidePanel.SetActive(true);
@@ -124,6 +127,8 @@ public class TutorialScript : MonoBehaviour
         if (submitAction != null) submitAction.Disable();
         if (cancelAction != null) cancelAction.Disable();
 
+        ShowCanvasSiblings();
+
         if (SaveManager.Instance != null)
         {
             SaveManager.Instance.SetHasSeenTutorial(true);
@@ -151,6 +156,32 @@ public class TutorialScript : MonoBehaviour
             currentSlide--;
             DisplaySlide();
         }
+    }
+
+    private void HideCanvasSiblings()
+    {
+        hiddenSiblings.Clear();
+        Transform parent = transform.parent;
+        if (parent == null) return;
+
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            GameObject sibling = parent.GetChild(i).gameObject;
+            if (sibling == gameObject) continue;
+            if (!sibling.activeSelf) continue;
+
+            sibling.SetActive(false);
+            hiddenSiblings.Add(sibling);
+        }
+    }
+
+    private void ShowCanvasSiblings()
+    {
+        foreach (GameObject go in hiddenSiblings)
+        {
+            if (go != null) go.SetActive(true);
+        }
+        hiddenSiblings.Clear();
     }
 
     private void DisplaySlide()
