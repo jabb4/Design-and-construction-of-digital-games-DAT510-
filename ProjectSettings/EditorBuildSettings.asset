@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/VanView.unity
     guid: c7def2bd52ed04454a3efadf743483d7
   - enabled: 1
-    path: Assets/Scenes/TestMaps/Alleyway.unity
+    path: Assets/Scenes/Alleyway.unity
     guid: 133eb114eaaf42640acfa098829d35ba
   - enabled: 1
     path: Assets/Scenes/Tempel.unity
