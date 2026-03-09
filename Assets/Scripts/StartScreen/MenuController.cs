@@ -166,7 +166,7 @@ public class MenuController : MonoBehaviour
 
         GameStateManager.Instance.SetInitValues();
         GameStateManager.Instance.SaveGameState();
-        SceneManager.LoadSceneAsync(1);
+        SceneManager.LoadSceneAsync(2);
     }
 
     private Vector2 GetMousePosition()

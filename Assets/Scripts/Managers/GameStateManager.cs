@@ -11,6 +11,7 @@ public class GameStateManager : MonoBehaviour
     [SerializeField] private int initMaxFuelAmount = 100;
     public bool gameSaveExists;
 
+    private bool hasSeenTutorial;
     private int currency;
     private int fuelAmount;
     private int maxFuelAmount;
@@ -28,6 +29,7 @@ public class GameStateManager : MonoBehaviour
             currency = initCurrency;
             fuelAmount = initFuelAmount;
             maxFuelAmount = initMaxFuelAmount;
+            hasSeenTutorial = false;
         }
         else
         {
@@ -58,6 +60,16 @@ public class GameStateManager : MonoBehaviour
     private void Start()
     {
         LoadGameState();
+    }
+
+    public bool GetHasSeenTutorial()
+    {
+        return hasSeenTutorial;
+    }
+
+    public void SetHasSeenTutorial(bool value)
+    {
+        hasSeenTutorial = value;
     }
 
     public int GetCurrency()
@@ -158,6 +170,7 @@ public class GameStateManager : MonoBehaviour
             SaveManager.Instance.SetCurrency(currency);
             SaveManager.Instance.SetFuelAmount(fuelAmount);
             SaveManager.Instance.SetMaxFuelAmount(maxFuelAmount);
+            SaveManager.Instance.SetHasSeenTutorial(hasSeenTutorial);
             SaveManager.Instance.SaveGameData();
 
             gameSaveExists =  SaveManager.Instance.gameDataSaveExists();
@@ -172,6 +185,7 @@ public class GameStateManager : MonoBehaviour
             currency = SaveManager.Instance.GetCurrency();
             fuelAmount = SaveManager.Instance.GetFuelAmount();
             maxFuelAmount = SaveManager.Instance.GetMaxFuelAmount();
+            hasSeenTutorial = SaveManager.Instance.GetHasSeenTutorial();
             OnMaxFuelChanged?.Invoke(maxFuelAmount);
             OnFuelChanged?.Invoke(fuelAmount);
             OnCurrencyChanged?.Invoke(currency, 0);
@@ -183,8 +197,7 @@ public class GameStateManager : MonoBehaviour
         currency = initCurrency;
         fuelAmount = initFuelAmount;
         maxFuelAmount = initMaxFuelAmount;
-
-        if (SaveManager.Instance != null)
-            SaveManager.Instance.SetHasSeenTutorial(false);
+        hasSeenTutorial = false;
+        
     }
 }
