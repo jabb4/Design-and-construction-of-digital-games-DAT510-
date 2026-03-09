@@ -50,7 +50,7 @@
 - Player death: [F.M.Audio](https://freesound.org/s/695386/)
 
 ### 3D Assets
-
+- pipe, pipebend, sliding door - [Filip Skaremyr](filska@chalmers.se)
 - low poly street pack - [Dynamic Art](https://assetstore.unity.com/packages/3d/environments/urban/low-poly-street-pack-67475)
 - KHS -Donggung (Tempel walls) - [Korea Heritage Service](https://assetstore.unity.com/packages/3d/props/khs-donggung-304769)
 - Pagoda Architecture (Tempel) - [Tanuki Digital](https://assetstore.unity.com/packages/3d/environments/historic/pagoda-architecture-113177)
