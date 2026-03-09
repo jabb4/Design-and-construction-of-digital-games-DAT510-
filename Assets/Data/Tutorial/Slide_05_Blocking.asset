@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Slide_05_Blocking
   m_EditorClassIdentifier: 
   title: Steel Meets Steel
-  body: 'Hold block to enter a defensive stance. Blocked attacks deal half damage.
+  body: 'Hold RMB to enter a defensive stance. Blocked attacks deal half damage.
     Painful, but survivable.
 
 

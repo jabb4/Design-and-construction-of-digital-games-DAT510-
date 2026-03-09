@@ -17,3 +17,4 @@ MonoBehaviour:
     parry, every decision matters. There are no second chances on the battlefield.
     \n\nGather fuel, navigate to the Temple and defeat the AI overlord. Now draw
     your blade."
+  clip: {fileID: 32900000, guid: f1dc4fc1744de40e292efadcc0af3c04, type: 3}
