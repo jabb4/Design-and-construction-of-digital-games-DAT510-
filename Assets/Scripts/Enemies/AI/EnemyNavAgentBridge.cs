@@ -39,6 +39,8 @@ namespace Enemies.AI
         private const float OrbitPathRequestInterval = 0.15f;
         private const float OrbitRadiusSmoothSpeed = 4f;
         private const float OffMeshRecoveryMaxDistance = 3f;
+        private const float OrbitRingRepositionTolerance = 0.75f;
+        private const float OrbitCandidateSampleDistance = 2f;
 
         public Vector3 CurrentVelocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
         public Vector3 DesiredVelocity => navMeshAgent != null ? navMeshAgent.desiredVelocity : Vector3.zero;
@@ -122,9 +124,15 @@ namespace Enemies.AI
 
         public void SetOrbit(Transform orbitTarget, float desiredRadius)
         {
+            bool enteringOrbit = mode != MoveMode.Orbit || target != orbitTarget;
             target = orbitTarget;
             mode = target == null ? MoveMode.Stopped : MoveMode.Orbit;
             targetOrbitRadius = Mathf.Max(0.1f, desiredRadius);
+            if (enteringOrbit && target != null)
+            {
+                AlignOrbitAngleToCurrentPosition(target);
+                orbitPathRequestTimer = 0f;
+            }
         }
 
         public void Stop()
@@ -155,10 +163,31 @@ namespace Enemies.AI
             orbitRadius = Mathf.MoveTowards(orbitRadius, targetOrbitRadius, OrbitRadiusSmoothSpeed * Time.deltaTime);
 
             Vector3 center = target.position;
-            orbitAngleDegrees += orbitDirectionSign * orbitAngularSpeedDegrees * angularSpeedJitter * Time.deltaTime;
-            float effectiveAngle = orbitAngleDegrees + orbitAngleOffset;
-            float radians = effectiveAngle * Mathf.Deg2Rad;
-            Vector3 candidate = center + new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians)) * orbitRadius;
+            Vector3 toSelf = transform.position - center;
+            toSelf.y = 0f;
+            float currentRadius = toSelf.magnitude;
+            float radialError = Mathf.Abs(currentRadius - orbitRadius);
+            bool needsRingReposition = radialError > OrbitRingRepositionTolerance;
+
+            Vector3 candidate;
+            if (needsRingReposition)
+            {
+                Vector3 radialDirection = ResolveOrbitDirectionFromCurrentPosition(toSelf);
+                candidate = center + radialDirection * orbitRadius;
+                AlignOrbitAngleToDirection(radialDirection);
+            }
+            else
+            {
+                orbitAngleDegrees += orbitDirectionSign * orbitAngularSpeedDegrees * angularSpeedJitter * Time.deltaTime;
+                float effectiveAngle = orbitAngleDegrees + orbitAngleOffset;
+                float radians = effectiveAngle * Mathf.Deg2Rad;
+                candidate = center + new Vector3(Mathf.Cos(radians), 0f, Mathf.Sin(radians)) * orbitRadius;
+            }
+
+            if (!TrySampleOrbitCandidate(candidate, out candidate))
+            {
+                return;
+            }
 
             float distanceToCandidate = Vector3.Distance(transform.position, candidate);
             if (distanceToCandidate <= orbitDestinationTolerance && navMeshAgent.hasPath)
@@ -173,7 +202,9 @@ namespace Enemies.AI
             }
             orbitPathRequestTimer = OrbitPathRequestInterval;
 
-            navMeshAgent.stoppingDistance = 0.1f;
+            navMeshAgent.stoppingDistance = needsRingReposition
+                ? Mathf.Max(orbitDestinationTolerance, 0.25f)
+                : 0.1f;
             navMeshAgent.SetDestination(candidate);
         }
 
@@ -302,6 +333,57 @@ namespace Enemies.AI
             }
 
             impulsePauseActive = false;
+        }
+
+        private void AlignOrbitAngleToCurrentPosition(Transform orbitTarget)
+        {
+            if (orbitTarget == null)
+            {
+                return;
+            }
+
+            Vector3 offset = transform.position - orbitTarget.position;
+            offset.y = 0f;
+            AlignOrbitAngleToDirection(ResolveOrbitDirectionFromCurrentPosition(offset));
+        }
+
+        private void AlignOrbitAngleToDirection(Vector3 direction)
+        {
+            if (direction.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+
+            orbitAngleDegrees = Mathf.Atan2(direction.z, direction.x) * Mathf.Rad2Deg - orbitAngleOffset;
+        }
+
+        private Vector3 ResolveOrbitDirectionFromCurrentPosition(Vector3 offset)
+        {
+            if (offset.sqrMagnitude > 0.0001f)
+            {
+                return offset.normalized;
+            }
+
+            Vector3 fallback = transform.forward;
+            fallback.y = 0f;
+            if (fallback.sqrMagnitude > 0.0001f)
+            {
+                return fallback.normalized;
+            }
+
+            return Vector3.forward;
+        }
+
+        private bool TrySampleOrbitCandidate(Vector3 candidate, out Vector3 sampledCandidate)
+        {
+            sampledCandidate = candidate;
+            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, OrbitCandidateSampleDistance, NavMesh.AllAreas))
+            {
+                sampledCandidate = hit.position;
+                return true;
+            }
+
+            return false;
         }
     }
 }

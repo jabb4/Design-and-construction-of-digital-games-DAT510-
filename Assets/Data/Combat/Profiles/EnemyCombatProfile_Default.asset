@@ -29,10 +29,10 @@ MonoBehaviour:
   sameAttackerReentryDelay: 1
   groupAwarenessRadius: 20
   engageRange: 15
-  orbitRadius: 7.5
-  supportOrbitExtraRadius: 10
+  orbitRadius: 2
+  supportOrbitExtraRadius: 3
   supportOrbitExtraRadiusPerEnemy: 0.5
-  supportDistanceFromPriorityEnemy: 10
+  supportDistanceFromPriorityEnemy: 3
   attackRange: 1.5
   dashAttackEnabled: 0
   dashAttackMinRange: 4
