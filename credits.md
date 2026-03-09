@@ -63,6 +63,10 @@
 - Van - [Ozgur Saral](https://assetstore.unity.com/packages/3d/vehicles/van-22061)
 - Japanese Garden 2 Free - [Waldermarst](https://assetstore.unity.com/packages/3d/vegetation/japanese-garden-2-free-327670)
 
+### Player/enemy animations and models
+
+- [Ghost Samurai Bundle](https://assetstore.unity.com/packages/3d/animations/ghostsamurai-bundle-197971)
+
 ### Materials & Shaders
 
 - [Blury UI material](https://github.com/lukakldiashvili/Unified-Universal-Blur)
