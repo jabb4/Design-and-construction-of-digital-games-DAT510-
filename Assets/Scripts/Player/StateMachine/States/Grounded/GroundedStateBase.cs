@@ -19,11 +19,11 @@ namespace Player.StateMachine.States
                 return true;
             }
 
-            if (AttackPressed && Motor.IsGrounded)
+            if ((AttackPressed || AttackBuffered) && Motor.IsGrounded)
             {
                 if (!Owner.IsEquipped)
                 {
-                    Owner.RequestEquip();
+                    Owner.RequestEquipWithPendingAttack();
                     decision = TransitionDecision.None;
                     return true;
                 }

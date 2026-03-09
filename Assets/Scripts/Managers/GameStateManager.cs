@@ -183,5 +183,8 @@ public class GameStateManager : MonoBehaviour
         currency = initCurrency;
         fuelAmount = initFuelAmount;
         maxFuelAmount = initMaxFuelAmount;
+
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.SetHasSeenTutorial(false);
     }
 }

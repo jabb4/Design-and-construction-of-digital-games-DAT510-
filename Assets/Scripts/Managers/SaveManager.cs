@@ -103,11 +103,22 @@ public class SaveManager : MonoBehaviour
         }
     }
 
+    public bool GetHasSeenTutorial()
+    {
+        return gameData.hasSeenTutorial;
+    }
+
+    public void SetHasSeenTutorial(bool value)
+    {
+        gameData.hasSeenTutorial = value;
+    }
+
     [System.Serializable]
     public class Data
     {
         public int currency;
         public int fuelAmount;
         public int maxFuelAmount;
+        public bool hasSeenTutorial;
     }
 }

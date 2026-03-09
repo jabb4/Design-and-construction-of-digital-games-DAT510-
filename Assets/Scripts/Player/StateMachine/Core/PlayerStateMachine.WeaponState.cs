@@ -36,6 +36,7 @@ namespace Player.StateMachine
 
         public bool IsEquipped { get; private set; }
         public bool IsTransitioningWeapon { get; private set; }
+        public bool PendingAttackAfterEquip { get; private set; }
 
         private float unequipTimer = -1f;
         private float bufferedBlockRequestUntil = float.NegativeInfinity;
@@ -68,6 +69,12 @@ namespace Player.StateMachine
             }
 
             BeginEquipTransition();
+        }
+
+        public void RequestEquipWithPendingAttack()
+        {
+            PendingAttackAfterEquip = true;
+            RequestEquip();
         }
 
         public void RequestUnequip()
@@ -123,7 +130,16 @@ namespace Player.StateMachine
             currentWeaponTransition = WeaponTransitionType.None;
             Animator?.SetBool(IsTransitioningWeaponHash, false);
 
-            if (WantsGuard() && Motor != null && Motor.IsGrounded)
+            bool wantsAttack = PendingAttackAfterEquip;
+            PendingAttackAfterEquip = false;
+
+            if (wantsAttack && Motor != null && Motor.IsGrounded)
+            {
+                AttackState attackState = GetState<AttackState>();
+                attackState.SetComboIndex(0);
+                ForceChangeState(attackState);
+            }
+            else if (WantsGuard() && Motor != null && Motor.IsGrounded)
             {
                 ForceChangeState(GetState<BlockingState>());
             }

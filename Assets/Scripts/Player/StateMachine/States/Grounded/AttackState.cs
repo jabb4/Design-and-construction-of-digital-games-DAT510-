@@ -159,7 +159,7 @@ namespace Player.StateMachine.States
 
         private void BufferComboInputIfNeeded(bool isInAttackState)
         {
-            if (hasEnteredRecovery && isInAttackState && AttackPressed)
+            if (hasEnteredRecovery && isInAttackState && (AttackPressed || AttackBuffered))
             {
                 queuedNextAttack = true;
             }

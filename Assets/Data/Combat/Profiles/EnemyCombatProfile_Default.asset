@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: EnemyCombatProfile_Default
   m_EditorClassIdentifier: 
   sharedCombo: {fileID: 11400000, guid: 9f8fa55d37bb44f8885cce0e87f2f9f0, type: 2}
-  minAttackChain: 2
-  maxAttackChain: 5
+  minAttackChain: 1
+  maxAttackChain: 3
   minParriesBeforeCounter: 1
-  maxParriesBeforeCounter: 5
+  maxParriesBeforeCounter: 4
   minDefenseDuration: 3
   maxDefenseDuration: 10
   parryWindowDuration: 0.2
@@ -34,3 +34,8 @@ MonoBehaviour:
   supportOrbitExtraRadiusPerEnemy: 0.5
   supportDistanceFromPriorityEnemy: 10
   attackRange: 1.5
+  dashAttackEnabled: 0
+  dashAttackMinRange: 4
+  dashAttackMaxRange: 8
+  dashAttackDuration: 0.3
+  dashAttackCooldown: 3

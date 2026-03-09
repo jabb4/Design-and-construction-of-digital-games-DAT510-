@@ -16,5 +16,6 @@ namespace StateMachine.Core
         bool JumpPressed { get; }
         bool JumpBuffered { get; }
         bool AttackPressed { get; }
+        bool AttackBuffered { get; }
     }
 }

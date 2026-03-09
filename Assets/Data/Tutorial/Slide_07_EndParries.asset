@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 492a1892d85284c9abfa8dd9fa064be4, type: 3}
+  m_Name: Slide_07_EndParries
+  m_EditorClassIdentifier: 
+  title: They Learn Too
+  body: "Enemies can parry your attacks. After deflecting enough strikes, they\u2019ll
+    launch a counter-attack signaled by the end-parry sparks and sound effect.\n\nWatch
+    and listen carefully for the tell. When an enemy parries your combo, be ready
+    to switch to defense immediately. Reckless aggression gets punished."
+  clip: {fileID: 32900000, guid: a63a6515fe93b4c0bb9487cf7df82e88, type: 3}
