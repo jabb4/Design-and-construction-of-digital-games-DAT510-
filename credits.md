@@ -14,7 +14,9 @@
 - Healing Item Icon - ChatGPT
 - Death overlay - ChatGPT
 - Boss defeated overlay - ChatGPT
-
+- Building facade texture [VictoriaShirokaya](https://se.pinterest.com/pin/328551735310699324/)
+- building tile texture [FreePik](https://www.freepik.com/premium-photo/marble-facing-tile-texture-natural-building-material_19244300.htm)
+- wood texture [herstockart](https://www.istockphoto.com/se/foto/bamboo-wood-texture-background-gm1423614623-468563387)
 ### Music
 
 - Main menu and boss fight music - [Kike Gutz](https://www.freepik.com/audio/tune/taiko-flame-call)
@@ -54,7 +56,7 @@
   - Sound Effect by <a href="https://pixabay.com/users/dragon-studio-38165424/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393845">DRAGON-STUDIO</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=393845">Pixabay</a>
 
 ### 3D Assets
-
+- pipe, pipebend, sliding door - [Filip Skaremyr](filska@chalmers.se)
 - low poly street pack - [Dynamic Art](https://assetstore.unity.com/packages/3d/environments/urban/low-poly-street-pack-67475)
 - KHS -Donggung (Tempel walls) - [Korea Heritage Service](https://assetstore.unity.com/packages/3d/props/khs-donggung-304769)
 - Pagoda Architecture (Tempel) - [Tanuki Digital](https://assetstore.unity.com/packages/3d/environments/historic/pagoda-architecture-113177)
