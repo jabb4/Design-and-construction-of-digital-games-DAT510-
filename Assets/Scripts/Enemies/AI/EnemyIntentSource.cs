@@ -23,6 +23,7 @@ namespace Enemies.AI
         public bool JumpPressed => intents != null && intents.JumpPressed;
         public bool JumpBuffered => intents != null && intents.JumpBuffered;
         public bool AttackPressed => intents != null && intents.AttackPressed;
+        public bool AttackBuffered => intents != null && intents.AttackBuffered;
 
         private void Awake()
         {

@@ -61,6 +61,11 @@ namespace Player.StateMachine
         public bool IsJumpBuffered => jumpIntent.IsBuffered;
 
         /// <summary>
+        /// True while attack input is buffered.
+        /// </summary>
+        public bool IsAttackBuffered => attackIntent.IsBuffered;
+
+        /// <summary>
         /// Returns true if the player has significant movement input (above threshold).
         /// </summary>
         public bool HasMovementInput => MoveInput.magnitude > MovementThreshold;
@@ -74,6 +79,7 @@ namespace Player.StateMachine
         public bool JumpPressed => IsJumpPressed;
         public bool JumpBuffered => IsJumpBuffered;
         public bool AttackPressed => IsAttackPressed;
+        public bool AttackBuffered => IsAttackBuffered;
 
         #endregion
 

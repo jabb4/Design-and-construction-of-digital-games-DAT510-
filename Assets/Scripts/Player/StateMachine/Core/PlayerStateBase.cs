@@ -113,6 +113,7 @@ namespace Player.StateMachine
         protected bool JumpPressed => Intent != null && Intent.JumpPressed;
         protected bool JumpBuffered => Intent != null && Intent.JumpBuffered;
         protected bool AttackPressed => Intent != null && Intent.AttackPressed;
+        protected bool AttackBuffered => Intent != null && Intent.AttackBuffered;
 
         #endregion
 

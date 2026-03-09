@@ -27,6 +27,7 @@ namespace StateMachine.Core
         public bool JumpPressed => jumpIntent.IsPressedThisFrame;
         public bool JumpBuffered => jumpIntent.IsBuffered;
         public bool AttackPressed => attackIntent.IsPressedThisFrame;
+        public bool AttackBuffered => attackIntent.IsBuffered;
 
         public void SetMoveIntent(Vector2 moveIntent)
         {
