@@ -273,8 +273,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'WARNING!
 
-    You are inside of a raid. Exiting will be equal to death
-    and you will lose all your items.'
+    You are inside of a raid. Exiting will equal death and you
+    will lose all coins you earned during this raid.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -449,7 +449,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Do you which to go back to the main menu?
+  m_text: Do you wish to go back to the main menu?
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -652,7 +652,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2125030877331854957, guid: a91c75e5d9710442e9dead3d9f687e61, type: 3}
       propertyPath: m_text
-      value: Resume Riad
+      value: Resume Raid
       objectReference: {fileID: 0}
     - target: {fileID: 2125030877331854957, guid: a91c75e5d9710442e9dead3d9f687e61, type: 3}
       propertyPath: m_fontSize

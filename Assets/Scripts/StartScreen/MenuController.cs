@@ -187,6 +187,10 @@ public class MenuController : MonoBehaviour
 
     public void QuitGame()
     {
+        if (menuAudioSource != null)
+        {
+            menuAudioSource.Stop();
+        }
         Application.Quit();
     }
 }
