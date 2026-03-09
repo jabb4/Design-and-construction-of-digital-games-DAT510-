@@ -106,3 +106,5 @@ InitTestScene*.unity*
 # Intro video (too big)
 Assets/Videos/Katan.mp4
 Assets/Videos/Katan.mp4.meta
+Assets/Resources/Videos/Katan.mp4
+Assets/Resources/Videos/Katan.mp4.meta

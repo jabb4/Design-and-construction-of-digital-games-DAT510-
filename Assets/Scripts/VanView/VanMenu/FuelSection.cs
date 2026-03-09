@@ -22,7 +22,7 @@ public class FuelSection : MonoBehaviour
         UpdateCurrentFuel(GameStateManager.Instance.GetFuelAmount());
 
         reFuelText.text = $"Buy {reFuelAmount}L of fuel for {fuelCost} coins";
-        upgradeTankText.text = $"Upgrade you fuel tank to fit more gas! Increase capacity with {tankUpgradeSize}L for {tankUpgradeCost}$";
+        upgradeTankText.text = $"Upgrade your fuel tank to fit more gas! Increase capacity with {tankUpgradeSize}L for {tankUpgradeCost} coins";
 
     }
 
@@ -49,7 +49,7 @@ public class FuelSection : MonoBehaviour
             Debug.LogWarning("Your fuel tank is already full");
             return;
         }
-        if (GameStateManager.Instance.GetCurrency() >= fuelCost) 
+        if (GameStateManager.Instance.GetCurrency() >= fuelCost)
         {
             GameStateManager.Instance.AddCurrency(-fuelCost);
             GameStateManager.Instance.AddFuel(reFuelAmount);
@@ -57,14 +57,14 @@ public class FuelSection : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Not enough currency to upgrade fuel");
+            Debug.LogWarning("Not enough coins to upgrade fuel");
         }
-        
+
     }
 
     public void UpgradeFuelTank()
     {
-        if (GameStateManager.Instance.GetCurrency() >= tankUpgradeCost) 
+        if (GameStateManager.Instance.GetCurrency() >= tankUpgradeCost)
         {
             GameStateManager.Instance.AddCurrency(-tankUpgradeCost);
             GameStateManager.Instance.AddMaxFuelAmount(tankUpgradeSize);
@@ -72,7 +72,7 @@ public class FuelSection : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Not enough currency to upgrade fuel");
+            Debug.LogWarning("Not enough coins to upgrade fuel");
         }
     }
 }
