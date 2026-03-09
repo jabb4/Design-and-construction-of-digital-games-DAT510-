@@ -14625,7 +14625,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.11666667
+  m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 5ba8a2920d5424643b8ec6ea53c113fb, type: 2}
   m_BuildHeightMesh: 0
@@ -17381,6 +17381,10 @@ PrefabInstance:
       propertyPath: healingSystem
       value: 
       objectReference: {fileID: 231308397011411995}
+    - target: {fileID: 4681713336791052000, guid: f64064a2e865b4a51a863398122b0b22, type: 3}
+      propertyPath: health
+      value: 
+      objectReference: {fileID: 231308397011411994}
     - target: {fileID: 6096798049441145297, guid: f64064a2e865b4a51a863398122b0b22, type: 3}
       propertyPath: m_Name
       value: PlayerRaidUI
