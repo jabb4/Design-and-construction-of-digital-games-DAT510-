@@ -221,6 +221,10 @@ public class Enemy : MonoBehaviour, ICombatant
             body = gameObject.AddComponent<Rigidbody>();
         }
 
+        // NavMeshAgent owns locomotion during normal gameplay. Keep the body kinematic so
+        // physics does not fight the agent on slower machines or different fixed-step timing.
+        body.useGravity = false;
+        body.isKinematic = true;
         body.linearDamping = 0f;
         body.angularDamping = 0.05f;
         body.constraints = RigidbodyConstraints.FreezeRotation;

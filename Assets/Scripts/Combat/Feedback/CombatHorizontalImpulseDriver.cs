@@ -138,10 +138,33 @@ namespace Combat
                 return;
             }
 
+            if (fallbackRigidbody.isKinematic)
+            {
+                MoveKinematicBody(velocity);
+                return;
+            }
+
             Vector3 current = fallbackRigidbody.linearVelocity;
             current.x = velocity.x;
             current.z = velocity.z;
             fallbackRigidbody.linearVelocity = current;
+        }
+
+        private void MoveKinematicBody(Vector3 velocity)
+        {
+            float dt = Time.inFixedTimeStep ? Time.fixedDeltaTime : Time.deltaTime;
+            if (dt <= 0f)
+            {
+                return;
+            }
+
+            Vector3 horizontalDisplacement = new Vector3(velocity.x, 0f, velocity.z) * dt;
+            if (horizontalDisplacement.sqrMagnitude <= 0f)
+            {
+                return;
+            }
+
+            fallbackRigidbody.MovePosition(fallbackRigidbody.position + horizontalDisplacement);
         }
 
         private void ClearHorizontalMotion()
